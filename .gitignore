@@ -1,0 +1,26 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+bin/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.DS_Store
+*.atlas
+assets/tiles/tiles.png
+assets/items/items.png
+
+# Python asset tools
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS
+Thumbs.db

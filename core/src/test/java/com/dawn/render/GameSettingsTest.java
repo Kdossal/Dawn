@@ -1,0 +1,44 @@
+package com.dawn.render;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.dawn.config.Constants;
+import org.junit.jupiter.api.Test;
+
+class GameSettingsTest {
+    @Test
+    void level1IsMaxZoomOut() {
+        GameSettings settings = new GameSettings();
+        settings.setZoomLevel(1);
+
+        assertEquals(1f, settings.targetZoomFactor(), 0.0001f);
+        assertEquals(Constants.VIEW_WIDTH_PX, GameSettings.viewWidthPx(settings.targetZoomFactor()), 0.01f);
+        assertEquals(Constants.VIEW_HEIGHT_PX, GameSettings.viewHeightPx(settings.targetZoomFactor()), 0.01f);
+    }
+
+    @Test
+    void level10IsMaxZoomIn() {
+        float factor = GameSettings.zoomFactorForLevel(10);
+
+        assertEquals(GameSettings.MAX_ZOOM_IN_FACTOR, factor, 0.001f);
+        assertEquals(384f, GameSettings.viewWidthPx(factor), 0.5f);
+        assertEquals(240f, GameSettings.viewHeightPx(factor), 0.5f);
+    }
+
+    @Test
+    void level5InterpolatesLinearly() {
+        float factor = GameSettings.zoomFactorForLevel(5);
+        float expected = 1f + (GameSettings.MAX_ZOOM_IN_FACTOR - 1f) * (4f / 9f);
+
+        assertEquals(expected, factor, 0.001f);
+    }
+
+    @Test
+    void clampZoomLevel() {
+        GameSettings settings = new GameSettings();
+        settings.setZoomLevel(0);
+        assertEquals(1, settings.zoomLevel);
+        settings.setZoomLevel(99);
+        assertEquals(10, settings.zoomLevel);
+    }
+}

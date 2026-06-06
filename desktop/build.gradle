@@ -1,0 +1,43 @@
+apply plugin: 'java-library'
+
+sourceSets.main.java.srcDirs = ['src/main/java/']
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    implementation project(':core')
+    api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+}
+
+tasks.register('run', JavaExec) {
+    group = 'application'
+    description = 'Runs the Dawn desktop game'
+    dependsOn classes
+    mainClass = 'com.dawn.desktop.DesktopLauncher'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = rootProject.file('assets').path
+}
+
+tasks.register('fontPreview', JavaExec) {
+    group = 'application'
+    description = 'Font smoke test — m5x7 tiers without game world'
+    dependsOn classes
+    mainClass = 'com.dawn.desktop.FontPreviewLauncher'
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = rootProject.file('assets').path
+}
+
+jar {
+    archiveBaseName.set(appName)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

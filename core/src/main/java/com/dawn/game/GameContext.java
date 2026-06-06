@@ -1,0 +1,189 @@
+package com.dawn.game;
+
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.Disposable;
+import com.dawn.assets.DawnAssets;
+import com.dawn.config.Constants;
+import com.dawn.render.GameSettings;
+import com.dawn.render.RenderSettings;
+import com.dawn.render.ZoomController;
+import com.dawn.entity.EntityId;
+import com.dawn.entity.EntityManager;
+import com.dawn.gameplay.InteractionPresentation;
+import com.dawn.gameplay.InteractionSystem;
+import com.dawn.gameplay.MiningSystem;
+import com.dawn.gameplay.PlacementSystem;
+import com.dawn.gameplay.drops.DropRenderer;
+import com.dawn.gameplay.drops.DropSystem;
+import com.dawn.gameplay.drops.LootTable;
+import com.dawn.gameplay.sim.SimulationSystem;
+import com.dawn.input.InputController;
+import com.dawn.inventory.EquipmentInventory;
+import com.dawn.inventory.PlayerInventory;
+import com.dawn.inventory.PlayerProfile;
+import com.dawn.ui.inventory.InventoryOverlay;
+import com.dawn.ui.DawnFonts;
+import com.dawn.ui.DebugOverlay;
+import com.dawn.ui.Hotbar;
+import com.dawn.ui.HudAssets;
+import com.dawn.ui.PauseOverlay;
+import com.dawn.world.World;
+import com.dawn.world.render.WorldRenderer;
+
+/** Runtime game state and systems wired for one play session. */
+public final class GameContext implements Disposable {
+    public final DawnAssets assets;
+    public final SpriteBatch worldBatch;
+    public final ShapeRenderer worldOverlay;
+    public final World world;
+    public final EntityManager entities;
+    public final PlayerInventory inventory;
+    public final EquipmentInventory equipment;
+    public final PlayerProfile profile;
+    public final InventoryOverlay inventoryOverlay;
+    public final PauseOverlay pauseOverlay;
+    public final WorldRenderer worldRenderer;
+    public final InputController input;
+    public final InteractionSystem interaction;
+    public final InteractionPresentation interactionPresentation = new InteractionPresentation();
+    public final MiningSystem mining;
+    public final PlacementSystem placement;
+    public final DropSystem dropSystem;
+    public final DropRenderer dropRenderer;
+    public final Hotbar hotbar;
+    public final DebugOverlay debug;
+    public final RenderSettings renderSettings = new RenderSettings();
+    public final GameSettings gameSettings;
+    public final ZoomController zoomController;
+    public final GameLoop gameLoop;
+    public final DawnFonts fonts;
+    public final HudAssets hud;
+
+    private GameContext(
+            DawnAssets assets,
+            SpriteBatch worldBatch,
+            ShapeRenderer worldOverlay,
+            World world,
+            EntityManager entities,
+            PlayerInventory inventory,
+            EquipmentInventory equipment,
+            PlayerProfile profile,
+            InventoryOverlay inventoryOverlay,
+            PauseOverlay pauseOverlay,
+            WorldRenderer worldRenderer,
+            InputController input,
+            InteractionSystem interaction,
+            MiningSystem mining,
+            PlacementSystem placement,
+            DropSystem dropSystem,
+            DropRenderer dropRenderer,
+            Hotbar hotbar,
+            DebugOverlay debug,
+            GameLoop gameLoop,
+            HudAssets hud,
+            DawnFonts fonts,
+            GameSettings gameSettings,
+            ZoomController zoomController) {
+        this.assets = assets;
+        this.worldBatch = worldBatch;
+        this.worldOverlay = worldOverlay;
+        this.world = world;
+        this.entities = entities;
+        this.inventory = inventory;
+        this.equipment = equipment;
+        this.profile = profile;
+        this.inventoryOverlay = inventoryOverlay;
+        this.pauseOverlay = pauseOverlay;
+        this.worldRenderer = worldRenderer;
+        this.input = input;
+        this.interaction = interaction;
+        this.mining = mining;
+        this.placement = placement;
+        this.dropSystem = dropSystem;
+        this.dropRenderer = dropRenderer;
+        this.hotbar = hotbar;
+        this.debug = debug;
+        this.gameLoop = gameLoop;
+        this.hud = hud;
+        this.fonts = fonts;
+        this.gameSettings = gameSettings;
+        this.zoomController = zoomController;
+    }
+
+    public static GameContext create() {
+        DawnAssets assets = new DawnAssets();
+        SpriteBatch worldBatch = new SpriteBatch();
+        ShapeRenderer worldOverlay = new ShapeRenderer();
+        World world = World.createDefault();
+        EntityManager entities = new EntityManager();
+        entities.spawn(EntityId.PLAYER, Constants.MAP_WIDTH / 2f, Constants.MAP_HEIGHT / 2f);
+        PlayerInventory inventory = new PlayerInventory();
+        EquipmentInventory equipment = new EquipmentInventory();
+        PlayerProfile profile = new PlayerProfile();
+        profile.bindEntity(entities.getPlayer());
+        WorldRenderer worldRenderer = new WorldRenderer(worldBatch, worldOverlay, assets);
+        InputController input = new InputController();
+        LootTable lootTable = new LootTable();
+        DropSystem dropSystem = new DropSystem();
+        DropRenderer dropRenderer = new DropRenderer();
+        InteractionSystem interaction = new InteractionSystem(lootTable, dropSystem);
+        MiningSystem mining = new MiningSystem(interaction);
+        PlacementSystem placement = new PlacementSystem(interaction);
+        SimulationSystem simulation = new SimulationSystem(world);
+        GameLoop gameLoop = new GameLoop(simulation);
+        DawnFonts fonts = new DawnFonts();
+        HudAssets hud = new HudAssets(fonts);
+        Hotbar hotbar = new Hotbar(hud, assets, inventory);
+        DebugOverlay debug = new DebugOverlay(hud);
+        GameSettings gameSettings = new GameSettings();
+        ZoomController zoomController = new ZoomController(gameSettings);
+        InventoryOverlay inventoryOverlay =
+                new InventoryOverlay(
+                        fonts,
+                        assets,
+                        inventory,
+                        equipment,
+                        profile,
+                        dropSystem,
+                        entities.getPlayer());
+        PauseOverlay pauseOverlay = new PauseOverlay(assets, fonts, gameSettings);
+        return new GameContext(
+                assets,
+                worldBatch,
+                worldOverlay,
+                world,
+                entities,
+                inventory,
+                equipment,
+                profile,
+                inventoryOverlay,
+                pauseOverlay,
+                worldRenderer,
+                input,
+                interaction,
+                mining,
+                placement,
+                dropSystem,
+                dropRenderer,
+                hotbar,
+                debug,
+                gameLoop,
+                hud,
+                fonts,
+                gameSettings,
+                zoomController);
+    }
+
+    @Override
+    public void dispose() {
+        worldBatch.dispose();
+        worldOverlay.dispose();
+        worldRenderer.dispose();
+        assets.dispose();
+        hud.dispose();
+        fonts.dispose();
+        inventoryOverlay.dispose();
+        pauseOverlay.dispose();
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "entries": [
+    { "blockId": "PIT", "textureId": "PIT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "GRASS", "textureId": "GRASS", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "DIRT", "textureId": "DIRT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "SAND", "textureId": "SAND", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "STONE", "textureId": "STONE", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "WATER", "textureId": "WATER", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "ROCK", "textureId": "ROCK", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "BUSH", "textureId": "BUSH", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT", "alpha": 1 },
+    { "blockId": "OAK_TREE", "textureId": "OAK_TREE", "width": 48, "height": 64, "anchor": "CELL_BOTTOM_CENTER", "alpha": 1 },
+    { "blockId": "OAK_STUMP", "textureId": "OAK_STUMP", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "SPRUCE_TREE", "textureId": "SPRUCE_TREE", "width": 48, "height": 64, "anchor": "CELL_BOTTOM_CENTER", "alpha": 1 },
+    { "blockId": "SPRUCE_STUMP", "textureId": "SPRUCE_STUMP", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "CRATE", "textureId": "CRATE", "width": 16, "height": 21, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "BED_FOOT", "textureId": "BED_FOOT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "BED_HEAD", "textureId": "BED_HEAD", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "tileSize": 16,
+  "itemSize": 16,
+  "entitySize": 16,
+  "uiSize": 16,
+  "tiles": {
+    "grass": { "color": "#40A633", "pattern": "noise", "label": "" },
+    "dirt": { "color": "#735026", "pattern": "noise", "label": "" },
+    "sand": { "color": "#C2B36B", "pattern": "dots", "label": "" },
+    "water": { "color": "#3373D9", "pattern": "waves", "alpha": 220, "label": "" },
+    "bedrock": { "color": "#52525C", "pattern": "brick", "label": "" },
+    "depths": { "color": "#261438", "pattern": "brick", "label": "" },
+    "stone_block": { "color": "#8C8C94", "pattern": "rock", "label": "" },
+    "bush": { "color": "#268C33", "pattern": "bush", "alpha": 140, "label": "" },
+    "tree": { "color": "#1A6B26", "pattern": "bush", "width": 48, "height": 64, "label": "" },
+    "tree_stump": { "color": "#66421F", "pattern": "wood", "label": "" },
+    "crate": { "color": "#8B6914", "pattern": "wood", "height": 21, "label": "" },
+    "bed_foot": { "color": "#B33A3A", "pattern": "solid", "label": "" },
+    "bed_head": { "color": "#D94D4D", "pattern": "solid", "label": "" }
+  },
+  "items": {
+    "pickaxe": { "color": "#7A7A8C", "pattern": "pickaxe", "label": "P" },
+    "axe": { "color": "#8B5A2B", "pattern": "axe", "label": "A" },
+    "shovel": { "color": "#9E7B4F", "pattern": "shovel", "label": "S" },
+    "rock": { "color": "#6E6E78", "pattern": "rock", "label": "" },
+    "wood": { "color": "#A67C52", "pattern": "wood", "label": "" },
+    "dirt_clump": { "color": "#5C3E1E", "pattern": "noise", "label": "" },
+    "sand": { "color": "#C2B36B", "pattern": "dots", "label": "" },
+    "leather_cap": { "color": "#6B5344", "pattern": "noise", "label": "" },
+    "crate": { "color": "#8B6914", "pattern": "wood", "label": "" },
+    "bed": { "color": "#B33A3A", "pattern": "solid", "label": "B" },
+    "tree_sapling": { "color": "#2D8C3D", "pattern": "bush", "label": "" }
+  },
+  "entities": {
+    "player": { "color": "#3380E6", "pattern": "player", "width": 16, "height": 24, "label": "" }
+  },
+  "ui": {
+    "common": {
+      "slot": { "width": 16, "height": 16, "color": "#2E3340", "pattern": "slot", "label": "" },
+      "slot_selected": { "width": 16, "height": 16, "color": "#4A5568", "pattern": "slot", "label": "" },
+      "slot_equip": { "width": 16, "height": 16, "color": "#353942", "pattern": "slot", "label": "" },
+      "cursor": { "width": 16, "height": 16, "color": "#E8E8F0", "pattern": "solid", "label": "" }
+    },
+    "inventory": {
+      "chrome_bg": { "width": 200, "height": 148, "color": "#252830", "pattern": "solid", "label": "" },
+      "grid_panel": { "width": 193, "height": 60, "color": "#3E424C", "pattern": "solid", "label": "" },
+      "tab_page": { "width": 193, "height": 74, "color": "#4A4E58", "pattern": "solid", "label": "" },
+      "tab_equipment": { "width": 12, "height": 8, "color": "#353942", "pattern": "solid", "label": "E" },
+      "tab_equipment_active": { "width": 12, "height": 8, "color": "#4A4E58", "pattern": "solid", "label": "E" },
+      "tab_crafting": { "width": 12, "height": 8, "color": "#353942", "pattern": "solid", "label": "C" },
+      "tab_crafting_active": { "width": 12, "height": 8, "color": "#4A4E58", "pattern": "solid", "label": "C" },
+      "hotbar_row": { "width": 193, "height": 20, "color": "#3A5A7A", "pattern": "solid", "alpha": 90, "label": "" }
+    },
+    "equipment": {
+      "stat_cell": { "width": 55, "height": 22, "color": "#353942", "pattern": "slot", "label": "" },
+      "exp_bar_bg": { "width": 40, "height": 4, "color": "#1A1C22", "pattern": "solid", "label": "" },
+      "exp_bar_fill": { "width": 40, "height": 4, "color": "#3DB84D", "pattern": "solid", "label": "" }
+    }
+  }
+}

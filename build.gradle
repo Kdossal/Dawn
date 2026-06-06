@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        google()
+        gradlePluginPortal()
+    }
+}
+
+allprojects {
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+
+    version = '0.1.0'
+    ext.appName = 'Dawn'
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        google()
+    }
+}
+
+project(':desktop') {
+    tasks.withType(JavaExec) {
+        workingDir rootProject.file('assets').path
+        dependsOn ':core:classes'
+    }
+}

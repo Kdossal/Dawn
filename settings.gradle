@@ -1,0 +1,2 @@
+rootProject.name = 'Dawn'
+include 'core', 'desktop'

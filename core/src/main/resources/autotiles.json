@@ -1,0 +1,40 @@
+{
+  "families": [
+    {
+      "id": "GRASS_FLOOR",
+      "blockId": "GRASS",
+      "textureId": "GRASS",
+      "cols": 4,
+      "rows": 5,
+      "tileSizePx": 16,
+      "neighborLayer": "FLOOR",
+      "neighborBlockId": "GRASS",
+      "bitOrder": ["N", "E", "S", "W"],
+      "bitValues": { "N": 8, "E": 4, "S": 2, "W": 1 },
+      "tiles": [
+        { "mask": 0, "col": 3, "row": 0 },
+        { "mask": 1, "col": 3, "row": 1 },
+        { "mask": 2, "col": 2, "row": 1 },
+        { "mask": 3, "col": 2, "row": 2 },
+        { "mask": 4, "col": 1, "row": 1 },
+        { "mask": 5, "col": 2, "row": 0 },
+        { "mask": 6, "col": 1, "row": 2 },
+        { "mask": 7, "col": 0, "row": 3 },
+        { "mask": 8, "col": 0, "row": 1 },
+        { "mask": 9, "col": 3, "row": 2 },
+        { "mask": 10, "col": 1, "row": 0 },
+        { "mask": 11, "col": 1, "row": 3 },
+        { "mask": 12, "col": 0, "row": 2 },
+        { "mask": 13, "col": 2, "row": 3 },
+        { "mask": 14, "col": 3, "row": 3 }
+      ],
+      "centerTiles": [
+        { "col": 0, "row": 0 },
+        { "col": 0, "row": 4 },
+        { "col": 1, "row": 4 },
+        { "col": 2, "row": 4 },
+        { "col": 3, "row": 4 }
+      ]
+    }
+  ]
+}
