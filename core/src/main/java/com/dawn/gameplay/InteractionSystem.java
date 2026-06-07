@@ -99,10 +99,10 @@ public class InteractionSystem {
         }
     }
 
-    private void spawnLoot(int x, int y, Layer layer, BlockId idBeforeBreak) {
+    private void spawnLoot(World world, int x, int y, Layer layer, BlockId idBeforeBreak) {
         List<ItemStack> loot = lootTable.roll(idBeforeBreak, layer);
         for (ItemStack stack : loot) {
-            dropSystem.spawnAtCell(stack, x, y);
+            dropSystem.spawnAtCell(world, stack, x, y);
         }
     }
 
@@ -111,14 +111,14 @@ public class InteractionSystem {
         if (structureResult != null) {
             lastMessage = structureResult.message();
             for (StructureBreakResult.PartBreak part : structureResult.partBreaks()) {
-                spawnLoot(part.x(), part.y(), part.layer(), part.blockId());
+                spawnLoot(world, part.x(), part.y(), part.layer(), part.blockId());
             }
             return;
         }
         Optional<String> message = BlockBreakEffects.breakObjectLayer(world, x, y, id);
         if (message.isPresent()) {
             lastMessage = message.get();
-            spawnLoot(x, y, Layer.OBJECT, id);
+            spawnLoot(world, x, y, Layer.OBJECT, id);
         }
     }
 
@@ -137,7 +137,7 @@ public class InteractionSystem {
         }
         lastMessage = message.get();
         if (id == BlockId.DIRT || id == BlockId.SAND) {
-            spawnLoot(x, y, Layer.GROUND, id);
+            spawnLoot(world, x, y, Layer.GROUND, id);
         }
     }
 }

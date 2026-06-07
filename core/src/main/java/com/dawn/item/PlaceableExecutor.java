@@ -64,7 +64,7 @@ public final class PlaceableExecutor {
     }
 
     private static boolean canPlaceBlock(World world, Entity entity, int x, int y, BlockId blockId) {
-        if (!SurfaceRules.canPlaceObject(world, entity, x, y)) {
+        if (!SurfaceRules.canPlaceObject(world, entity, x, y, blockId)) {
             return false;
         }
         return blockId != BlockId.AIR;

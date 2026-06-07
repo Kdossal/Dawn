@@ -1,7 +1,7 @@
 package com.dawn.world.render;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.dawn.assets.DawnAssets;
+import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.dawn.entity.EntityBounds;
 import com.dawn.world.World;
 import java.util.List;
@@ -10,10 +10,15 @@ import java.util.List;
 public final class DrawContext {
     private final World world;
     private final OcclusionFadePlan fadePlan;
+    private final float pixelAlignOffsetX;
+    private final float pixelAlignOffsetY;
 
-    private DrawContext(World world, OcclusionFadePlan fadePlan) {
+    private DrawContext(
+            World world, OcclusionFadePlan fadePlan, float pixelAlignOffsetX, float pixelAlignOffsetY) {
         this.world = world;
         this.fadePlan = fadePlan;
+        this.pixelAlignOffsetX = pixelAlignOffsetX;
+        this.pixelAlignOffsetY = pixelAlignOffsetY;
     }
 
     public static DrawContext create(
@@ -22,9 +27,11 @@ public final class DrawContext {
             EntityBounds playerBounds,
             float playerFeetX,
             float playerFeetY,
-            TextureRegion playerSprite,
+            EntitySpriteFrame playerSprite,
             DawnAssets assets,
-            boolean occlusionFadeEnabled) {
+            boolean occlusionFadeEnabled,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY) {
         OcclusionFadePlan fadePlan =
                 occlusionFadeEnabled
                         ? OcclusionFadePlan.build(
@@ -35,7 +42,7 @@ public final class DrawContext {
                                 playerSprite,
                                 assets)
                         : OcclusionFadePlan.disabled();
-        return new DrawContext(world, fadePlan);
+        return new DrawContext(world, fadePlan, pixelAlignOffsetX, pixelAlignOffsetY);
     }
 
     public World world() {
@@ -44,5 +51,13 @@ public final class DrawContext {
 
     public OcclusionFadePlan fadePlan() {
         return fadePlan;
+    }
+
+    public float pixelAlignOffsetX() {
+        return pixelAlignOffsetX;
+    }
+
+    public float pixelAlignOffsetY() {
+        return pixelAlignOffsetY;
     }
 }

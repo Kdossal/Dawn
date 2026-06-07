@@ -9,8 +9,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.dawn.config.Constants;
 import com.dawn.entity.Entity;
+import com.dawn.entity.sprite.PlayerAnimContext;
 import com.dawn.gameplay.TargetResolver.TargetCell;
-import com.dawn.gameplay.drops.WorldDrop;
 import com.dawn.input.GameCursor;
 import com.dawn.render.GameViewport;
 import com.dawn.render.HudViewport;
@@ -108,13 +108,6 @@ public class GameScreen extends ScreenAdapter {
             update(delta);
         }
 
-        WorldDrop hovered = null;
-        if (!ctx.pauseOverlay.isPaused()) {
-            float mouseCellX = mouseWorld.x / Constants.CELL_SIZE_PX;
-            float mouseCellY = mouseWorld.y / Constants.CELL_SIZE_PX;
-            hovered = ctx.dropRenderer.findHovered(ctx.dropSystem.getDrops(), mouseCellX, mouseCellY);
-        }
-
         screenRenderer.render(
                 ctx,
                 gameViewport,
@@ -122,7 +115,6 @@ public class GameScreen extends ScreenAdapter {
                 worldCamera,
                 hudCamera,
                 target,
-                hovered,
                 mouseWorld,
                 ctx.input,
                 ctx.entities.getPlayer(),
@@ -156,10 +148,12 @@ public class GameScreen extends ScreenAdapter {
         updateCamera();
         unprojectMouseWorld();
         target = ctx.input.updateTarget(ctx.world, player, mouseWorld, ctx.hotbar.getHeld());
+        ctx.placement.tick(delta);
 
         if (ctx.inventoryOverlay.isOpen()) {
             ctx.mining.reset();
             ctx.interactionPresentation.clear();
+            player.updateAnimation(delta, PlayerAnimContext.idle(player.getX(), player.getY()));
             ctx.inventoryOverlay.act(delta);
             updateSimulationRegions();
             ctx.gameLoop.update(delta);
@@ -206,6 +200,24 @@ public class GameScreen extends ScreenAdapter {
                 ctx.hotbar.getHeld(),
                 target,
                 !ctx.input.placeHeld());
+
+        boolean interacting =
+                !overHotbar
+                        && (ctx.mining.isActive()
+                                || ctx.placement.isInteracting()
+                                || (ctx.input.placeHeld()
+                                        && ctx.interactionPresentation.hasValidPlacementPreview()));
+        boolean moving = lastMoveX != 0f || lastMoveY != 0f;
+        player.updateAnimation(
+                delta,
+                new PlayerAnimContext(
+                        moving,
+                        interacting,
+                        player.getX(),
+                        player.getY(),
+                        lastMoveX,
+                        lastMoveY,
+                        target));
 
         updateSimulationRegions();
         ctx.gameLoop.update(delta);

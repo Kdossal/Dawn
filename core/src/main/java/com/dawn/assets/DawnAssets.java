@@ -9,6 +9,9 @@ import com.badlogic.gdx.utils.Disposable;
 import com.dawn.entity.EntityDef;
 import com.dawn.entity.EntityId;
 import com.dawn.entity.EntityRegistry;
+import com.dawn.entity.sprite.EntityAnimDef;
+import com.dawn.entity.sprite.EntityAnimRegistry;
+import com.dawn.entity.sprite.EntitySpriteSheet;
 import com.dawn.item.ItemDef;
 import com.dawn.item.ItemId;
 import com.dawn.item.ItemRegistry;
@@ -38,6 +41,7 @@ public final class DawnAssets implements Disposable {
     public final UiEquipment uiEquipment;
     public final OcclusionMasks occlusionMasks;
     private final AutotileAtlas autotileAtlas;
+    private final EntitySpriteSheet entitySpriteSheet;
 
     private final List<Texture> textures = new ArrayList<>();
 
@@ -62,14 +66,15 @@ public final class DawnAssets implements Disposable {
             EntityDef def = EntityRegistry.get(id);
             String path = "entities/" + def.spriteId() + ".png";
             if (id == EntityId.PLAYER) {
-                LoadedSprite loaded = loadWithOcclusionMask(path);
+                LoadedSprite loaded = loadPlayerSheet(path);
                 entities.put(def.spriteId(), loaded.region);
                 occlusionMasks.registerPlayer(loaded.mask);
             } else {
                 entities.put(def.spriteId(), load(path));
             }
         }
-        player = entities.get("player");
+        entitySpriteSheet = EntitySpriteSheet.build(entities);
+        player = entityFrame(EntityId.PLAYER, 0, 0);
         whitePixel = createWhitePixel();
 
         uiCommon = new UiCommon(this);
@@ -102,6 +107,39 @@ public final class DawnAssets implements Disposable {
     }
 
     /** Single disk read: texture for rendering + boolean mask for occlusion tests. */
+    private LoadedSprite loadPlayerSheet(String path) {
+        EntityAnimDef animDef = EntityAnimRegistry.get(EntityId.PLAYER);
+        if (animDef == null) {
+            throw new IllegalStateException("Missing animation definition for PLAYER");
+        }
+        Pixmap pixmap = new Pixmap(Gdx.files.internal(path));
+        try {
+            int expectedW = animDef.cols() * animDef.frameWidth();
+            int expectedH = animDef.rows() * animDef.frameHeight();
+            if (pixmap.getWidth() != expectedW || pixmap.getHeight() != expectedH) {
+                throw new IllegalStateException(
+                        "Player sheet "
+                                + path
+                                + " expected "
+                                + expectedW
+                                + "x"
+                                + expectedH
+                                + " but was "
+                                + pixmap.getWidth()
+                                + "x"
+                                + pixmap.getHeight());
+            }
+            SpriteAlphaMask mask =
+                    SpriteAlphaMask.fromPixmapRegion(pixmap, 0, 0, animDef.frameWidth(), animDef.frameHeight());
+            Texture texture = new Texture(pixmap);
+            texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            textures.add(texture);
+            return new LoadedSprite(new TextureRegion(texture), mask);
+        } finally {
+            pixmap.dispose();
+        }
+    }
+
     private LoadedSprite loadWithOcclusionMask(String path) {
         Pixmap pixmap = new Pixmap(Gdx.files.internal(path));
         try {
@@ -139,6 +177,10 @@ public final class DawnAssets implements Disposable {
 
     public TextureRegion textureForEntity(EntityDef def) {
         return def == null ? null : entity(def.spriteId());
+    }
+
+    public TextureRegion entityFrame(EntityId entityId, int col, int row) {
+        return entitySpriteSheet.frame(entityId, col, row);
     }
 
     public TextureRegion ui(String path) {

@@ -33,7 +33,7 @@
     "tree_sapling": { "color": "#2D8C3D", "pattern": "bush", "label": "" }
   },
   "entities": {
-    "player": { "color": "#3380E6", "pattern": "player", "width": 16, "height": 24, "label": "" }
+    "player": { "color": "#3380E6", "pattern": "player", "width": 64, "height": 225, "label": "" }
   },
   "ui": {
     "common": {

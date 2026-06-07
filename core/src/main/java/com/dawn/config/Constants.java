@@ -39,16 +39,20 @@ public final class Constants {
     /** Default floor/base tile art size in pixels; blocks may use other sizes via {@link com.dawn.world.block.visual.BlockVisualDef}. */
     public static final int TILE_ART_PX = 16;
 
-    /**
-     * Default movement footprint width in cells (14 logical px). Slightly narrower than a full tile so
-     * the body fits 1-cell-wide gaps when centered in a corridor cell.
-     */
-    public static final float DEFAULT_MOVE_WIDTH_CELLS = 14f / CELL_SIZE_PX;
+    /** Player sprite draw size (animation frames); movement hitbox stays 12×12. */
+    public static final int PLAYER_SPRITE_WIDTH_PX = 16;
+    public static final int PLAYER_SPRITE_HEIGHT_PX = 25;
 
     /**
-     * Default movement footprint height in cells (14 logical px). Square 14×14 body for corridor fit.
+     * Default movement footprint width in cells (12 logical px). Slightly narrower than a full tile so
+     * the body fits 1-cell-wide gaps when centered in a corridor cell.
      */
-    public static final float DEFAULT_MOVE_HEIGHT_CELLS = 14f / CELL_SIZE_PX;
+    public static final float DEFAULT_MOVE_WIDTH_CELLS = 12f / CELL_SIZE_PX;
+
+    /**
+     * Default movement footprint height in cells (12 logical px). Square 12×12 body for corridor fit.
+     */
+    public static final float DEFAULT_MOVE_HEIGHT_CELLS = 12f / CELL_SIZE_PX;
 
     public static final int MAP_WIDTH_PX = MAP_WIDTH * CELL_SIZE_PX;
     public static final int MAP_HEIGHT_PX = MAP_HEIGHT * CELL_SIZE_PX;

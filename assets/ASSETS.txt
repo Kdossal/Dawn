@@ -70,7 +70,7 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
 [entities/]
 
-  player.png
+  player.png  (64x225 — 4x9 animation sheet, 16x25 frames; layout in core/src/main/resources/entity_animations.json)
 
 
 

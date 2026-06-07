@@ -21,27 +21,41 @@ public final class InteractionHighlightRenderer {
         this.structureMasks = structureMasks;
     }
 
-    public void render(SpriteBatch batch, DawnAssets assets, World world, List<InteractionHighlight.Highlight> highlights) {
+    public void render(
+            SpriteBatch batch,
+            DawnAssets assets,
+            World world,
+            List<InteractionHighlight.Highlight> highlights,
+            float alignOffsetX,
+            float alignOffsetY) {
         Color tint = RenderColors.TARGET_HIGHLIGHT;
         for (InteractionHighlight.Highlight highlight : highlights) {
             if (highlight instanceof InteractionHighlight.Highlight.StructureMask mask) {
-                structureMasks.render(batch, assets, world, mask.anchorX(), mask.anchorY(), mask.kind(), tint);
+                structureMasks.render(
+                        batch, assets, world, mask.anchorX(), mask.anchorY(), mask.kind(), tint, alignOffsetX, alignOffsetY);
             } else if (highlight instanceof InteractionHighlight.Highlight.BlockSprite sprite) {
-                renderBlockSprite(batch, assets, sprite, tint);
+                renderBlockSprite(batch, assets, sprite, tint, alignOffsetX, alignOffsetY);
             }
         }
     }
 
     private static void renderBlockSprite(
-            SpriteBatch batch, DawnAssets assets, InteractionHighlight.Highlight.BlockSprite sprite, Color tint) {
+            SpriteBatch batch,
+            DawnAssets assets,
+            InteractionHighlight.Highlight.BlockSprite sprite,
+            Color tint,
+            float alignOffsetX,
+            float alignOffsetY) {
         if (sprite.layer() == Layer.FLOOR || AutotileRegistry.familyFor(sprite.blockId()) != null) {
-            BlockSpriteDraw.drawTintedCell(batch, assets, sprite.cellX(), sprite.cellY(), tint);
+            BlockSpriteDraw.drawTintedCell(
+                    batch, assets, sprite.cellX(), sprite.cellY(), tint, alignOffsetX, alignOffsetY);
             return;
         }
         BlockVisualDef visual = BlockVisualRegistry.get(sprite.blockId());
         if (visual == null) {
             return;
         }
-        BlockSpriteDraw.drawTintedBlock(batch, assets, visual, sprite.cellX(), sprite.cellY(), tint);
+        BlockSpriteDraw.drawTintedBlock(
+                batch, assets, visual, sprite.cellX(), sprite.cellY(), tint, alignOffsetX, alignOffsetY);
     }
 }

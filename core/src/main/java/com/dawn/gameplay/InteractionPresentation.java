@@ -13,6 +13,7 @@ import java.util.List;
 public final class InteractionPresentation {
     private List<PlacementPreview> placementPreviews = List.of();
     private List<InteractionHighlight.Highlight> breakHighlights = List.of();
+    private boolean showPlacementGhosts;
 
     public List<PlacementPreview> placementPreviews() {
         return placementPreviews;
@@ -22,13 +23,18 @@ public final class InteractionPresentation {
         return breakHighlights;
     }
 
+    public boolean showPlacementGhosts() {
+        return showPlacementGhosts;
+    }
+
     public void update(
             World world,
             Entity player,
             ItemStack held,
             TargetCell target,
             boolean showPlacementGhost) {
-        if (showPlacementGhost && target != null) {
+        showPlacementGhosts = showPlacementGhost;
+        if (target != null) {
             placementPreviews = PlacementPreviewResolver.resolve(
                     world, player, player.getX(), player.getY(), held, target);
         } else {
@@ -44,5 +50,27 @@ public final class InteractionPresentation {
     public void clear() {
         placementPreviews = Collections.emptyList();
         breakHighlights = Collections.emptyList();
+    }
+
+    public boolean hasValidPlacementPreview() {
+        for (PlacementPreview preview : placementPreviews) {
+            if (isValid(preview)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isValid(PlacementPreview preview) {
+        if (preview instanceof PlacementPreview.FloorCell cell) {
+            return cell.valid();
+        }
+        if (preview instanceof PlacementPreview.BlockSprite block) {
+            return block.valid();
+        }
+        if (preview instanceof PlacementPreview.StructureMask mask) {
+            return mask.valid();
+        }
+        return false;
     }
 }

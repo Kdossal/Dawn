@@ -23,12 +23,20 @@ public final class PlacementRules {
         Placeable placeable = def.placeable();
         float reach = ReachResolver.radiusForHeld(held);
         if (!InteractionRules.canTargetCell(world, entity, playerX, playerY, cellX, cellY, reach)) {
-            String message =
-                    InteractionRules.isEntityCell(entity, cellX, cellY) ? "Can't place on yourself" : null;
-            return new Result(false, placeable, cellX, cellY, message);
+            return new Result(false, placeable, cellX, cellY, null);
         }
         boolean valid = PlaceableExecutor.canPlace(world, entity, placeable, cellX, cellY);
-        String failure = valid ? null : PlaceableExecutor.placementError(placeable);
+        String failure = valid ? null : placementFailureMessage(entity, placeable, cellX, cellY);
         return new Result(valid, placeable, cellX, cellY, failure);
+    }
+
+    private static String placementFailureMessage(
+            Entity entity, Placeable placeable, int cellX, int cellY) {
+        if (entity != null
+                && InteractionRules.isEntityCell(entity, cellX, cellY)
+                && placeable instanceof Placeable.Block) {
+            return "Can't place that on yourself";
+        }
+        return PlaceableExecutor.placementError(placeable);
     }
 }

@@ -36,14 +36,17 @@ public final class StructureMaskHighlightRenderer implements Disposable {
             int anchorX,
             int anchorY,
             StructureKind kind,
-            Color tint) {
+            Color tint,
+            float alignOffsetX,
+            float alignOffsetY) {
         List<StructureSprites.Sprite> sprites =
                 StructureSprites.collectPlaced(world, assets, kind, anchorX, anchorY);
-        renderSprites(batch, sprites, tint);
+        renderSprites(batch, sprites, tint, alignOffsetX, alignOffsetY);
     }
 
     /** Masked tint for blueprint or placed structure sprites. */
-    public void renderSprites(SpriteBatch batch, List<StructureSprites.Sprite> sprites, Color tint) {
+    public void renderSprites(
+            SpriteBatch batch, List<StructureSprites.Sprite> sprites, Color tint, float alignOffsetX, float alignOffsetY) {
         if (sprites.isEmpty()) {
             return;
         }
@@ -87,7 +90,7 @@ public final class StructureMaskHighlightRenderer implements Disposable {
         batch.setProjectionMatrix(savedProj);
         batch.setColor(tint.r, tint.g, tint.b, tint.a);
         bufferRegion.flip(false, true);
-        batch.draw(bufferRegion, minPx, minPy, bufW, bufH);
+        batch.draw(bufferRegion, minPx + alignOffsetX, minPy + alignOffsetY, bufW, bufH);
         bufferRegion.flip(false, true);
         batch.setColor(Color.WHITE);
     }

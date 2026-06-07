@@ -27,10 +27,20 @@ public final class InteractionRules {
         if (!world.inBounds(x, y)) {
             return false;
         }
-        if (!ReachResolver.inReach(entity.def(), entityX, entityY, x, y, reachRadius)) {
-            return false;
-        }
-        return !isEntityCell(entity, x, y);
+        return ReachResolver.inReach(entity.def(), entityX, entityY, x, y, reachRadius);
+    }
+
+    /** True when breaking this target on a cell the entity occupies would not trap the entity. */
+    public static boolean canBreakOnOccupiedCell(BreakTarget target) {
+        return switch (target.layer()) {
+            case GROUND -> false;
+            case FLOOR, OBJECT -> true;
+        };
+    }
+
+    public static boolean canBreakOnOccupiedCell(World world, Entity entity, int x, int y) {
+        BreakTarget target = inspectBreak(world, x, y);
+        return target != null && (!isEntityCell(entity, x, y) || canBreakOnOccupiedCell(target));
     }
 
     public static BreakTarget inspectBreak(World world, int x, int y) {
@@ -52,8 +62,15 @@ public final class InteractionRules {
 
     /** Break target at {@code (x,y)} only if {@code held} is a matching tool (or hands for NONE-tagged blocks). */
     public static BreakTarget resolveToolBreak(World world, ItemStack held, int x, int y) {
+        return resolveToolBreak(world, held, x, y, null);
+    }
+
+    public static BreakTarget resolveToolBreak(World world, ItemStack held, int x, int y, Entity entity) {
         BreakTarget target = inspectBreak(world, x, y);
         if (target == null) {
+            return null;
+        }
+        if (entity != null && isEntityCell(entity, x, y) && !canBreakOnOccupiedCell(target)) {
             return null;
         }
         BlockDef def = BlockDefinitions.get(target.blockId());

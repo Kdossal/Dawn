@@ -15,6 +15,8 @@ public final class GameConfig {
     public float baseMiningDamagePerSec = 14f;
     public float handToolPowerPercent = 18f;
     public float placeRepeatIntervalSec = 0.12f;
+    /** How long the interact pose lingers after a successful place. */
+    public float placeInteractPulseSec = 0.12f;
     public float pickupRadiusCells = 1.5f;
     public float pickupCooldownSec = 1f;
     public float dropScatterCells = 0.25f;

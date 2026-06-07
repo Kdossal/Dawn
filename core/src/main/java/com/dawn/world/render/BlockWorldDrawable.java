@@ -56,7 +56,15 @@ public final class BlockWorldDrawable implements WorldDrawable {
         BlockVisualDef visual = BlockVisualRegistry.get(blockId);
         if (visual != null) {
             float alpha = context.fadePlan().blockDrawAlpha(blockId, cellX, cellY);
-            BlockSpriteDraw.drawBlock(batch, assets, visual, cellX, cellY, alpha);
+            BlockSpriteDraw.drawBlock(
+                    batch,
+                    assets,
+                    visual,
+                    cellX,
+                    cellY,
+                    alpha,
+                    context.pixelAlignOffsetX(),
+                    context.pixelAlignOffsetY());
         }
     }
 }

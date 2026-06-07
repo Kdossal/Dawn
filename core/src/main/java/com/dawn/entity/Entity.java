@@ -1,6 +1,14 @@
 package com.dawn.entity;
 
 import com.dawn.assets.DawnAssets;
+import com.dawn.config.Constants;
+import com.dawn.entity.sprite.EntityAnimClip;
+import com.dawn.entity.sprite.EntityAnimDef;
+import com.dawn.entity.sprite.EntityAnimRegistry;
+import com.dawn.entity.sprite.EntityAnimResolver;
+import com.dawn.entity.sprite.EntitySpriteFrame;
+import com.dawn.entity.sprite.Facing4;
+import com.dawn.entity.sprite.PlayerAnimContext;
 import com.dawn.world.World;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -14,6 +22,9 @@ public final class Entity {
     private float currentHp;
     private float maxHp;
     private boolean lastMoveApplied;
+    private Facing4 facing = Facing4.DOWN;
+    private String currentClipId = "idle_down";
+    private float animStateTime;
 
     public Entity(EntityId entityId, float startX, float startY) {
         EntityDef entityDef = EntityRegistry.get(entityId);
@@ -74,14 +85,54 @@ public final class Entity {
         return lastMoveApplied;
     }
 
+    public void updateAnimation(float delta, PlayerAnimContext ctx) {
+        if (entityId != EntityId.PLAYER || ctx == null) {
+            return;
+        }
+        EntityAnimResolver.Selection selection = EntityAnimResolver.selectClip(ctx, facing);
+        if (!selection.clipId().equals(currentClipId) || selection.facing() != facing) {
+            animStateTime = 0f;
+        }
+        currentClipId = selection.clipId();
+        facing = selection.facing();
+        animStateTime += delta;
+    }
+
+    public EntitySpriteFrame resolveSpriteFrame(DawnAssets assets) {
+        if (entityId != EntityId.PLAYER) {
+            TextureRegion region = assets.textureForEntity(def);
+            if (region == null) {
+                return null;
+            }
+            return new EntitySpriteFrame(
+                    region, false, region.getRegionWidth(), region.getRegionHeight());
+        }
+        EntityAnimDef animDef = EntityAnimRegistry.get(entityId);
+        if (animDef == null) {
+            return null;
+        }
+        EntityAnimClip clip = animDef.clip(currentClipId);
+        int frameCol = EntityAnimResolver.frameIndex(clip, animStateTime);
+        TextureRegion region = assets.entityFrame(entityId, frameCol, clip.row());
+        if (region == null) {
+            return null;
+        }
+        return new EntitySpriteFrame(
+                region,
+                facing.flipX(),
+                animDef.frameWidth(),
+                animDef.frameHeight());
+    }
+
     public TextureRegion resolveSprite(DawnAssets assets) {
-        return assets.textureForEntity(def);
+        EntitySpriteFrame frame = resolveSpriteFrame(assets);
+        return frame == null ? null : frame.region();
     }
 
     public EntityBounds bounds(DawnAssets assets) {
-        TextureRegion sprite = resolveSprite(assets);
-        int w = sprite == null ? 0 : sprite.getRegionWidth();
-        int h = sprite == null ? 0 : sprite.getRegionHeight();
+        EntitySpriteFrame frame = resolveSpriteFrame(assets);
+        int w = frame == null ? Constants.PLAYER_SPRITE_WIDTH_PX : frame.widthPx();
+        int h = frame == null ? Constants.PLAYER_SPRITE_HEIGHT_PX : frame.heightPx();
         return EntityBounds.fromFeet(def, x, y, w, h);
     }
 

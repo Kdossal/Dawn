@@ -28,7 +28,8 @@ public final class InteractionHighlight {
         if (!InteractionRules.canTargetCell(world, entity, playerX, playerY, hover.x(), hover.y(), reach)) {
             return List.of();
         }
-        BreakTarget breakTarget = InteractionRules.resolveToolBreak(world, held, hover.x(), hover.y());
+        BreakTarget breakTarget =
+                InteractionRules.resolveToolBreak(world, held, hover.x(), hover.y(), entity);
         if (breakTarget == null) {
             return List.of();
         }

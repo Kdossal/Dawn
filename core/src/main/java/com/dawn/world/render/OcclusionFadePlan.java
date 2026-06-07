@@ -11,7 +11,7 @@ import com.dawn.world.block.BlockId;
 import com.dawn.world.block.visual.BlockVisualDef;
 import com.dawn.world.block.visual.BlockVisualLayout;
 import com.dawn.world.block.visual.BlockVisualRegistry;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.dawn.entity.sprite.EntitySpriteFrame;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -44,12 +44,13 @@ public final class OcclusionFadePlan {
             EntityBounds playerBounds,
             float playerFeetX,
             float playerFeetY,
-            TextureRegion playerSprite,
+            EntitySpriteFrame playerSprite,
             DawnAssets assets) {
         Set<Long> fadedCells = new HashSet<>();
         SpriteAlphaMask playerMask = assets.occlusionMasks.player();
-        int playerW = playerSprite == null ? 0 : playerSprite.getRegionWidth();
-        int playerH = playerSprite == null ? 0 : playerSprite.getRegionHeight();
+        int playerW = playerSprite == null ? 0 : playerSprite.widthPx();
+        int playerH = playerSprite == null ? 0 : playerSprite.heightPx();
+        boolean playerFlipX = playerSprite != null && playerSprite.flipX();
         boolean pixelTest = playerMask != null && playerW > 0 && playerH > 0;
 
         int playerOriginX = 0;
@@ -86,6 +87,7 @@ public final class OcclusionFadePlan {
                                 playerOriginY,
                                 playerW,
                                 playerH,
+                                playerFlipX,
                                 playerMask,
                                 blockMask,
                                 blockRect);

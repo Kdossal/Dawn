@@ -1,0 +1,23 @@
+{
+  "entities": [
+    {
+      "entityId": "PLAYER",
+      "spriteId": "player",
+      "frameWidth": 16,
+      "frameHeight": 25,
+      "cols": 4,
+      "rows": 9,
+      "clips": {
+        "idle_down": { "row": 0, "frameCount": 4, "fps": 4 },
+        "idle_right": { "row": 1, "frameCount": 4, "fps": 4 },
+        "idle_up": { "row": 2, "frameCount": 4, "fps": 4 },
+        "walk_down": { "row": 3, "frameCount": 4, "fps": 8 },
+        "walk_right": { "row": 4, "frameCount": 4, "fps": 8 },
+        "walk_up": { "row": 5, "frameCount": 4, "fps": 8 },
+        "interact_down": { "row": 6, "frameCount": 4, "fps": 10 },
+        "interact_right": { "row": 7, "frameCount": 4, "fps": 10 },
+        "interact_up": { "row": 8, "frameCount": 4, "fps": 10 }
+      }
+    }
+  ]
+}

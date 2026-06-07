@@ -3,6 +3,9 @@ package com.dawn.world.block;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.dawn.entity.Entity;
+import com.dawn.entity.EntityId;
+import com.dawn.entity.EntityManager;
 import com.dawn.test.TestWorlds;
 import com.dawn.world.World;
 import org.junit.jupiter.api.Test;
@@ -45,5 +48,19 @@ class SurfaceRulesTest {
         assertTrue(SurfaceRules.canPlaceFloor(world, 2, 2, BlockId.GRASS));
         world.setGround(2, 2, BlockId.SAND);
         assertFalse(SurfaceRules.canPlaceFloor(world, 2, 2, BlockId.GRASS));
+    }
+
+    @Test
+    void placeObject_passThroughAllowedOnOccupiedCell() {
+        World world = TestWorlds.smallWalkable(6, 6);
+        Entity player = new EntityManager().spawn(EntityId.PLAYER, 2.5f, 2f);
+        assertTrue(SurfaceRules.canPlaceObject(world, player, 2, 2, BlockId.BUSH));
+    }
+
+    @Test
+    void placeObject_solidBlockedOnOccupiedCell() {
+        World world = TestWorlds.smallWalkable(6, 6);
+        Entity player = new EntityManager().spawn(EntityId.PLAYER, 2.5f, 2f);
+        assertFalse(SurfaceRules.canPlaceObject(world, player, 2, 2, BlockId.CRATE));
     }
 }

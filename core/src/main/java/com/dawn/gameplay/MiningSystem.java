@@ -40,7 +40,8 @@ public final class MiningSystem {
             return;
         }
 
-        BreakTarget breakTarget = InteractionRules.resolveToolBreak(world, held, target.x(), target.y());
+        BreakTarget breakTarget =
+                InteractionRules.resolveToolBreak(world, held, target.x(), target.y(), entity);
         if (breakTarget == null) {
             BreakTarget raw = InteractionRules.inspectBreak(world, target.x(), target.y());
             if (raw != null) {
@@ -92,6 +93,10 @@ public final class MiningSystem {
             return def.toolPowerPercent();
         }
         return cfg.handToolPowerPercent;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public void reset() {

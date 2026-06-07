@@ -20,6 +20,7 @@ public final class OcclusionFade {
             int playerOriginY,
             int playerSpriteWidthPx,
             int playerSpriteHeightPx,
+            boolean playerFlipX,
             SpriteAlphaMask playerMask,
             SpriteAlphaMask blockMask,
             float[] blockRectPx) {
@@ -41,7 +42,11 @@ public final class OcclusionFade {
             return false;
         }
 
-        return SpriteAlphaMask.opaqueOverlap(
+        if (!playerFlipX) {
+            return SpriteAlphaMask.opaqueOverlap(
+                    playerMask, playerOriginX, playerOriginY, blockMask, blockRectPx[0], blockRectPx[1]);
+        }
+        return SpriteAlphaMask.opaqueOverlapFlippedX(
                 playerMask, playerOriginX, playerOriginY, blockMask, blockRectPx[0], blockRectPx[1]);
     }
 

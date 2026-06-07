@@ -3,6 +3,8 @@ package com.dawn.world.render;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Matrix4;
+import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Disposable;
 import com.dawn.assets.DawnAssets;
@@ -48,11 +50,14 @@ public class WorldRenderer implements Disposable {
         structureMaskRenderer.dispose();
     }
 
-    public void renderPlacementGhosts(List<PlacementPreview> previews) {
-        placementGhostRenderer.render(batch, assets, previews);
+    public void renderPlacementGhosts(
+            List<PlacementPreview> previews, float pixelAlignOffsetX, float pixelAlignOffsetY) {
+        placementGhostRenderer.render(batch, assets, previews, pixelAlignOffsetX, pixelAlignOffsetY);
     }
 
-    public void renderTerrain(World world, int minX, int maxX, int minY, int maxY) {
+    public void renderTerrain(
+            World world, int minX, int maxX, int minY, int maxY, float pixelAlignOffsetX, float pixelAlignOffsetY) {
+        applyPixelAlign(batch, pixelAlignOffsetX, pixelAlignOffsetY);
         batch.setColor(Color.WHITE);
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -61,6 +66,7 @@ public class WorldRenderer implements Disposable {
                 }
             }
         }
+        clearPixelAlign(batch, pixelAlignOffsetX, pixelAlignOffsetY);
     }
 
     public void renderSortedWorld(
@@ -71,10 +77,12 @@ public class WorldRenderer implements Disposable {
             int maxY,
             float playerFeetX,
             float playerFeetY,
-            TextureRegion playerSprite,
+            EntitySpriteFrame playerSprite,
             EntityBounds playerMoveBox,
             boolean occlusionFadeEnabled,
-            List<WorldDrop> drops) {
+            List<WorldDrop> drops,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY) {
         List<WorldDrawable> drawables = WorldDrawCollector.collect(
                 world, minX, maxX, minY, maxY, playerFeetX, playerFeetY, playerSprite, drops);
         WorldDrawableSort.sort(drawables);
@@ -87,7 +95,9 @@ public class WorldRenderer implements Disposable {
                         playerFeetY,
                         playerSprite,
                         assets,
-                        occlusionFadeEnabled);
+                        occlusionFadeEnabled,
+                        pixelAlignOffsetX,
+                        pixelAlignOffsetY);
         batch.setColor(Color.WHITE);
         for (WorldDrawable drawable : drawables) {
             drawable.draw(batch, assets, context);
@@ -132,8 +142,28 @@ public class WorldRenderer implements Disposable {
         }
     }
 
-    public void renderInteractionHighlights(World world, List<InteractionHighlight.Highlight> highlights) {
-        highlightRenderer.render(batch, assets, world, highlights);
+    public void renderInteractionHighlights(
+            World world,
+            List<InteractionHighlight.Highlight> highlights,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY) {
+        highlightRenderer.render(batch, assets, world, highlights, pixelAlignOffsetX, pixelAlignOffsetY);
+    }
+
+    private static void applyPixelAlign(SpriteBatch batch, float offsetX, float offsetY) {
+        if (offsetX != 0f || offsetY != 0f) {
+            Matrix4 transform = batch.getTransformMatrix();
+            transform.translate(offsetX, offsetY, 0f);
+            batch.setTransformMatrix(transform);
+        }
+    }
+
+    private static void clearPixelAlign(SpriteBatch batch, float offsetX, float offsetY) {
+        if (offsetX != 0f || offsetY != 0f) {
+            Matrix4 transform = batch.getTransformMatrix();
+            transform.translate(-offsetX, -offsetY, 0f);
+            batch.setTransformMatrix(transform);
+        }
     }
 
     public void renderEntityCollisionDebug(World world, EntityBounds bounds, Color moveColor, Color spriteColor) {

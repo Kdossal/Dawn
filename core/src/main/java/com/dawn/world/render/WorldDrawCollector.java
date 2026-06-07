@@ -1,6 +1,6 @@
 package com.dawn.world.render;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.dawn.gameplay.drops.WorldDrop;
 import com.dawn.world.World;
 import com.dawn.world.block.BlockId;
@@ -18,7 +18,7 @@ public final class WorldDrawCollector {
             int maxY,
             float playerFeetX,
             float playerFeetY,
-            TextureRegion playerSprite,
+            EntitySpriteFrame playerSprite,
             List<WorldDrop> drops) {
         int cellCount = Math.max(0, maxX - minX + 1) * Math.max(0, maxY - minY + 1);
         List<WorldDrawable> out = new ArrayList<>(cellCount + 1 + drops.size());
@@ -36,7 +36,7 @@ public final class WorldDrawCollector {
             }
         }
 
-        if (playerSprite != null) {
+        if (playerSprite != null && playerSprite.region() != null) {
             out.add(new EntityWorldDrawable(playerFeetX, playerFeetY, playerSprite));
         }
 

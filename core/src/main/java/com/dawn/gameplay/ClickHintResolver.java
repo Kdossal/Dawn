@@ -39,7 +39,8 @@ public final class ClickHintResolver {
             return ClickVerb.ATTACK;
         }
 
-        BreakTarget breakTarget = InteractionRules.resolveToolBreak(world, held, hover.x(), hover.y());
+        BreakTarget breakTarget =
+                InteractionRules.resolveToolBreak(world, held, hover.x(), hover.y(), entity);
         if (breakTarget != null) {
             return verbForBreakTarget(breakTarget);
         }

@@ -4,13 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
-import com.dawn.config.Constants;
+import com.dawn.render.PixelAlign;
 import com.dawn.gameplay.ClickHintResolver;
 import com.dawn.gameplay.InteractionRules;
 import com.dawn.gameplay.ReachResolver;
 import com.dawn.gameplay.TargetResolver.TargetCell;
 import com.dawn.ui.ClickHintRenderer;
-import com.dawn.gameplay.drops.WorldDrop;
 import com.dawn.input.InputController;
 import com.dawn.entity.Entity;
 import com.dawn.item.ItemStack;
@@ -27,7 +26,6 @@ public final class ScreenRenderer {
             OrthographicCamera worldCamera,
             OrthographicCamera hudCamera,
             TargetCell target,
-            WorldDrop hoveredDrop,
             Vector3 mouseWorld,
             InputController input,
             Entity player,
@@ -49,7 +47,7 @@ public final class ScreenRenderer {
         if (paused) {
             renderPause(ctx, hudViewport, hudCamera);
         } else {
-            renderHud(ctx, hudViewport, hudCamera, hoveredDrop, target, player);
+            renderHud(ctx, hudViewport, hudCamera, target, player);
             renderDebug(
                     ctx,
                     hudViewport,
@@ -81,7 +79,10 @@ public final class ScreenRenderer {
         worldCamera.update();
         ctx.worldBatch.setProjectionMatrix(worldCamera.combined);
         ctx.worldBatch.begin();
-        ctx.worldRenderer.renderTerrain(ctx.world, bounds[0], bounds[1], bounds[2], bounds[3]);
+        float alignX = PixelAlign.gridOffset(worldCamera.position.x);
+        float alignY = PixelAlign.gridOffset(worldCamera.position.y);
+        ctx.worldRenderer.renderTerrain(
+                ctx.world, bounds[0], bounds[1], bounds[2], bounds[3], alignX, alignY);
         Entity player = ctx.entities.getPlayer();
         ctx.worldRenderer.renderSortedWorld(
                 ctx.world,
@@ -91,14 +92,19 @@ public final class ScreenRenderer {
                 bounds[3],
                 player.getX(),
                 player.getY(),
-                player.resolveSprite(ctx.assets),
+                player.resolveSpriteFrame(ctx.assets),
                 player.bounds(ctx.assets),
                 ctx.renderSettings.occlusionFadeEnabled,
-                ctx.dropSystem.getDrops());
+                ctx.dropSystem.getDrops(),
+                alignX,
+                alignY);
         if (!paused) {
-            ctx.worldRenderer.renderPlacementGhosts(ctx.interactionPresentation.placementPreviews());
+            if (ctx.interactionPresentation.showPlacementGhosts()) {
+                ctx.worldRenderer.renderPlacementGhosts(
+                        ctx.interactionPresentation.placementPreviews(), alignX, alignY);
+            }
             ctx.worldRenderer.renderInteractionHighlights(
-                    ctx.world, ctx.interactionPresentation.breakHighlights());
+                    ctx.world, ctx.interactionPresentation.breakHighlights(), alignX, alignY);
         }
         ctx.worldBatch.end();
 
@@ -119,7 +125,6 @@ public final class ScreenRenderer {
             GameContext ctx,
             HudViewport hudViewport,
             OrthographicCamera hudCamera,
-            WorldDrop hoveredDrop,
             TargetCell target,
             Entity player) {
         hudViewport.apply(hudCamera);
@@ -133,13 +138,6 @@ public final class ScreenRenderer {
                     ClickHintResolver.resolve(ctx.world, player, ctx.hotbar.getHeld(), target));
         }
         ctx.inventoryOverlay.draw();
-
-        if (hoveredDrop != null && !ctx.inventoryOverlay.isOpen()) {
-            float scale = Constants.DISPLAY_SCALE;
-            float labelX = hoveredDrop.x * Constants.CELL_SIZE_PX * scale;
-            float labelY = hoveredDrop.y * Constants.CELL_SIZE_PX * scale;
-            ctx.dropRenderer.renderHoverLabel(ctx.hud, ctx.assets, hoveredDrop, labelX, labelY);
-        }
     }
 
     private void renderDebug(
@@ -159,7 +157,10 @@ public final class ScreenRenderer {
         ctx.hud.setProjection(hudCamera.combined);
         ItemStack held = ctx.hotbar.getHeld();
         com.dawn.gameplay.BreakTarget hoverBreak =
-                target == null ? null : InteractionRules.resolveToolBreak(ctx.world, held, target.x(), target.y());
+                target == null
+                        ? null
+                        : InteractionRules.resolveToolBreak(
+                                ctx.world, held, target.x(), target.y(), player);
         com.dawn.gameplay.sim.SimulationSystem simulation = ctx.gameLoop.getSimulation();
         Boolean hoverSimActive =
                 target == null ? null : simulation.isCellSimActive(target.x(), target.y());

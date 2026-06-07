@@ -11,9 +11,16 @@ import com.dawn.world.World;
 public final class PlacementSystem {
     private final InteractionSystem interaction;
     private float cooldown;
+    private float interactPulseRemaining;
 
     public PlacementSystem(InteractionSystem interaction) {
         this.interaction = interaction;
+    }
+
+    public void tick(float delta) {
+        if (interactPulseRemaining > 0f) {
+            interactPulseRemaining = Math.max(0f, interactPulseRemaining - delta);
+        }
     }
 
     public void update(
@@ -47,6 +54,12 @@ public final class PlacementSystem {
                 target.y(),
                 held)) {
             cooldown = GameConfig.get().placeRepeatIntervalSec;
+            interactPulseRemaining = GameConfig.get().placeInteractPulseSec;
         }
+    }
+
+    /** Brief interact pose after a successful place (visible even on quick taps). */
+    public boolean isInteracting() {
+        return interactPulseRemaining > 0f;
     }
 }

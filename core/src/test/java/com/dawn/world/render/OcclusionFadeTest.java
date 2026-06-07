@@ -82,7 +82,7 @@ class OcclusionFadeTest {
         float[] blockRect = BlockVisualLayout.rectPx(visual, 4, 5);
 
         assertFalse(OcclusionFade.playerBehindOccluder(
-                bounds, 56, 115, 32, 64, player, tree, blockRect));
+                bounds, 56, 115, 32, 64, false, player, tree, blockRect));
     }
 
     @Test
@@ -94,7 +94,7 @@ class OcclusionFadeTest {
         float[] blockRect = BlockVisualLayout.rectPx(visual, 4, 5);
 
         assertTrue(OcclusionFade.playerBehindOccluder(
-                bounds, 56, 115, 32, 64, player, tree, blockRect));
+                bounds, 56, 115, 32, 64, false, player, tree, blockRect));
     }
 
     @Test
@@ -116,7 +116,7 @@ class OcclusionFadeTest {
         EntityBounds player = EntityBounds.fromFeet(PLAYER, 4.5f, 7.2f, 32, 64);
 
         DrawContext ctx =
-                DrawContext.create(world, List.of(tree), player, 4.5f, 7.2f, null, null, false);
+                DrawContext.create(world, List.of(tree), player, 4.5f, 7.2f, null, null, false, 0f, 0f);
 
         assertEquals(1f, ctx.fadePlan().blockDrawAlpha(BlockId.OAK_TREE, 4, 5));
     }

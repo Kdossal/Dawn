@@ -57,6 +57,10 @@ public final class SurfaceRules {
     }
 
     public static boolean canPlaceObject(World world, Entity entity, int x, int y) {
+        return canPlaceObject(world, entity, x, y, BlockId.AIR);
+    }
+
+    public static boolean canPlaceObject(World world, Entity entity, int x, int y, BlockId objectToPlace) {
         if (!world.inBounds(x, y)) {
             return false;
         }
@@ -66,7 +70,7 @@ public final class SurfaceRules {
         if (world.getObject(x, y) != BlockId.AIR) {
             return false;
         }
-        if (entity != null && entity.occupiesCell(x, y)) {
+        if (entity != null && entity.occupiesCell(x, y) && !BlockDefinitions.isPassThroughObject(objectToPlace)) {
             return false;
         }
         return world.getStructures().getAt(x, y) == null;

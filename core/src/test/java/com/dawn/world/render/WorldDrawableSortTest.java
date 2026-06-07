@@ -74,7 +74,7 @@ class WorldDrawableSortTest {
         float sortY = 6f;
         float sortX = 4f;
         BlockWorldDrawable bush = block(BlockId.BUSH, 3, 6);
-        EntityWorldDrawable player = new EntityWorldDrawable(sortX, sortY, null);
+        EntityWorldDrawable player = new EntityWorldDrawable(sortX, sortY, 0);
         WorldDrop drop = new WorldDrop(new ItemStack(ItemId.DIRT_CLUMP, 1), sortX - halfIcon, sortY + halfIcon, 0f);
         DropWorldDrawable dropDrawable = new DropWorldDrawable(drop);
         assertEquals(sortY, bush.sortY(), 1e-5f);

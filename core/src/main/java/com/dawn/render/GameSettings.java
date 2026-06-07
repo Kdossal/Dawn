@@ -6,10 +6,11 @@ import com.dawn.config.Constants;
 public final class GameSettings {
     public static final int MIN_ZOOM_LEVEL = 1;
     public static final int MAX_ZOOM_LEVEL = 10;
+    public static final int DEFAULT_ZOOM_LEVEL = 5;
     /** Max zoom in: 40% closer than max zoom out (visible area × 0.6). */
     public static final float MAX_ZOOM_IN_FACTOR = 1f / 0.6f;
 
-    public int zoomLevel = MIN_ZOOM_LEVEL;
+    public int zoomLevel = DEFAULT_ZOOM_LEVEL;
 
     public void setZoomLevel(int level) {
         zoomLevel = clampZoomLevel(level);

@@ -4,6 +4,7 @@ import com.dawn.config.GameConfig;
 import com.dawn.inventory.PlayerInventory;
 import com.dawn.item.ItemStack;
 import com.dawn.entity.Entity;
+import com.dawn.world.World;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,26 +27,27 @@ public final class DropSystem {
 
     /** Loot from breaking / world sources — immediately pickable. */
     public WorldDrop spawn(ItemStack stack, float x, float y) {
-        return spawn(stack, x, y, 0f);
+        return spawnNear(x, y, stack, 0f);
     }
 
-    public void spawnAtCell(ItemStack stack, int cellX, int cellY) {
-        spawn(stack, cellX, cellY);
+    public void spawnAtCell(World world, ItemStack stack, int cellX, int cellY) {
+        float[] center = DropPlacement.cellCenter(world, cellX, cellY);
+        spawnNear(center[0], center[1], stack, 0f);
     }
 
     /** Q-drop, inventory drag-out, etc. — short pickup cooldown. */
     public WorldDrop spawnPlayerDrop(ItemStack stack, float x, float y) {
-        return spawn(stack, x, y, GameConfig.get().pickupCooldownSec);
+        return spawnNear(x, y, stack, GameConfig.get().pickupCooldownSec);
     }
 
-    private WorldDrop spawn(ItemStack stack, float x, float y, float pickupCooldown) {
+    private WorldDrop spawnNear(float x, float y, ItemStack stack, float pickupCooldown) {
         if (stack == null || stack.isEmpty()) {
             return null;
         }
         float scatter = GameConfig.get().dropScatterCells;
         ThreadLocalRandom rng = ThreadLocalRandom.current();
-        float sx = x + 0.5f + (rng.nextFloat() * 2f - 1f) * scatter;
-        float sy = y + 0.5f + (rng.nextFloat() * 2f - 1f) * scatter;
+        float sx = x + (rng.nextFloat() * 2f - 1f) * scatter;
+        float sy = y + (rng.nextFloat() * 2f - 1f) * scatter;
         WorldDrop drop = new WorldDrop(stack, sx, sy, pickupCooldown);
         drops.add(drop);
         return drop;
@@ -63,8 +65,9 @@ public final class DropSystem {
             }
             float dx = drop.x - px;
             float dy = drop.y - py;
-            float dist = Math.max(Math.abs(dx), Math.abs(dy));
-            if (dist <= cfg.pickupRadiusCells) {
+            float distSq = dx * dx + dy * dy;
+            float radius = cfg.pickupRadiusCells;
+            if (distSq <= radius * radius) {
                 int left = inventory.tryAdd(drop.stack);
                 if (left <= 0) {
                     it.remove();
