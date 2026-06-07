@@ -2,20 +2,17 @@
 """
 Generate rudimentary placeholder PNG assets for Dawn.
 
-By default, existing PNGs are never overwritten (safe for hand-made art).
-Use --force only when you intentionally want to regenerate placeholders.
+SAFE (default): only creates PNGs that do not exist yet. Hand-made art is never touched.
+
+DESTRUCTIVE — overwrites existing PNGs; do NOT use on assets/ you have painted or edited:
+  --force          overwrite every manifest PNG
+  --only NAME …    overwrite only the named stems (still destroys hand-made files)
+
+Also rewrites assets/ASSETS.txt on every run. Back up or git-restore that file if you edit it by hand.
 
 Usage:
   pip install -r tools/requirements.txt
-  python tools/generate_assets.py              # missing files only
-  python tools/generate_assets.py --force      # overwrite all manifest PNGs
-
-Outputs:
-  assets/tiles/<name>.png       (16x16)
-  assets/items/<name>.png       (16x16)
-  assets/entities/<name>.png    (16x16)
-  assets/ui/<group>/<name>.png  (common, inventory, equipment)
-  assets/ASSETS.txt             (index)
+  python tools/generate_assets.py              # missing files only (safe)
 """
 
 from __future__ import annotations
@@ -60,7 +57,12 @@ def draw_border(
         draw.rectangle([i, i, width - 1 - i, height - 1 - i], outline=edge)
 
 
-def draw_noise(draw: ImageDraw.ImageDraw, size: int, base: tuple[int, int, int, int], seed: int = 0) -> None:
+def draw_noise(
+    draw: ImageDraw.ImageDraw,
+    size: int,
+    base: tuple[int, int, int, int],
+    seed: int = 0,
+) -> None:
     rng = random.Random(seed)
     for y in range(size):
         for x in range(size):
@@ -193,9 +195,27 @@ def try_load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
 
 
 def asset_dimensions(spec: dict, default_size: int) -> tuple[int, int]:
+    tile = int(spec.get("tileSize", default_size))
+    cols = spec.get("sheetCols")
+    rows = spec.get("sheetRows")
+    if cols and rows:
+        return int(cols) * tile, int(rows) * tile
     w = spec.get("width", spec.get("w", default_size))
     h = spec.get("height", spec.get("h", default_size))
     return int(w), int(h)
+
+
+def render_autotile_sheet(name: str, spec: dict, tile_size: int) -> Image.Image:
+    cols = int(spec["sheetCols"])
+    rows = int(spec["sheetRows"])
+    sheet = Image.new("RGBA", (cols * tile_size, rows * tile_size), (0, 0, 0, 0))
+    for row in range(rows):
+        for col in range(cols):
+            cell_spec = {k: v for k, v in spec.items() if k not in ("sheetCols", "sheetRows")}
+            cell_spec["seed"] = col + row * cols
+            cell = render_asset(f"{name}_{col}_{row}", cell_spec, tile_size)
+            sheet.paste(cell, (col * tile_size, row * tile_size))
+    return sheet
 
 
 def render_asset(name: str, spec: dict, default_size: int) -> Image.Image:
@@ -209,7 +229,9 @@ def render_asset(name: str, spec: dict, default_size: int) -> Image.Image:
     draw_border(draw, width, height, color)
 
     fn = PATTERNS.get(pattern)
-    if fn:
+    if pattern == "noise":
+        draw_noise(draw, min(width, height), color, seed=int(spec.get("seed", 0)))
+    elif fn:
         fn(draw, width, height, color)
 
     if label:
@@ -228,9 +250,10 @@ def is_asset_spec(value: object) -> bool:
     return isinstance(value, dict) and "color" in value
 
 
-def write_png(path: Path, img: Image.Image, force: bool) -> bool:
-    """Save image when path is missing or force is set. Returns True if written."""
-    if path.exists() and not force:
+def write_png(path: Path, img: Image.Image, force: bool, only: set[str] | None, stem: str) -> bool:
+    """Save image when path is missing, force is set, or stem is in only."""
+    targeted = only is not None and stem in only
+    if path.exists() and not force and not targeted:
         print(f"  skip {path.relative_to(ROOT)} (already exists)")
         return False
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -255,14 +278,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Overwrite existing PNGs (default: only create missing files)",
+        help="DESTRUCTIVE: overwrite ALL existing manifest PNGs. Never use on hand-made art.",
+    )
+    parser.add_argument(
+        "--only",
+        nargs="*",
+        metavar="NAME",
+        help="DESTRUCTIVE: overwrite named stems even if PNGs exist. Never use on hand-made art.",
     )
     return parser.parse_args()
+
+
+def render_tile_asset(name: str, spec: dict, tile_size: int) -> Image.Image:
+    if spec.get("sheetCols") and spec.get("sheetRows"):
+        return render_autotile_sheet(name, spec, tile_size)
+    return render_asset(name, spec, tile_size)
 
 
 def main() -> None:
     args = parse_args()
     force = args.force
+    only = set(args.only) if args.only else None
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     tile_size = manifest.get("tileSize", 16)
     item_size = manifest.get("itemSize", 16)
@@ -290,7 +326,7 @@ def main() -> None:
         index_lines.append(f"[{cat}/]")
         for name, spec in entries.items():
             path = out_dir / f"{name}.png"
-            if write_png(path, render_asset(name, spec, size), force):
+            if write_png(path, render_tile_asset(name, spec, size), force, only, name):
                 wrote += 1
             else:
                 skipped += 1
@@ -307,7 +343,7 @@ def main() -> None:
                 index_lines.append("")
             index_lines.append(f"[ui/{group}/]")
             current_group = group
-        if write_png(path, render_asset(path.stem, spec, size), force):
+        if write_png(path, render_asset(path.stem, spec, size), force, only, path.stem):
             wrote += 1
         else:
             skipped += 1

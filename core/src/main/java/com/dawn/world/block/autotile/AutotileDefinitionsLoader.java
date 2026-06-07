@@ -68,7 +68,7 @@ public final class AutotileDefinitionsLoader {
         Layer neighborLayer = Layer.valueOf(requireString(element, "neighborLayer"));
         BlockId neighborBlockId = BlockId.valueOf(requireString(element, "neighborBlockId"));
 
-        AutotileCell[] maskTiles = new AutotileCell[AutotileFamily.FULL_SURROUND_MASK];
+        AutotileCell[] maskTiles = new AutotileCell[AutotileFamily.MASK_COUNT];
         JsonValue tiles = element.get("tiles");
         if (tiles == null || !tiles.isArray()) {
             throw new IllegalArgumentException("autotiles.json: family \"" + id + "\" missing \"tiles\" array");
@@ -76,7 +76,7 @@ public final class AutotileDefinitionsLoader {
         Set<Integer> seenMasks = new HashSet<>();
         for (JsonValue tile : tiles) {
             int mask = requireInt(tile, "mask");
-            if (mask < 0 || mask >= AutotileFamily.FULL_SURROUND_MASK) {
+            if (mask < 0 || mask >= AutotileFamily.MASK_COUNT) {
                 throw new IllegalArgumentException(
                         "autotiles.json: family \"" + id + "\" mask out of range: " + mask);
             }
@@ -93,7 +93,18 @@ public final class AutotileDefinitionsLoader {
             }
         }
 
-        AutotileCell[] centerTiles = parseCenterTiles(element, id, cols, rows);
+        AutotileCell[] centerTiles = parseCenterTiles(element);
+        if (centerTiles.length > 0) {
+            if (maskTiles[AutotileFamily.FULL_SURROUND_MASK] != null) {
+                throw new IllegalArgumentException(
+                        "autotiles.json: family \""
+                                + id
+                                + "\" cannot define mask 15 in tiles when centerTiles is set");
+            }
+        } else if (maskTiles[AutotileFamily.FULL_SURROUND_MASK] == null) {
+            throw new IllegalArgumentException(
+                    "autotiles.json: family \"" + id + "\" missing mask 15 or centerTiles");
+        }
         validateCellBounds(id, cols, rows, maskTiles, centerTiles);
 
         return new AutotileFamily(
@@ -109,10 +120,10 @@ public final class AutotileDefinitionsLoader {
                 centerTiles);
     }
 
-    private static AutotileCell[] parseCenterTiles(JsonValue element, String id, int cols, int rows) {
+    private static AutotileCell[] parseCenterTiles(JsonValue element) {
         JsonValue centers = element.get("centerTiles");
         if (centers == null || !centers.isArray() || centers.size == 0) {
-            throw new IllegalArgumentException("autotiles.json: family \"" + id + "\" missing \"centerTiles\"");
+            return new AutotileCell[0];
         }
         List<AutotileCell> cells = new ArrayList<>();
         for (JsonValue tile : centers) {
@@ -124,7 +135,9 @@ public final class AutotileDefinitionsLoader {
     private static void validateCellBounds(
             String id, int cols, int rows, AutotileCell[] maskTiles, AutotileCell[] centerTiles) {
         for (AutotileCell cell : maskTiles) {
-            validateCell(id, cols, rows, cell);
+            if (cell != null) {
+                validateCell(id, cols, rows, cell);
+            }
         }
         for (AutotileCell cell : centerTiles) {
             validateCell(id, cols, rows, cell);

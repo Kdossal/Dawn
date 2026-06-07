@@ -15,7 +15,7 @@ class BlockVisualLayoutTest {
         assertEquals(3 * Constants.CELL_SIZE_PX, rect[0], 1e-5f);
         assertEquals(5 * Constants.CELL_SIZE_PX, rect[1], 1e-5f);
         assertEquals(16f, rect[2], 1e-5f);
-        assertEquals(21f, rect[3], 1e-5f);
+        assertEquals(20f, rect[3], 1e-5f);
     }
 
     @Test

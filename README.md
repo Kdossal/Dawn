@@ -24,13 +24,14 @@ py -3 -m pip install -r tools/requirements.txt
 py -3 tools/generate_assets.py
 ```
 
-See [tools/README.md](tools/README.md). Replace PNGs later; keep filenames in sync with `ItemRegistry` / `BlockTextureId`. The generator skips existing PNGs (use `--force` only to regenerate placeholders).
+See [tools/README.md](tools/README.md). Replace PNGs later; keep filenames in sync with `ItemRegistry` / `BlockTextureId`. The default generator run skips existing files and is safe after you add art. **Never use `--force` or `--only`** on hand-made PNGs — those flags overwrite existing files.
 
 ## Controls
 
 | Input | Action |
 |--------|--------|
 | WASD / arrows | Move |
+| Double-tap WASD / arrows (while holding) | Run (+50% speed) |
 | **1**–**9**, **0** | Select hotbar slot (active row) |
 | Scroll wheel | Cycle hotbar slot |
 | **E** | Open / close inventory overlay (game keeps running) |

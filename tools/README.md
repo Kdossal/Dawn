@@ -1,15 +1,35 @@
 # Dawn asset tools
 
+## Hand-made art — read this first
+
+**Do not run the generator against PNGs you have painted or edited by hand.**
+
+| Command | Safe with hand-made art? |
+|---------|--------------------------|
+| `py -3 tools/generate_assets.py` | **Yes** — creates **missing** files only; skips existing PNGs |
+| `py -3 tools/generate_assets.py --only …` | **No** — **overwrites** those files even if they already exist |
+| `py -3 tools/generate_assets.py --force` | **No** — **overwrites every** manifest PNG |
+
+Once you replace a placeholder with real pixel art, **never** pass `--force` or `--only`. Edit PNGs directly in `assets/`, or copy files in from elsewhere. Commit art to git so you can recover it.
+
+The script also rewrites `assets/ASSETS.txt` when it runs. If you maintain that file by hand, back it up first or restore it from git after a generator run.
+
 ## Generate placeholder art
 
 Rudimentary PNGs aligned with game ids. Swap files later without renaming (keep exact pixel dimensions for inventory chrome art).
 
-**The generator never overwrites existing PNGs** unless you pass `--force`. Safe to run after adding hand-made art; it only creates missing files.
+**Default run is safe:** existing PNGs are skipped. Use `--force` or `--only` only when you deliberately want to throw away current files and regenerate placeholders from scratch.
 
 ```bat
 py -3 -m pip install -r tools/requirements.txt
 py -3 tools/generate_assets.py
+```
+
+**Destructive (do not use on hand-made art):**
+
+```bat
 py -3 tools/generate_assets.py --force
+py -3 tools/generate_assets.py --only pit water
 ```
 
 (Linux/macOS: use `python3` instead of `py -3`.)
@@ -55,7 +75,7 @@ World block **draw size, anchor, and offsets** live in [`core/src/main/resources
 
 1. **Block / tile sprites:** Add `BlockTextureId` and PNG under `assets/tiles/`; append an entry to `block_visuals.json`; run `generate_assets.py` only to fill **missing** placeholders.
 2. Edit [`assets_manifest.json`](assets_manifest.json) for placeholders (tiles / ui groups as needed).
-3. Run `generate_assets.py` to create any new manifest entries that do not have a PNG yet (`--force` to regenerate everything).
+3. Run `generate_assets.py` to create any new manifest entries that do not have a PNG yet. **Do not** use `--force` or `--only` if you have hand-made PNGs in `assets/`.
 4. Register items in Java (`ItemRegistry`, etc.) using the same **filename** (without `.png`) where applicable.
 5. For new UI regions, add a field to the matching `DawnAssets.Ui*` class and wire the load path.
 
@@ -65,4 +85,4 @@ World block **draw size, anchor, and offsets** live in [`core/src/main/resources
 
 ## Replacing with real pixel art
 
-Replace any `assets/**/<name>.png` directly, or update the manifest and run the generator once (skipped files stay untouched).
+Replace any `assets/**/<name>.png` directly in an image editor or file explorer. **Do not** run `generate_assets.py --force` or `--only` on folders that contain art you care about — those flags overwrite existing PNGs.

@@ -2,8 +2,12 @@ package com.dawn.config;
 
 /** Tunable gameplay values (mutable singleton for testing). */
 public final class GameConfig {
-    public float baseMoveSpeed = 9f;
+    public float baseMoveSpeed = 6f;
     public float agilitySpeedFactor = 0.03f;
+    /** Speed multiplier while running after a movement-key double-tap (50 = +50%). */
+    public float runSpeedBonusPercent = 50f;
+    /** Max seconds between two presses of the same movement key to start a run. */
+    public float runDoubleTapWindowSec = 0.3f;
     public float baseMaxHealth = 0f;
     public float vigorHealthFactor = 8f;
     public float strengthArmorFactor = 0.5f;

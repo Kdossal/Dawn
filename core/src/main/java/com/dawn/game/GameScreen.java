@@ -149,7 +149,7 @@ public class GameScreen extends ScreenAdapter {
             float len = (float) Math.sqrt(lastMoveX * lastMoveX + lastMoveY * lastMoveY);
             lastMoveX /= len;
             lastMoveY /= len;
-            float speed = player.getMoveSpeedCellsPerSec() * delta;
+            float speed = player.getMoveSpeedCellsPerSec(ctx.input.isRunning()) * delta;
             player.move(lastMoveX * speed, lastMoveY * speed, ctx.world);
         }
 

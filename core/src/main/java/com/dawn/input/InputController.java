@@ -15,18 +15,21 @@ import com.dawn.world.World;
 /** Keyboard movement tracking and world targeting. */
 public class InputController extends InputAdapter {
     private final IntSet held = new IntSet();
+    private final DoubleTapRunTracker runTracker = new DoubleTapRunTracker();
     private TargetCell targetCell;
     private float scrollYAccum;
 
     @Override
     public boolean keyDown(int keycode) {
         held.add(keycode);
+        runTracker.onKeyDown(keycode, System.nanoTime() / 1_000_000_000d);
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
         held.remove(keycode);
+        runTracker.onKeyUp(keycode, isAnyMovementHeld());
         return false;
     }
 
@@ -54,6 +57,20 @@ public class InputController extends InputAdapter {
             y += 1f;
         }
         return y;
+    }
+
+    /** True after a movement-key double-tap while at least one movement key is still held. */
+    public boolean isRunning() {
+        return runTracker.isRunning() && (getMoveX() != 0f || getMoveY() != 0f);
+    }
+
+    private boolean isAnyMovementHeld() {
+        for (int key : MovementKeys.all()) {
+            if (isHeld(key)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public TargetCell updateTarget(World world, Entity player, Vector3 mouseWorldPx, ItemStack held) {

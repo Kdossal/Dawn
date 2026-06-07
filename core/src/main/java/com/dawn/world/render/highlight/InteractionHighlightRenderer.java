@@ -7,6 +7,7 @@ import com.dawn.gameplay.InteractionHighlight;
 import com.dawn.render.RenderColors;
 import com.dawn.world.World;
 import com.dawn.world.block.Layer;
+import com.dawn.world.block.autotile.AutotileRegistry;
 import com.dawn.world.block.visual.BlockSpriteDraw;
 import com.dawn.world.block.visual.BlockVisualDef;
 import com.dawn.world.block.visual.BlockVisualRegistry;
@@ -33,7 +34,7 @@ public final class InteractionHighlightRenderer {
 
     private static void renderBlockSprite(
             SpriteBatch batch, DawnAssets assets, InteractionHighlight.Highlight.BlockSprite sprite, Color tint) {
-        if (sprite.layer() == Layer.FLOOR) {
+        if (sprite.layer() == Layer.FLOOR || AutotileRegistry.familyFor(sprite.blockId()) != null) {
             BlockSpriteDraw.drawTintedCell(batch, assets, sprite.cellX(), sprite.cellY(), tint);
             return;
         }

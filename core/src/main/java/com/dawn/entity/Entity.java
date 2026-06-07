@@ -63,7 +63,11 @@ public final class Entity {
     }
 
     public float getMoveSpeedCellsPerSec() {
-        return StatFormulas.moveSpeedCellsPerSec(stats);
+        return getMoveSpeedCellsPerSec(false);
+    }
+
+    public float getMoveSpeedCellsPerSec(boolean running) {
+        return StatFormulas.moveSpeedCellsPerSec(stats, running);
     }
 
     public boolean wasLastMoveApplied() {

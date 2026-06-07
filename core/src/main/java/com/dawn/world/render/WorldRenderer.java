@@ -96,20 +96,26 @@ public class WorldRenderer implements Disposable {
     }
 
     private void drawTerrainCell(World world, int x, int y) {
-        drawBlockId(world.getGround(x, y), x, y);
+        BlockId ground = world.getGround(x, y);
+        AutotileFamily groundAutotile = AutotileRegistry.familyFor(ground);
+        if (groundAutotile != null) {
+            drawAutotile(world, groundAutotile, x, y);
+        } else {
+            drawBlockId(ground, x, y);
+        }
 
         BlockId floor = world.getFloor(x, y);
         if (floor != BlockId.AIR) {
-            AutotileFamily autotile = AutotileRegistry.familyFor(floor);
-            if (autotile != null) {
-                drawAutotileFloor(world, autotile, x, y);
+            AutotileFamily floorAutotile = AutotileRegistry.familyFor(floor);
+            if (floorAutotile != null) {
+                drawAutotile(world, floorAutotile, x, y);
             } else {
                 drawBlockId(floor, x, y);
             }
         }
     }
 
-    private void drawAutotileFloor(World world, AutotileFamily family, int cellX, int cellY) {
+    private void drawAutotile(World world, AutotileFamily family, int cellX, int cellY) {
         BlockVisualDef visual = BlockVisualRegistry.get(family.blockId());
         if (visual == null) {
             return;

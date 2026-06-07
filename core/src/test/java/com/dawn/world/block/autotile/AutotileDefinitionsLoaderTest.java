@@ -8,14 +8,21 @@ import org.junit.jupiter.api.Test;
 class AutotileDefinitionsLoaderTest {
 
     @Test
-    void load_grassFloorFamilyPresent() {
+    void load_allFamiliesPresent() {
         var map = AutotileDefinitionsLoader.load();
-        AutotileFamily family = map.get(BlockId.GRASS);
-        assertNotNull(family);
-        assertEquals("GRASS_FLOOR", family.id());
-        assertEquals(4, family.cols());
-        assertEquals(5, family.rows());
-        assertEquals(5, family.centerTiles().length);
+        AutotileFamily grass = map.get(BlockId.GRASS);
+        AutotileFamily pit = map.get(BlockId.PIT);
+        AutotileFamily water = map.get(BlockId.WATER);
+        assertNotNull(grass);
+        assertNotNull(pit);
+        assertNotNull(water);
+        assertEquals("GRASS_FLOOR", grass.id());
+        assertEquals(4, grass.cols());
+        assertEquals(5, grass.rows());
+        assertEquals(5, grass.centerTiles().length);
+        assertEquals(4, pit.rows());
+        assertEquals(0, pit.centerTiles().length);
+        assertEquals(4, water.rows());
     }
 
     @Test

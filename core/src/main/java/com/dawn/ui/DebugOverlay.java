@@ -71,7 +71,19 @@ public class DebugOverlay implements Disposable {
                 8f,
                 y,
                 line);
-        y = line("Move: " + fmt(moveX) + ", " + fmt(moveY) + "  delta: " + fmt(delta), 8f, y, line);
+        y = line(
+                "Move: "
+                        + fmt(moveX)
+                        + ", "
+                        + fmt(moveY)
+                        + "  spd: "
+                        + fmt(entity.getMoveSpeedCellsPerSec(input.isRunning()))
+                        + (input.isRunning() ? " RUN" : "")
+                        + "  delta: "
+                        + fmt(delta),
+                8f,
+                y,
+                line);
         com.dawn.entity.EntityDef def = entity.def();
         int moveWpx = Math.round(def.moveWidthCells() * Constants.CELL_SIZE_PX);
         int moveHpx = Math.round(def.moveHeightCells() * Constants.CELL_SIZE_PX);

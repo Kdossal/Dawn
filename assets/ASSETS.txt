@@ -1,56 +1,116 @@
 Dawn assets index.
+
+*** HAND-MADE ART: do not run tools/generate_assets.py with --force or --only ***
+Those flags overwrite existing PNGs. Safe command (missing files only):
+  py -3 tools/generate_assets.py
+See tools/README.md. Edit PNGs directly here; commit to git to keep backups.
+
 Generate missing placeholders: python tools/generate_assets.py
-Existing PNGs are never overwritten unless you pass --force.
 Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
+
+
 [tiles/]
+
   grass.png  (64x80 — 4x5 autotile sheet, 16px cells; layout in core/src/main/resources/autotiles.json)
+
+  pit.png    (64x64 — 4x4 autotile sheet, 16px cells; layout in autotiles.json)
+
+  water.png  (64x64 — 4x4 autotile sheet, 16px cells; layout in autotiles.json)
+
   dirt.png
+
   sand.png
-  water.png
+
   bedrock.png
+
   depths.png
+
   stone_block.png
+
   bush.png
+
   tree.png
+
   tree_stump.png
-  crate.png
+
+  crate.png  (16x20 — world prop; item icon stays 16x16)
+
   bed_foot.png
+
   bed_head.png
 
+
+
 [items/]
+
   pickaxe.png
+
   axe.png
+
   shovel.png
+
   rock.png
+
   wood.png
+
   dirt_clump.png
+
   sand.png
+
   leather_cap.png
+
   crate.png
+
   bed.png
+
   tree_sapling.png
 
+
+
 [entities/]
+
   player.png
 
+
+
 [ui/common/]
+
   slot.png
+
   slot_selected.png
+
   slot_equip.png
+
   cursor.png
 
+
+
 [ui/inventory/]
+
   chrome_bg.png
+
   grid_panel.png
+
   tab_page.png
+
   tab_equipment.png
+
   tab_equipment_active.png
+
   tab_crafting.png
+
   tab_crafting_active.png
+
   hotbar_row.png
 
+
+
 [ui/equipment/]
+
   stat_cell.png
+
   exp_bar_bg.png
+
   exp_bar_fill.png
+
