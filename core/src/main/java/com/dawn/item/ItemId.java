@@ -6,11 +6,14 @@ public enum ItemId {
     SHOVEL,
     ROCK,
     WOOD,
+    STONE,
     DIRT_CLUMP,
     SAND,
-    LEATHER_CAP,
+    LEATHER_HOOD,
     CRATE,
     BED,
     OAK_SAPLING,
-    SPRUCE_SAPLING
+    SPRUCE_SAPLING,
+    CANNED_FOOD,
+    LANTERN
 }

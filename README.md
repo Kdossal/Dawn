@@ -45,7 +45,7 @@ See [tools/README.md](tools/README.md). Replace PNGs later; keep filenames in sy
 | **Q** | Drop 1 from held stack |
 | **Shift+Q** | Drop full held stack |
 | Walk near drops | Pick up (player-dropped items have a short cooldown) |
-| **F3** | Debug overlay (includes active inventory row) |
+| **F3** | Debug overlay (OFF → stats → stats + world hitboxes) |
 
 Click the game window for keyboard focus.
 

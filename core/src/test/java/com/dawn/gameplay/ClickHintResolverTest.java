@@ -101,6 +101,15 @@ class ClickHintResolverTest {
     }
 
     @Test
+    void cannedFood_showsEatOnRight() {
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world, player, ItemStack.of(ItemId.CANNED_FOOD), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.ATTACK, hints.left());
+        assertEquals(ClickVerb.EAT, hints.rightOrNull());
+    }
+
+    @Test
     void placeable_showsPlaceOnRight() {
         ClickHints hints =
                 ClickHintResolver.resolve(

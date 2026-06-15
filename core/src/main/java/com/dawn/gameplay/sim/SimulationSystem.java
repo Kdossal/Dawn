@@ -7,7 +7,7 @@ import com.dawn.world.block.BlockId;
 import java.util.Random;
 
 /**
- * Region-based world sim (grass spread, bush spawn). Active regions tick live; waking regions catch up
+ * Region-based world sim (grass spread). Active regions tick live; waking regions catch up
  * via batched events to {@link #currentTick}.
  */
 public class SimulationSystem {
@@ -20,7 +20,6 @@ public class SimulationSystem {
         long lastSimulatedTick;
         boolean active;
         int pendingGrassEvents;
-        int pendingBushEvents;
         Random rng;
 
         RegionState(int regionX, int regionY) {
@@ -76,17 +75,7 @@ public class SimulationSystem {
         return n;
     }
 
-    public int totalPendingBushEvents() {
-        int n = 0;
-        for (int rx = 0; rx < regionsWide; rx++) {
-            for (int ry = 0; ry < regionsHigh; ry++) {
-                n += regions[rx][ry].pendingBushEvents;
-            }
-        }
-        return n;
-    }
-
-    /** Whether this cell's region is sim-active this frame (grass/bush may write here). */
+    /** Whether this cell's region is sim-active this frame (grass may write here). */
     public boolean isCellSimActive(int cellX, int cellY) {
         return isRegionActive(cellX, cellY);
     }
@@ -114,7 +103,6 @@ public class SimulationSystem {
         maxCellY = Math.max(maxCellY, pCellY + margin);
 
         int grassBudget = cfg.maxCatchupGrassEventsPerFrame;
-        int bushBudget = cfg.maxCatchupBushEventsPerFrame;
 
         for (int rx = 0; rx < regionsWide; rx++) {
             for (int ry = 0; ry < regionsHigh; ry++) {
@@ -127,14 +115,14 @@ public class SimulationSystem {
             }
         }
 
-        FrameCatchUpBudget budget = new FrameCatchUpBudget(grassBudget, bushBudget);
+        int grassRemaining = grassBudget;
         for (int rx = 0; rx < regionsWide; rx++) {
             for (int ry = 0; ry < regionsHigh; ry++) {
                 RegionState region = regions[rx][ry];
                 if (!region.active) {
                     continue;
                 }
-                drainCatchUp(region, budget);
+                grassRemaining = drainCatchUp(region, grassRemaining);
             }
         }
     }
@@ -149,16 +137,13 @@ public class SimulationSystem {
                 if (!region.active) {
                     continue;
                 }
-                if (region.pendingGrassEvents > 0 || region.pendingBushEvents > 0) {
+                if (region.pendingGrassEvents > 0) {
                     continue;
                 }
                 region.lastSimulatedTick = currentTick;
                 Random rng = regionRandom(region);
                 if (currentTick % cfg.grassSpreadIntervalTicks == 0) {
                     tickGrassSpread(region, rng);
-                }
-                if (currentTick % cfg.bushSpawnIntervalTicks == 0) {
-                    tickBushSpawn(region, rng);
                 }
             }
         }
@@ -189,7 +174,7 @@ public class SimulationSystem {
     private void enqueueCatchUp(RegionState region) {
         long missed = currentTick - region.lastSimulatedTick;
         if (missed <= 0) {
-            if (region.pendingGrassEvents == 0 && region.pendingBushEvents == 0) {
+            if (region.pendingGrassEvents == 0) {
                 region.lastSimulatedTick = currentTick;
             }
             return;
@@ -197,42 +182,24 @@ public class SimulationSystem {
         long effective =
                 effectiveMissedTicks(region.lastSimulatedTick, currentTick, GameConfig.get().maxCatchupTicksPerChunk);
         int grass = grassSpreadEventCount(effective);
-        int bush = bushSpawnEventCount(effective);
-        // Keep the larger owed batch if a prior wake was interrupted (e.g. frame budget / deactivation).
         region.pendingGrassEvents = Math.max(region.pendingGrassEvents, grass);
-        region.pendingBushEvents = Math.max(region.pendingBushEvents, bush);
     }
 
-    private void drainCatchUp(RegionState region, FrameCatchUpBudget budget) {
-        if (region.pendingGrassEvents <= 0 && region.pendingBushEvents <= 0) {
-            return;
+    private int drainCatchUp(RegionState region, int grassBudget) {
+        if (region.pendingGrassEvents <= 0) {
+            return grassBudget;
         }
         Random rng = regionRandom(region);
-        int grassRun = Math.min(region.pendingGrassEvents, budget.grass);
+        int grassRun = Math.min(region.pendingGrassEvents, grassBudget);
         if (grassRun > 0) {
             runGrassSpreadEvents(region, rng, grassRun);
             region.pendingGrassEvents -= grassRun;
-            budget.grass -= grassRun;
+            grassBudget -= grassRun;
         }
-        int bushRun = Math.min(region.pendingBushEvents, budget.bush);
-        if (bushRun > 0) {
-            runBushSpawnEvents(region, rng, bushRun);
-            region.pendingBushEvents -= bushRun;
-            budget.bush -= bushRun;
-        }
-        if (region.pendingGrassEvents <= 0 && region.pendingBushEvents <= 0) {
+        if (region.pendingGrassEvents <= 0) {
             region.lastSimulatedTick = currentTick;
         }
-    }
-
-    private static final class FrameCatchUpBudget {
-        int grass;
-        int bush;
-
-        FrameCatchUpBudget(int grass, int bush) {
-            this.grass = grass;
-            this.bush = bush;
-        }
+        return grassBudget;
     }
 
     static long effectiveMissedTicks(long fromTick, long toTick, int cap) {
@@ -250,23 +217,9 @@ public class SimulationSystem {
         return (int) (effectiveMissed / GameConfig.get().grassSpreadIntervalTicks);
     }
 
-    private static int bushSpawnEventCount(long effectiveMissed) {
-        if (effectiveMissed <= 0) {
-            return 0;
-        }
-        return (int) (effectiveMissed / GameConfig.get().bushSpawnIntervalTicks);
-    }
-
     private void runGrassSpreadEvents(RegionState region, Random rng, int eventCount) {
         for (int i = 0; i < eventCount; i++) {
             tickGrassSpread(region, rng);
-        }
-    }
-
-    private void runBushSpawnEvents(RegionState region, Random rng, int eventCount) {
-        GameConfig cfg = GameConfig.get();
-        for (int i = 0; i < eventCount; i++) {
-            tickBushSpawn(region, rng, cfg.bushSpawnChance);
         }
     }
 
@@ -327,31 +280,6 @@ public class SimulationSystem {
                     && world.getObject(nx, ny) == BlockId.AIR) {
                 world.setFloor(nx, ny, BlockId.GRASS);
             }
-        }
-    }
-
-    private void tickBushSpawn(RegionState region, Random rng) {
-        tickBushSpawn(region, rng, GameConfig.get().bushSpawnChance);
-    }
-
-    private void tickBushSpawn(RegionState region, Random rng, float spawnChance) {
-        int startX = region.regionX * regionSize;
-        int startY = region.regionY * regionSize;
-        int endX = Math.min(startX + regionSize, world.getWidth());
-        int endY = Math.min(startY + regionSize, world.getHeight());
-        int width = Math.max(1, endX - startX);
-        int height = Math.max(1, endY - startY);
-
-        int x = startX + rng.nextInt(width);
-        int y = startY + rng.nextInt(height);
-        if (!isRegionActive(x, y)) {
-            return;
-        }
-        if (world.getFloor(x, y) != BlockId.GRASS || world.getObject(x, y) != BlockId.AIR) {
-            return;
-        }
-        if (rng.nextFloat() < spawnChance) {
-            world.setObject(x, y, BlockId.BUSH);
         }
     }
 }

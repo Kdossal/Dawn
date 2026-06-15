@@ -1,8 +1,5 @@
 package com.dawn.gameplay;
 
-import com.dawn.config.GameConfig;
-import com.dawn.item.ItemDef;
-import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
 import com.dawn.entity.Entity;
 import com.dawn.world.World;
@@ -34,7 +31,7 @@ public final class MiningSystem {
             return;
         }
 
-        float reach = ReachResolver.radiusForHeld(held);
+        float reach = ReachResolver.radiusCellsFloatForHeld(held);
         if (!InteractionRules.canTargetCell(world, entity, entity.getX(), entity.getY(), target.x(), target.y(), reach)) {
             active = false;
             return;
@@ -68,7 +65,7 @@ public final class MiningSystem {
         float remaining =
                 world.getBlockDamage().getRemaining(targetLayer, targetX, targetY, maxHealth);
 
-        float dps = GameConfig.get().baseMiningDamagePerSec * (miningPowerPercent(held) / 100f);
+        float dps = DamageCalculator.damagePerSecForBreak(entity, held, breakTarget);
         remaining -= dps * delta;
         world.getBlockDamage().setRemaining(targetLayer, targetX, targetY, remaining, maxHealth);
 
@@ -78,21 +75,6 @@ public final class MiningSystem {
             world.getBlockDamage().clear(targetLayer, targetX, targetY);
             active = false;
         }
-    }
-
-    private static float miningPowerPercent(ItemStack held) {
-        GameConfig cfg = GameConfig.get();
-        if (held == null || held.isEmpty()) {
-            return cfg.handToolPowerPercent;
-        }
-        ItemDef def = ItemRegistry.get(held);
-        if (def == null) {
-            return cfg.handToolPowerPercent;
-        }
-        if (def.toolPowerPercent() > 0) {
-            return def.toolPowerPercent();
-        }
-        return cfg.handToolPowerPercent;
     }
 
     public boolean isActive() {

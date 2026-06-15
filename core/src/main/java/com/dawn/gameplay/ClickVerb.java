@@ -7,7 +7,8 @@ public enum ClickVerb {
     DIG,
     MINE,
     CHOP,
-    PLACE;
+    PLACE,
+    EAT;
 
     public String label() {
         return switch (this) {
@@ -17,6 +18,7 @@ public enum ClickVerb {
             case MINE -> "Mine";
             case CHOP -> "Chop";
             case PLACE -> "Place";
+            case EAT -> "Eat";
         };
     }
 }

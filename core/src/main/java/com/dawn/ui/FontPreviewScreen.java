@@ -51,7 +51,7 @@ public final class FontPreviewScreen implements Screen, Disposable {
 
         root.add(sectionLabel("Scene2D (typography tiers)")).padBottom(10f).row();
         root.add(sceneRow(DawnTypography.TextTier.XS, "XS native 16px: " + SAMPLE)).padBottom(8f).row();
-        root.add(sceneRow(DawnTypography.TextTier.S, "S 24px: " + SAMPLE)).padBottom(8f).row();
+        root.add(mediumFontRow("Medium 24pt bake: " + SAMPLE)).padBottom(8f).row();
         root.add(sceneRow(DawnTypography.TextTier.SM, "SM 32px: " + SAMPLE)).padBottom(8f).row();
         root.add(sceneRow(DawnTypography.TextTier.MD, "MD 48px: " + SAMPLE)).padBottom(16f).row();
         root.add(sectionLabel("Press ESC to exit")).row();
@@ -66,6 +66,12 @@ public final class FontPreviewScreen implements Screen, Disposable {
     private Label sceneRow(DawnTypography.TextTier tier, String text) {
         return DawnTypography.label(
                 text, fonts, DawnFonts.FontWeight.NORMAL, tier, DawnTypography.TextContext.HUD, LABEL_COLOR);
+    }
+
+    private Label mediumFontRow(String text) {
+        Label label = new Label(text, new Label.LabelStyle(fonts.medium(), LABEL_COLOR));
+        label.setFontScale(1f);
+        return label;
     }
 
     @Override
@@ -93,9 +99,10 @@ public final class FontPreviewScreen implements Screen, Disposable {
         float x = 24f;
         float y = Constants.HUD_HEIGHT_PX - 36f;
 
-        y = drawNativeScale(font, x, y, 1, "Native 1x (16pt): " + ALPHABET);
-        y = drawNativeScale(font, x, y, 1, "             " + DIGITS + "  " + LOWER);
-        y = drawNativeScale(font, x, y, 2, "Native 2x: " + SAMPLE);
+        y = drawNativeScale(font, x, y, 1, "Small 16pt @1x: " + ALPHABET);
+        y = drawNativeScale(font, x, y, 1, "              " + DIGITS + "  " + LOWER);
+        y = drawNativeScale(fonts.medium(), x, y, 1, "Medium 24pt @1x: " + SAMPLE);
+        y = drawNativeScale(font, x, y, 2, "Large 16pt @2x: " + SAMPLE);
         y = drawNativeScale(font, x, y, 3, "Native 3x: " + SAMPLE);
         y -= 6f;
 

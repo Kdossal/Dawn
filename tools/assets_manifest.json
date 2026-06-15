@@ -12,6 +12,7 @@
     "bedrock": { "color": "#52525C", "pattern": "brick", "label": "" },
     "depths": { "color": "#261438", "pattern": "brick", "label": "" },
     "stone_block": { "color": "#8C8C94", "pattern": "rock", "label": "" },
+    "stone_wall": { "color": "#8C8C94", "pattern": "brick", "width": 64, "height": 128, "label": "" },
     "bush": { "color": "#268C33", "pattern": "bush", "alpha": 140, "label": "" },
     "tree": { "color": "#1A6B26", "pattern": "bush", "width": 48, "height": 64, "label": "" },
     "tree_stump": { "color": "#66421F", "pattern": "wood", "label": "" },
@@ -30,7 +31,10 @@
     "leather_cap": { "color": "#6B5344", "pattern": "noise", "label": "" },
     "crate": { "color": "#8B6914", "pattern": "wood", "label": "" },
     "bed": { "color": "#B33A3A", "pattern": "solid", "label": "B" },
-    "tree_sapling": { "color": "#2D8C3D", "pattern": "bush", "label": "" }
+    "oak_sapling": { "color": "#2D8C3D", "pattern": "bush", "label": "" },
+    "spruce_sapling": { "color": "#1E6B3A", "pattern": "bush", "label": "" },
+    "stone": { "color": "#8C8C94", "pattern": "rock", "label": "" },
+    "canned_food": { "color": "#C45C26", "pattern": "solid", "label": "F" }
   },
   "entities": {
     "player": { "color": "#3380E6", "pattern": "player", "width": 64, "height": 225, "label": "" }

@@ -27,7 +27,17 @@ class LootTableTest {
     }
 
     @Test
+    void stoneGroundDropsStoneItem() {
+        assertEquals(ItemId.STONE, loot.roll(BlockId.STONE, Layer.GROUND).get(0).itemId);
+    }
+
+    @Test
     void bushDropsNothing() {
         assertTrue(loot.roll(BlockId.BUSH, Layer.OBJECT).isEmpty());
+    }
+
+    @Test
+    void stoneWallDropsStoneItem() {
+        assertEquals(ItemId.STONE, loot.roll(BlockId.STONE_WALL, Layer.OBJECT).get(0).itemId);
     }
 }

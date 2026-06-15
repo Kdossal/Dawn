@@ -22,6 +22,7 @@ import com.dawn.assets.DawnAssets;
 import com.dawn.config.Constants;
 import com.dawn.render.GameSettings;
 import com.dawn.render.RenderColors;
+import com.dawn.render.RenderSettings;
 
 /** ESC-toggled pause screen with main menu and options sub-screen. */
 public final class PauseOverlay implements Disposable {
@@ -33,16 +34,21 @@ public final class PauseOverlay implements Disposable {
     private Table mainMenu;
     private Table optionsPanel;
     private Label zoomValueLabel;
+    private TextButton uiSizeButton;
+    private TextButton gammaButton;
+    private final RenderSettings renderSettings;
     private boolean paused;
     private boolean showingOptions;
     private Runnable onResume = () -> {};
     private Runnable onExit = () -> {};
 
-    public PauseOverlay(DawnAssets assets, DawnFonts fonts, GameSettings gameSettings) {
+    public PauseOverlay(DawnAssets assets, DawnFonts fonts, GameSettings gameSettings, RenderSettings renderSettings) {
         this.assets = assets;
         this.fonts = fonts;
         this.whitePixel = assets.whitePixel;
         this.gameSettings = gameSettings;
+        this.renderSettings = renderSettings;
+        gameSettings.applyDisplayGamma(renderSettings);
         initStage();
         unpause();
     }
@@ -59,6 +65,7 @@ public final class PauseOverlay implements Disposable {
         fonts = null;
         whitePixel = null;
         gameSettings = null;
+        renderSettings = null;
     }
 
     public void setCallbacks(Runnable onResume, Runnable onExit) {
@@ -157,6 +164,8 @@ public final class PauseOverlay implements Disposable {
     private void showOptions() {
         showingOptions = true;
         refreshZoomUi();
+        refreshUiSizeUi();
+        refreshGammaUi();
         if (mainMenu != null) {
             mainMenu.setVisible(false);
         }
@@ -175,6 +184,31 @@ public final class PauseOverlay implements Disposable {
             return;
         }
         zoomValueLabel.setText(gameSettings.zoomLevel + " / " + GameSettings.MAX_ZOOM_LEVEL);
+    }
+
+    private void toggleUiSize() {
+        gameSettings.cycleUiSize();
+        refreshUiSizeUi();
+    }
+
+    private void refreshUiSizeUi() {
+        if (uiSizeButton == null) {
+            return;
+        }
+        uiSizeButton.setText(GameSettings.uiSizeLabel(gameSettings.uiSize));
+    }
+
+    private void cycleDisplayGamma() {
+        gameSettings.cycleDisplayGammaPreset();
+        gameSettings.applyDisplayGamma(renderSettings);
+        refreshGammaUi();
+    }
+
+    private void refreshGammaUi() {
+        if (gammaButton == null) {
+            return;
+        }
+        gammaButton.setText(GameSettings.displayGammaLabel(gameSettings.displayGammaPreset));
     }
 
     private void initStage() {
@@ -283,6 +317,32 @@ public final class PauseOverlay implements Disposable {
         });
         zoomRow.add(plus).size(44f, 44f);
         column.add(zoomRow).padBottom(36f).row();
+
+        Table uiSizeRow = new Table();
+        uiSizeRow.add(PauseUiStyle.sectionLabel("UI Size", fonts)).padRight(16f);
+        uiSizeButton = PauseUiStyle.smallButton(GameSettings.uiSizeLabel(gameSettings.uiSize), fonts, assets);
+        uiSizeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                toggleUiSize();
+            }
+        });
+        uiSizeRow.add(uiSizeButton).width(160f).height(44f);
+        column.add(uiSizeRow).padBottom(36f).row();
+
+        Table gammaRow = new Table();
+        gammaRow.add(PauseUiStyle.sectionLabel("Gamma", fonts)).padRight(16f);
+        gammaButton =
+                PauseUiStyle.smallButton(
+                        GameSettings.displayGammaLabel(gameSettings.displayGammaPreset), fonts, assets);
+        gammaButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                cycleDisplayGamma();
+            }
+        });
+        gammaRow.add(gammaButton).width(160f).height(44f);
+        column.add(gammaRow).padBottom(36f).row();
 
         TextButton back = PauseUiStyle.button("Back", fonts, assets);
         back.addListener(new ClickListener() {

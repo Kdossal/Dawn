@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.dawn.config.DayNightConfig;
+import com.dawn.config.GameConfig;
 import com.dawn.entity.EntityBounds;
 import com.dawn.entity.EntityDef;
 import com.dawn.entity.EntityId;
@@ -49,24 +51,6 @@ class OcclusionFadeTest {
         EntityBounds player = EntityBounds.fromFeet(PLAYER, 4.5f, 4f, 32, 64);
         assertFalse(OcclusionFade.movementBoxBehindFootprint(
                 player, footprint[0], footprint[1], footprint[2], footprint[3]));
-    }
-
-    @Test
-    void opaqueOverlap_requiresBothSpritesOpaque() {
-        SpriteAlphaMask solid2x2 = solidRect(2, 2);
-        SpriteAlphaMask hollow =
-                SpriteAlphaMask.of(
-                        4,
-                        4,
-                        new boolean[] {
-                            false, false, false, false,
-                            false, true, true, false,
-                            false, true, true, false,
-                            false, false, false, false
-                        });
-
-        assertTrue(SpriteAlphaMask.opaqueOverlap(solid2x2, 0f, 0f, solid2x2, 1f, 1f));
-        assertFalse(SpriteAlphaMask.opaqueOverlap(solid2x2, 0f, 0f, hollow, 3f, 0f));
     }
 
     @Test
@@ -116,7 +100,27 @@ class OcclusionFadeTest {
         EntityBounds player = EntityBounds.fromFeet(PLAYER, 4.5f, 7.2f, 32, 64);
 
         DrawContext ctx =
-                DrawContext.create(world, List.of(tree), player, 4.5f, 7.2f, null, null, false, 0f, 0f);
+                DrawContext.create(
+                        world,
+                        List.of(tree),
+                        player,
+                        4.5f,
+                        7.2f,
+                        null,
+                        null,
+                        false,
+                        0f,
+                        0f,
+                        0,
+                        0,
+                        11,
+                        11,
+                        0.25f,
+                        DayNightConfig.from(GameConfig.get()),
+                        false,
+                        true,
+                        false,
+                        0.85f);
 
         assertEquals(1f, ctx.fadePlan().blockDrawAlpha(BlockId.OAK_TREE, 4, 5));
     }

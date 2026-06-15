@@ -3,12 +3,24 @@ package com.dawn.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
+import com.dawn.world.light.LightEngine;
+import com.dawn.config.DayNightConfig;
+import com.dawn.config.GameConfig;
 import com.dawn.config.Constants;
 import com.dawn.entity.Entity;
+import com.dawn.gameplay.EatSystem;
+import com.dawn.item.ItemId;
+import com.dawn.item.ItemStack;
+import com.dawn.world.block.BlockDefinitions;
+import com.dawn.world.block.BlockId;
+import com.dawn.entity.status.StatusId;
+import com.dawn.entity.status.StatusSystem;
+import com.dawn.entity.VitalSystem;
 import com.dawn.entity.sprite.PlayerAnimContext;
 import com.dawn.gameplay.TargetResolver.TargetCell;
 import com.dawn.input.GameCursor;
@@ -77,7 +89,16 @@ public class GameScreen extends ScreenAdapter {
 
         if (!ctx.pauseOverlay.isPaused()) {
             if (Gdx.input.isKeyJustPressed(DebugOverlay.TOGGLE_KEY)) {
-                ctx.debug.toggle();
+                ctx.debug.cycleMode();
+            }
+
+            if (ctx.debug.getMode().showsHudDebug()) {
+                if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT_BRACKET)) {
+                    ctx.world.clock().nudge(-0.01f);
+                }
+                if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT_BRACKET)) {
+                    ctx.world.clock().nudge(0.01f);
+                }
             }
 
             boolean wasOpen = ctx.inventoryOverlay.isOpen();
@@ -134,21 +155,36 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void update(float delta) {
+        ctx.world.clock().advance(delta, DayNightConfig.from(GameConfig.get()));
+
         Entity player = ctx.entities.getPlayer();
+        player.tickEffects(delta);
+        StatusSystem.refresh(player, ctx.inventory, ctx.equipment);
         lastMoveX = ctx.input.getMoveX();
         lastMoveY = ctx.input.getMoveY();
-        if (lastMoveX != 0f || lastMoveY != 0f) {
+        boolean running = ctx.input.isRunningWithEnergy(player.getCurrentEnergy());
+        boolean immobile = player.getStatuses().has(StatusId.IMMOBILE);
+        if (immobile) {
+            ctx.input.cancelRun();
+        }
+        if (!immobile && (lastMoveX != 0f || lastMoveY != 0f)) {
             float len = (float) Math.sqrt(lastMoveX * lastMoveX + lastMoveY * lastMoveY);
             lastMoveX /= len;
             lastMoveY /= len;
-            float speed = player.getMoveSpeedCellsPerSec(ctx.input.isRunning()) * delta;
+            float speed = player.getMoveSpeedCellsPerSec(running) * delta;
             player.move(lastMoveX * speed, lastMoveY * speed, ctx.world);
+        }
+
+        VitalSystem.update(player, delta, running);
+        if (player.getCurrentEnergy() <= 0f) {
+            ctx.input.cancelRun();
         }
 
         updateCamera();
         unprojectMouseWorld();
         target = ctx.input.updateTarget(ctx.world, player, mouseWorld, ctx.hotbar.getHeld());
         ctx.placement.tick(delta);
+        ctx.eat.tick(delta);
 
         if (ctx.inventoryOverlay.isOpen()) {
             ctx.mining.reset();
@@ -159,6 +195,8 @@ public class GameScreen extends ScreenAdapter {
             ctx.gameLoop.update(delta);
             ctx.dropSystem.update(delta);
             ctx.dropSystem.tryPickupAll(player, ctx.inventory);
+            syncHeldLight(player, ctx.hotbar.getHeld());
+            flushLighting();
             return;
         }
 
@@ -173,14 +211,19 @@ public class GameScreen extends ScreenAdapter {
                     ctx.input.miningHeld(),
                     delta);
 
-            ctx.placement.update(
-                    ctx.world,
-                    player,
-                    ctx.inventory,
-                    target,
-                    ctx.hotbar.getHeld(),
-                    ctx.input.placeHeld(),
-                    delta);
+            ItemStack held = ctx.hotbar.getHeld();
+            if (EatSystem.canEat(player, held)) {
+                ctx.eat.update(player, ctx.inventory, held, ctx.input.placeHeld(), delta);
+            } else {
+                ctx.placement.update(
+                        ctx.world,
+                        player,
+                        ctx.inventory,
+                        target,
+                        held,
+                        ctx.input.placeHeld(),
+                        delta);
+            }
         } else {
             ctx.mining.reset();
         }
@@ -204,6 +247,7 @@ public class GameScreen extends ScreenAdapter {
         boolean interacting =
                 !overHotbar
                         && (ctx.mining.isActive()
+                                || ctx.eat.isInteracting()
                                 || ctx.placement.isInteracting()
                                 || (ctx.input.placeHeld()
                                         && ctx.interactionPresentation.hasValidPlacementPreview()));
@@ -221,6 +265,34 @@ public class GameScreen extends ScreenAdapter {
 
         updateSimulationRegions();
         ctx.gameLoop.update(delta);
+        syncHeldLight(player, ctx.hotbar.getHeld());
+        flushLighting();
+    }
+
+    private void syncHeldLight(Entity player, ItemStack held) {
+        boolean lanternHeld = !held.isEmpty() && held.itemId == ItemId.LANTERN;
+        if (lanternHeld) {
+            int cellX = (int) Math.floor(player.getX());
+            int cellY = (int) Math.floor(player.getY());
+            ctx.world.lightMap().updateHeldSource(
+                    cellX,
+                    cellY,
+                    BlockDefinitions.lightEmission(BlockId.LANTERN),
+                    BlockDefinitions.lightRadius(BlockId.LANTERN),
+                    BlockDefinitions.lightColorR(BlockId.LANTERN),
+                    BlockDefinitions.lightColorG(BlockId.LANTERN),
+                    BlockDefinitions.lightColorB(BlockId.LANTERN),
+                    true);
+        } else {
+            ctx.world.lightMap().updateHeldSource(0, 0, 0f, 0, 1f, 1f, 1f, false);
+        }
+    }
+
+    private void flushLighting() {
+        if (ctx.world.lightMap().hasDirty()) {
+            int[] bounds = ctx.world.lightMap().pollRebuildBounds();
+            LightEngine.rebuild(ctx.world, bounds[0], bounds[1], bounds[2], bounds[3]);
+        }
     }
 
     private void unprojectMouseWorld() {

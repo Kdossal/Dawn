@@ -2,25 +2,25 @@ package com.dawn.world.render;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Matrix4;
 import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Disposable;
 import com.dawn.assets.DawnAssets;
 import com.dawn.config.Constants;
+import com.dawn.config.DayNightConfig;
 import com.dawn.entity.EntityBounds;
 import com.dawn.entity.EntityCollision;
 import com.dawn.gameplay.InteractionHighlight;
 import com.dawn.gameplay.drops.WorldDrop;
 import com.dawn.gameplay.placement.PlacementPreview;
 import com.dawn.render.RenderColors;
+import com.dawn.render.TileLighting;
 import com.dawn.world.World;
 import com.dawn.world.block.BlockId;
-import com.dawn.world.block.autotile.AutotileCell;
+import com.dawn.world.block.autotile.AutotileDraw;
 import com.dawn.world.block.autotile.AutotileFamily;
 import com.dawn.world.block.autotile.AutotileRegistry;
-import com.dawn.world.block.autotile.AutotileResolver;
 import com.dawn.world.block.visual.BlockSpriteDraw;
 import com.dawn.world.block.visual.BlockVisualDef;
 import com.dawn.world.block.visual.BlockVisualRegistry;
@@ -51,21 +51,70 @@ public class WorldRenderer implements Disposable {
     }
 
     public void renderPlacementGhosts(
-            List<PlacementPreview> previews, float pixelAlignOffsetX, float pixelAlignOffsetY) {
-        placementGhostRenderer.render(batch, assets, previews, pixelAlignOffsetX, pixelAlignOffsetY);
+            World world,
+            List<PlacementPreview> previews,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY) {
+        placementGhostRenderer.render(batch, assets, world, previews, pixelAlignOffsetX, pixelAlignOffsetY);
     }
 
     public void renderTerrain(
-            World world, int minX, int maxX, int minY, int maxY, float pixelAlignOffsetX, float pixelAlignOffsetY) {
+            World world,
+            int minX,
+            int maxX,
+            int minY,
+            int maxY,
+            float timeOfDay,
+            DayNightConfig dayNightConfig,
+            boolean localLightingEnabled,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY) {
         applyPixelAlign(batch, pixelAlignOffsetX, pixelAlignOffsetY);
-        batch.setColor(Color.WHITE);
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                if (world.inBounds(x, y)) {
-                    drawTerrainCell(world, x, y);
+        TileLighting.TileLight[][] lightCache =
+                TileLighting.buildCache(
+                        world,
+                        minX,
+                        minY,
+                        maxX,
+                        maxY,
+                        timeOfDay,
+                        dayNightConfig,
+                        localLightingEnabled,
+                        dayNightEnabled,
+                        displayGammaEnabled,
+                        displayGamma);
+        for (GroundDrawPass pass : GroundDrawPass.groundPasses()) {
+            for (int x = minX; x <= maxX; x++) {
+                for (int y = minY; y <= maxY; y++) {
+                    if (world.inBounds(x, y) && pass.matches(world.getGround(x, y))) {
+                        drawGround(
+                                world,
+                                x,
+                                y,
+                                lightCache[x - minX][y - minY],
+                                0f,
+                                0f);
+                    }
                 }
             }
         }
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                if (world.inBounds(x, y)) {
+                    drawFloor(
+                            world,
+                            x,
+                            y,
+                            lightCache[x - minX][y - minY],
+                            0f,
+                            0f);
+                }
+            }
+        }
+        batch.setColor(Color.WHITE);
         clearPixelAlign(batch, pixelAlignOffsetX, pixelAlignOffsetY);
     }
 
@@ -81,6 +130,12 @@ public class WorldRenderer implements Disposable {
             EntityBounds playerMoveBox,
             boolean occlusionFadeEnabled,
             List<WorldDrop> drops,
+            float timeOfDay,
+            DayNightConfig dayNightConfig,
+            boolean localLightingEnabled,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma,
             float pixelAlignOffsetX,
             float pixelAlignOffsetY) {
         List<WorldDrawable> drawables = WorldDrawCollector.collect(
@@ -97,7 +152,17 @@ public class WorldRenderer implements Disposable {
                         assets,
                         occlusionFadeEnabled,
                         pixelAlignOffsetX,
-                        pixelAlignOffsetY);
+                        pixelAlignOffsetY,
+                        minX,
+                        minY,
+                        maxX,
+                        maxY,
+                        timeOfDay,
+                        dayNightConfig,
+                        localLightingEnabled,
+                        dayNightEnabled,
+                        displayGammaEnabled,
+                        displayGamma);
         batch.setColor(Color.WHITE);
         for (WorldDrawable drawable : drawables) {
             drawable.draw(batch, assets, context);
@@ -105,40 +170,75 @@ public class WorldRenderer implements Disposable {
         batch.setColor(Color.WHITE);
     }
 
-    private void drawTerrainCell(World world, int x, int y) {
+    private void drawGround(
+            World world, int x, int y, TileLighting.TileLight light, float alignOffsetX, float alignOffsetY) {
         BlockId ground = world.getGround(x, y);
         AutotileFamily groundAutotile = AutotileRegistry.familyFor(ground);
         if (groundAutotile != null) {
-            drawAutotile(world, groundAutotile, x, y);
+            drawAutotile(world, groundAutotile, x, y, light, alignOffsetX, alignOffsetY);
         } else {
-            drawBlockId(ground, x, y);
-        }
-
-        BlockId floor = world.getFloor(x, y);
-        if (floor != BlockId.AIR) {
-            AutotileFamily floorAutotile = AutotileRegistry.familyFor(floor);
-            if (floorAutotile != null) {
-                drawAutotile(world, floorAutotile, x, y);
-            } else {
-                drawBlockId(floor, x, y);
-            }
+            drawBlockId(ground, x, y, light, alignOffsetX, alignOffsetY);
         }
     }
 
-    private void drawAutotile(World world, AutotileFamily family, int cellX, int cellY) {
+    private void drawFloor(
+            World world, int x, int y, TileLighting.TileLight light, float alignOffsetX, float alignOffsetY) {
+        BlockId floor = world.getFloor(x, y);
+        if (floor == BlockId.AIR) {
+            return;
+        }
+        AutotileFamily floorAutotile = AutotileRegistry.familyFor(floor);
+        if (floorAutotile != null) {
+            drawAutotile(world, floorAutotile, x, y, light, alignOffsetX, alignOffsetY);
+        } else {
+            drawBlockId(floor, x, y, light, alignOffsetX, alignOffsetY);
+        }
+    }
+
+    private void drawAutotile(
+            World world,
+            AutotileFamily family,
+            int cellX,
+            int cellY,
+            TileLighting.TileLight light,
+            float alignOffsetX,
+            float alignOffsetY) {
         BlockVisualDef visual = BlockVisualRegistry.get(family.blockId());
         if (visual == null) {
             return;
         }
-        AutotileCell cell = AutotileResolver.resolve(world, cellX, cellY, family);
-        TextureRegion region = assets.autotileRegion(family.texture(), cell);
-        BlockSpriteDraw.drawRegion(batch, assets, region, visual, cellX, cellY);
+        AutotileDraw.drawColored(
+                batch,
+                assets,
+                world,
+                family,
+                cellX,
+                cellY,
+                visual,
+                light.r(),
+                light.g(),
+                light.b(),
+                1f,
+                alignOffsetX,
+                alignOffsetY);
     }
 
-    private void drawBlockId(BlockId id, int cellX, int cellY) {
+    private void drawBlockId(
+            BlockId id, int cellX, int cellY, TileLighting.TileLight light, float alignOffsetX, float alignOffsetY) {
         BlockVisualDef visual = BlockVisualRegistry.get(id);
         if (visual != null) {
-            BlockSpriteDraw.drawBlock(batch, assets, visual, cellX, cellY);
+            BlockSpriteDraw.drawColoredBlock(
+                    batch,
+                    assets,
+                    visual,
+                    cellX,
+                    cellY,
+                    light.r(),
+                    light.g(),
+                    light.b(),
+                    1f,
+                    alignOffsetX,
+                    alignOffsetY);
         }
     }
 

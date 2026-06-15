@@ -2,6 +2,7 @@ package com.dawn.entity;
 
 import com.dawn.assets.DawnAssets;
 import com.dawn.config.Constants;
+import com.dawn.config.GameConfig;
 import com.dawn.entity.sprite.EntityAnimClip;
 import com.dawn.entity.sprite.EntityAnimDef;
 import com.dawn.entity.sprite.EntityAnimRegistry;
@@ -9,6 +10,8 @@ import com.dawn.entity.sprite.EntityAnimResolver;
 import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.dawn.entity.sprite.Facing4;
 import com.dawn.entity.sprite.PlayerAnimContext;
+import com.dawn.entity.status.StatusModifiers;
+import com.dawn.entity.status.StatusSet;
 import com.dawn.world.World;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -21,10 +24,19 @@ public final class Entity {
     private float y;
     private float currentHp;
     private float maxHp;
+    private float currentEnergy;
+    private float maxEnergy;
+    private float currentHunger;
+    private float maxHunger;
+    private float currentThirst;
+    private float maxThirst;
+    private boolean vitalsInitialized;
     private boolean lastMoveApplied;
     private Facing4 facing = Facing4.DOWN;
     private String currentClipId = "idle_down";
     private float animStateTime;
+    private final StatusSet statuses = new StatusSet();
+    private float poisonTimeRemaining;
 
     public Entity(EntityId entityId, float startX, float startY) {
         EntityDef entityDef = EntityRegistry.get(entityId);
@@ -69,6 +81,30 @@ public final class Entity {
         return maxHp;
     }
 
+    public float getCurrentEnergy() {
+        return currentEnergy;
+    }
+
+    public float getMaxEnergy() {
+        return maxEnergy;
+    }
+
+    public float getCurrentHunger() {
+        return currentHunger;
+    }
+
+    public float getMaxHunger() {
+        return maxHunger;
+    }
+
+    public float getCurrentThirst() {
+        return currentThirst;
+    }
+
+    public float getMaxThirst() {
+        return maxThirst;
+    }
+
     public float getArmor() {
         return StatFormulas.armor(stats);
     }
@@ -78,7 +114,35 @@ public final class Entity {
     }
 
     public float getMoveSpeedCellsPerSec(boolean running) {
-        return StatFormulas.moveSpeedCellsPerSec(stats, running);
+        float base = StatFormulas.moveSpeedCellsPerSec(stats, running);
+        return base * StatusModifiers.moveSpeedMultiplier(statuses);
+    }
+
+    public StatusSet getStatuses() {
+        return statuses;
+    }
+
+    public boolean isPoisoned() {
+        return poisonTimeRemaining > 0f;
+    }
+
+    public float getPoisonTimeRemaining() {
+        return poisonTimeRemaining;
+    }
+
+    public void setPoisoned(boolean poisoned) {
+        poisonTimeRemaining = poisoned ? GameConfig.get().poisonDurationSec : 0f;
+    }
+
+    public void tickEffects(float delta) {
+        if (delta <= 0f || poisonTimeRemaining <= 0f) {
+            return;
+        }
+        poisonTimeRemaining = Math.max(0f, poisonTimeRemaining - delta);
+    }
+
+    public void setHunger(float hunger) {
+        currentHunger = Math.max(0f, hunger);
     }
 
     public boolean wasLastMoveApplied() {
@@ -137,10 +201,46 @@ public final class Entity {
     }
 
     public void refreshVitals() {
+        GameConfig cfg = GameConfig.get();
         maxHp = StatFormulas.maxHealth(stats);
+        maxEnergy = StatFormulas.maxEnergy(stats);
+        maxHunger = cfg.maxHunger;
+        maxThirst = cfg.maxThirst;
+
+        if (!vitalsInitialized) {
+            currentHp = maxHp;
+            currentEnergy = maxEnergy;
+            if (entityId == EntityId.PLAYER) {
+                currentHunger = 10f;
+                poisonTimeRemaining = cfg.poisonDurationSec;
+            } else {
+                currentHunger = maxHunger;
+            }
+            currentThirst = maxThirst;
+            vitalsInitialized = true;
+            return;
+        }
+
         if (currentHp <= 0f || currentHp > maxHp) {
             currentHp = maxHp;
         }
+        if (currentEnergy <= 0f || currentEnergy > maxEnergy) {
+            currentEnergy = maxEnergy;
+        }
+        if (currentHunger < 0f) {
+            currentHunger = 0f;
+        }
+        if (currentThirst > maxThirst) {
+            currentThirst = maxThirst;
+        }
+    }
+
+    /** Applies deltas to vital pools (positive regen, negative drain). */
+    public void adjustVitals(float hpDelta, float energyDelta, float hungerDelta, float thirstDelta) {
+        currentHp = clamp(currentHp + hpDelta, 0f, maxHp);
+        currentEnergy = clamp(currentEnergy + energyDelta, 0f, maxEnergy);
+        currentHunger = Math.max(0f, currentHunger + hungerDelta);
+        currentThirst = clamp(currentThirst + thirstDelta, 0f, maxThirst);
     }
 
     /** True if the movement footprint overlaps this cell. */
@@ -157,5 +257,9 @@ public final class Entity {
 
     private EntityBounds boundsForMovement() {
         return EntityBounds.fromFeet(def, x, y, 0, 0);
+    }
+
+    private static float clamp(float value, float min, float max) {
+        return Math.max(min, Math.min(max, value));
     }
 }

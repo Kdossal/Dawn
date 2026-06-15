@@ -1,9 +1,12 @@
 package com.dawn.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
+import com.dawn.config.DayNightConfig;
+import com.dawn.config.GameConfig;
 import com.dawn.render.PixelAlign;
 import com.dawn.gameplay.ClickHintResolver;
 import com.dawn.gameplay.InteractionRules;
@@ -81,8 +84,23 @@ public final class ScreenRenderer {
         ctx.worldBatch.begin();
         float alignX = PixelAlign.gridOffset(worldCamera.position.x);
         float alignY = PixelAlign.gridOffset(worldCamera.position.y);
+        boolean dayNight = ctx.renderSettings.dayNightEnabled;
+        boolean gammaEnabled = ctx.renderSettings.displayGammaEnabled;
+        float gamma = ctx.renderSettings.displayGamma;
         ctx.worldRenderer.renderTerrain(
-                ctx.world, bounds[0], bounds[1], bounds[2], bounds[3], alignX, alignY);
+                ctx.world,
+                bounds[0],
+                bounds[1],
+                bounds[2],
+                bounds[3],
+                ctx.world.clock().timeOfDay(),
+                DayNightConfig.from(GameConfig.get()),
+                ctx.renderSettings.localLightingEnabled,
+                dayNight,
+                gammaEnabled,
+                gamma,
+                alignX,
+                alignY);
         Entity player = ctx.entities.getPlayer();
         ctx.worldRenderer.renderSortedWorld(
                 ctx.world,
@@ -96,12 +114,18 @@ public final class ScreenRenderer {
                 player.bounds(ctx.assets),
                 ctx.renderSettings.occlusionFadeEnabled,
                 ctx.dropSystem.getDrops(),
+                ctx.world.clock().timeOfDay(),
+                DayNightConfig.from(GameConfig.get()),
+                ctx.renderSettings.localLightingEnabled,
+                dayNight,
+                gammaEnabled,
+                gamma,
                 alignX,
                 alignY);
         if (!paused) {
             if (ctx.interactionPresentation.showPlacementGhosts()) {
                 ctx.worldRenderer.renderPlacementGhosts(
-                        ctx.interactionPresentation.placementPreviews(), alignX, alignY);
+                        ctx.world, ctx.interactionPresentation.placementPreviews(), alignX, alignY);
             }
             ctx.worldRenderer.renderInteractionHighlights(
                     ctx.world, ctx.interactionPresentation.breakHighlights(), alignX, alignY);
@@ -109,9 +133,9 @@ public final class ScreenRenderer {
         ctx.worldBatch.end();
 
         ctx.worldOverlay.setProjectionMatrix(worldCamera.combined);
-        if (!paused && ctx.debug.isVisible()) {
+        if (!paused && ctx.debug.isWorldDebugVisible()) {
             com.dawn.entity.EntityBounds entityBounds = player.bounds(ctx.assets);
-            float reach = ReachResolver.radiusForHeld(ctx.hotbar.getHeld());
+            float reach = ReachResolver.radiusCellsFloatForHeld(ctx.hotbar.getHeld());
             ctx.worldRenderer.renderReachRing(entityBounds.moveCenterX(), entityBounds.moveCenterY(), reach);
             ctx.worldRenderer.renderEntityCollisionDebug(
                     ctx.world,
@@ -167,15 +191,14 @@ public final class ScreenRenderer {
         ctx.debug.render(
                 input,
                 player,
+                ctx.profile,
                 ctx.inventory,
+                ctx.equipment,
                 moveX,
                 moveY,
                 delta,
                 interactionMessage,
                 simTick,
-                simulation.countActiveRegions(),
-                simulation.totalPendingGrassEvents(),
-                simulation.totalPendingBushEvents(),
                 hoverSimActive,
                 Gdx.input.getX(),
                 Gdx.input.getY(),

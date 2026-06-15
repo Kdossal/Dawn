@@ -17,12 +17,18 @@ public final class ClickHintResolver {
 
     public static ClickHints resolve(World world, Entity entity, ItemStack held, TargetCell hover) {
         ClickVerb left = resolveLeft(world, entity, held, hover);
-        ClickVerb right = resolveRight(held);
+        ClickVerb right = resolveRight(entity, held);
         return new ClickHints(left, right);
     }
 
-    private static ClickVerb resolveRight(ItemStack held) {
+    private static ClickVerb resolveRight(Entity entity, ItemStack held) {
+        if (EatSystem.canEat(entity, held)) {
+            return ClickVerb.EAT;
+        }
         ItemDef def = ItemRegistry.get(held);
+        if (def != null && def.isEdible()) {
+            return null;
+        }
         if (def != null && def.canPlace()) {
             return ClickVerb.PLACE;
         }
@@ -33,7 +39,7 @@ public final class ClickHintResolver {
         if (hover == null) {
             return ClickVerb.ATTACK;
         }
-        float reach = ReachResolver.radiusForHeld(held);
+        float reach = ReachResolver.radiusCellsFloatForHeld(held);
         if (!InteractionRules.canTargetCell(
                 world, entity, entity.getX(), entity.getY(), hover.x(), hover.y(), reach)) {
             return ClickVerb.ATTACK;

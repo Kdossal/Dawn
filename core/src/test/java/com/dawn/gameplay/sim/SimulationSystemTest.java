@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 class SimulationSystemTest {
     private int savedMaxCatchup;
     private int savedGrassBudget;
-    private int savedBushBudget;
     private int savedSimMargin;
     private int savedSpreadAttempts;
 
@@ -25,7 +24,6 @@ class SimulationSystemTest {
         GameConfig cfg = GameConfig.get();
         savedMaxCatchup = cfg.maxCatchupTicksPerChunk;
         savedGrassBudget = cfg.maxCatchupGrassEventsPerFrame;
-        savedBushBudget = cfg.maxCatchupBushEventsPerFrame;
         savedSimMargin = cfg.simMarginCells;
         savedSpreadAttempts = cfg.grassSpreadAttemptsPerEvent;
     }
@@ -35,7 +33,6 @@ class SimulationSystemTest {
         GameConfig cfg = GameConfig.get();
         cfg.maxCatchupTicksPerChunk = savedMaxCatchup;
         cfg.maxCatchupGrassEventsPerFrame = savedGrassBudget;
-        cfg.maxCatchupBushEventsPerFrame = savedBushBudget;
         cfg.simMarginCells = savedSimMargin;
         cfg.grassSpreadAttemptsPerEvent = savedSpreadAttempts;
     }
@@ -78,7 +75,6 @@ class SimulationSystemTest {
         sim.advanceCurrentTickForTest(50_000);
         GameConfig.get().simMarginCells = 0;
         GameConfig.get().maxCatchupGrassEventsPerFrame = 50_000;
-        GameConfig.get().maxCatchupBushEventsPerFrame = 50_000;
 
         wakeRegionTight(sim, 0, 0);
         drainCatchUpFully(sim, 0, 0);
@@ -168,7 +164,6 @@ class SimulationSystemTest {
         sim.setRegionLastSimulatedTickForTest(0, 0, 0);
         sim.advanceCurrentTickForTest(10_000);
         GameConfig.get().maxCatchupGrassEventsPerFrame = 5;
-        GameConfig.get().maxCatchupBushEventsPerFrame = 5;
 
         wakeRegion(sim, 0, 0);
         assertTrue(sim.pendingGrassEventsForTest(0, 0) > 5);
@@ -188,7 +183,6 @@ class SimulationSystemTest {
         sim.updateActiveRegions(originPx, originPx, originPx + sizePx, originPx + sizePx, center, center);
     }
 
-    /** Camera stays inside one region so neighbors stay inactive (margin must be 0). */
     private static void wakeRegionTight(SimulationSystem sim, int regionX, int regionY) {
         int rs = GameConfig.get().regionSizeCells;
         int originCell = regionX * rs;
@@ -203,7 +197,6 @@ class SimulationSystemTest {
     private static void drainCatchUpFully(SimulationSystem sim, int regionX, int regionY) {
         for (int i = 0; i < 200 && sim.pendingGrassEventsForTest(regionX, regionY) > 0; i++) {
             GameConfig.get().maxCatchupGrassEventsPerFrame = 50_000;
-            GameConfig.get().maxCatchupBushEventsPerFrame = 50_000;
             wakeRegionTight(sim, regionX, regionY);
         }
     }

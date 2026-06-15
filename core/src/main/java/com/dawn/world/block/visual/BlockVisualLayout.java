@@ -14,6 +14,7 @@ public final class BlockVisualLayout {
         float[] origin = switch (visual.anchor()) {
             case CELL_BOTTOM_LEFT -> SpriteAnchor.cellBottomLeft(cellX, cellY, w, h);
             case CELL_BOTTOM_CENTER -> SpriteAnchor.cellBottomCenter(cellX, cellY, w, h);
+            case CELL_CENTER -> SpriteAnchor.cellCenter(cellX, cellY, w, h);
         };
         float px = origin[0] + visual.offsetPxX();
         float py = origin[1] + visual.offsetPxY();

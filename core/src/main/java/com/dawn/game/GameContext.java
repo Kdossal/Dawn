@@ -10,6 +10,7 @@ import com.dawn.render.RenderSettings;
 import com.dawn.render.ZoomController;
 import com.dawn.entity.EntityId;
 import com.dawn.entity.EntityManager;
+import com.dawn.gameplay.EatSystem;
 import com.dawn.gameplay.InteractionPresentation;
 import com.dawn.gameplay.InteractionSystem;
 import com.dawn.gameplay.MiningSystem;
@@ -49,11 +50,12 @@ public final class GameContext implements Disposable {
     public final InteractionPresentation interactionPresentation = new InteractionPresentation();
     public final MiningSystem mining;
     public final PlacementSystem placement;
+    public final EatSystem eat;
     public final DropSystem dropSystem;
     public final DropRenderer dropRenderer;
     public final Hotbar hotbar;
     public final DebugOverlay debug;
-    public final RenderSettings renderSettings = new RenderSettings();
+    public final RenderSettings renderSettings;
     public final GameSettings gameSettings;
     public final ZoomController zoomController;
     public final GameLoop gameLoop;
@@ -76,6 +78,7 @@ public final class GameContext implements Disposable {
             InteractionSystem interaction,
             MiningSystem mining,
             PlacementSystem placement,
+            EatSystem eat,
             DropSystem dropSystem,
             DropRenderer dropRenderer,
             Hotbar hotbar,
@@ -84,7 +87,8 @@ public final class GameContext implements Disposable {
             HudAssets hud,
             DawnFonts fonts,
             GameSettings gameSettings,
-            ZoomController zoomController) {
+            ZoomController zoomController,
+            RenderSettings renderSettings) {
         this.assets = assets;
         this.worldBatch = worldBatch;
         this.worldOverlay = worldOverlay;
@@ -100,6 +104,7 @@ public final class GameContext implements Disposable {
         this.interaction = interaction;
         this.mining = mining;
         this.placement = placement;
+        this.eat = eat;
         this.dropSystem = dropSystem;
         this.dropRenderer = dropRenderer;
         this.hotbar = hotbar;
@@ -109,6 +114,7 @@ public final class GameContext implements Disposable {
         this.fonts = fonts;
         this.gameSettings = gameSettings;
         this.zoomController = zoomController;
+        this.renderSettings = renderSettings;
     }
 
     public static GameContext create() {
@@ -130,13 +136,16 @@ public final class GameContext implements Disposable {
         InteractionSystem interaction = new InteractionSystem(lootTable, dropSystem);
         MiningSystem mining = new MiningSystem(interaction);
         PlacementSystem placement = new PlacementSystem(interaction);
+        EatSystem eat = new EatSystem();
         SimulationSystem simulation = new SimulationSystem(world);
         GameLoop gameLoop = new GameLoop(simulation);
         DawnFonts fonts = new DawnFonts();
         HudAssets hud = new HudAssets(fonts);
-        Hotbar hotbar = new Hotbar(hud, assets, inventory);
-        DebugOverlay debug = new DebugOverlay(hud);
         GameSettings gameSettings = new GameSettings();
+        RenderSettings renderSettings = new RenderSettings();
+        gameSettings.applyDisplayGamma(renderSettings);
+        Hotbar hotbar = new Hotbar(hud, assets, inventory, gameSettings);
+        DebugOverlay debug = new DebugOverlay(hud);
         ZoomController zoomController = new ZoomController(gameSettings);
         InventoryOverlay inventoryOverlay =
                 new InventoryOverlay(
@@ -147,7 +156,7 @@ public final class GameContext implements Disposable {
                         profile,
                         dropSystem,
                         entities.getPlayer());
-        PauseOverlay pauseOverlay = new PauseOverlay(assets, fonts, gameSettings);
+        PauseOverlay pauseOverlay = new PauseOverlay(assets, fonts, gameSettings, renderSettings);
         return new GameContext(
                 assets,
                 worldBatch,
@@ -164,6 +173,7 @@ public final class GameContext implements Disposable {
                 interaction,
                 mining,
                 placement,
+                eat,
                 dropSystem,
                 dropRenderer,
                 hotbar,
@@ -172,7 +182,8 @@ public final class GameContext implements Disposable {
                 hud,
                 fonts,
                 gameSettings,
-                zoomController);
+                zoomController,
+                renderSettings);
     }
 
     @Override

@@ -10,5 +10,7 @@ public enum VisualAnchor {
     /** Bottom-left corner of the cell — good for crates, bushes, floor-aligned props. */
     CELL_BOTTOM_LEFT,
     /** Bottom edge, horizontally centered — good for tall centered trees. */
-    CELL_BOTTOM_CENTER
+    CELL_BOTTOM_CENTER,
+    /** Geometric center of the cell — good for oversized ground tiles with border overlap. */
+    CELL_CENTER
 }

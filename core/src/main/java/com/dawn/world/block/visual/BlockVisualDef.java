@@ -60,6 +60,9 @@ public record BlockVisualDef(
 
     /** Extra cells to include when culling visible region (left, right, down, up). */
     public int[] cullPaddingCells() {
+        if (anchor == VisualAnchor.CELL_CENTER) {
+            return symmetricCullPaddingCells();
+        }
         int cell = Constants.CELL_SIZE_PX;
         int padLeft = Math.max(0, (widthPx - cell) / 2 + Math.max(0, -offsetPxX) + cell - 1) / cell;
         int padRight = Math.max(0, (widthPx - cell) / 2 + Math.max(0, offsetPxX) + cell - 1) / cell;
@@ -67,5 +70,14 @@ public record BlockVisualDef(
         int overflowUp = heightPx - cell + Math.max(0, offsetPxY);
         int padUp = Math.max(0, (overflowUp + cell - 1) / cell);
         return new int[] {padLeft, padRight, padDown, padUp};
+    }
+
+    private int[] symmetricCullPaddingCells() {
+        int cell = Constants.CELL_SIZE_PX;
+        int bleedX = Math.max(0, (widthPx - cell) / 2 + Math.abs(offsetPxX));
+        int bleedY = Math.max(0, (heightPx - cell) / 2 + Math.abs(offsetPxY));
+        int padX = Math.max(0, (bleedX + cell - 1) / cell);
+        int padY = Math.max(0, (bleedY + cell - 1) / cell);
+        return new int[] {padX, padX, padY, padY};
     }
 }

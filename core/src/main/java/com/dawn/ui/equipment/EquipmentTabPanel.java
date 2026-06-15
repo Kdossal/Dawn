@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.dawn.assets.DawnAssets;
+import com.dawn.entity.AttributeId;
 import com.dawn.inventory.EquipmentInventory;
 import com.dawn.inventory.EquipmentSlot;
 import com.dawn.inventory.PlayerProfile;
@@ -22,7 +23,7 @@ import com.dawn.ui.inventory.ItemSlotWidget;
 public final class EquipmentTabPanel extends Group {
     private final ItemSlotWidget[] wearSlots = new ItemSlotWidget[EquipmentSlot.wearOrder().length];
     private final ItemSlotWidget[] accessorySlots = new ItemSlotWidget[EquipmentSlot.accessoryOrder().length];
-    private final StatCellWidget[] statCells = new StatCellWidget[PlayerProfile.STAT_NAMES.length];
+    private final StatCellWidget[] statCells = new StatCellWidget[AttributeId.ALL.length];
     private final Label nameLabel;
     private final Image playerSprite;
     private final Label levelLabel;
@@ -116,7 +117,7 @@ public final class EquipmentTabPanel extends Group {
             addActor(accessorySlots[i]);
         }
 
-        for (int i = 0; i < PlayerProfile.STAT_NAMES.length; i++) {
+        for (int i = 0; i < AttributeId.ALL.length; i++) {
             int row = i / InventoryDesign.STAT_COLS;
             int col = i % InventoryDesign.STAT_COLS;
             statCells[i] = new StatCellWidget(assets, fonts);
@@ -177,7 +178,7 @@ public final class EquipmentTabPanel extends Group {
             accessorySlots[i].refresh(equipment.get(accessories[i]), assets);
         }
         for (int i = 0; i < statCells.length; i++) {
-            statCells[i].setStat(PlayerProfile.STAT_NAMES[i], profile.statValue(i));
+            statCells[i].setStat(AttributeId.DISPLAY_NAMES[i], profile.attributeValue(i));
         }
     }
 }

@@ -27,7 +27,7 @@ class GrassAutotileResolverTest {
         setGrass(2, 2);
         AutotileCell cell = AutotileResolver.resolve(world, 2, 2, family, 0);
         assertEquals(3, cell.col());
-        assertEquals(0, cell.row());
+        assertEquals(3, cell.row());
         assertEquals(0, CardinalMask.compute(world, 2, 2, family.neighborLayer(), family.neighborBlockId()));
     }
 
@@ -38,8 +38,8 @@ class GrassAutotileResolverTest {
         setGrass(2, 1);
         AutotileCell cell = AutotileResolver.resolve(world, 2, 2, family, 0);
         assertEquals(6, CardinalMask.compute(world, 2, 2, family.neighborLayer(), family.neighborBlockId()));
-        assertEquals(1, cell.col());
-        assertEquals(2, cell.row());
+        assertEquals(0, cell.col());
+        assertEquals(0, cell.row());
     }
 
     @Test

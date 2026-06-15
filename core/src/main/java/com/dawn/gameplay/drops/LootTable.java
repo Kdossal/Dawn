@@ -15,6 +15,8 @@ public final class LootTable {
                 case OAK_TREE, OAK_STUMP, SPRUCE_TREE, SPRUCE_STUMP ->
                         List.of(ItemStack.of(ItemId.WOOD, 2));
                 case CRATE -> List.of(ItemStack.of(ItemId.CRATE));
+                case STONE_WALL -> List.of(ItemStack.of(ItemId.STONE));
+                case LANTERN -> List.of(ItemStack.of(ItemId.LANTERN));
                 case BED_FOOT -> List.of(ItemStack.of(ItemId.BED));
                 case BED_HEAD -> Collections.emptyList();
                 case BUSH -> Collections.emptyList();
@@ -25,6 +27,7 @@ public final class LootTable {
             return switch (blockId) {
                 case DIRT -> List.of(ItemStack.of(ItemId.DIRT_CLUMP));
                 case SAND -> List.of(ItemStack.of(ItemId.SAND));
+                case STONE -> List.of(ItemStack.of(ItemId.STONE));
                 default -> Collections.emptyList();
             };
         }

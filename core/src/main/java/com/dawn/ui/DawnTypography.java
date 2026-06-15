@@ -8,7 +8,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.dawn.ui.DawnFonts.FontWeight;
 import com.dawn.ui.inventory.InventoryDesign;
 
-/** Screen-pixel typography tiers for crisp m5x7 rendering. */
+/**
+ * Screen-pixel typography tiers for crisp m5x7 rendering.
+ *
+ * <p>Middle hotbar text uses {@link DawnFonts#medium()} via {@link com.dawn.render.GameSettings.UiSize},
+ * not a fractional tier here.
+ */
 public final class DawnTypography {
     /** Matches {@link DawnFonts#NATIVE_POINT_SIZE} atlas line height after load. */
     public static final int BASE_LINE_PX = 16;
@@ -19,8 +24,6 @@ public final class DawnTypography {
     public enum TextTier {
         /** Native 1× m5x7 grid (~5×7 px glyphs). */
         XS(16),
-        /** Between XS and SM (1.5× native; debug / microcopy). */
-        S(24),
         SM(32),
         MD(48),
         LG(64),

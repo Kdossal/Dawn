@@ -1,8 +1,11 @@
 package com.dawn.world.render;
 
 import com.dawn.assets.DawnAssets;
-import com.dawn.entity.sprite.EntitySpriteFrame;
+import com.dawn.config.DayNightConfig;
 import com.dawn.entity.EntityBounds;
+import com.dawn.entity.sprite.EntitySpriteFrame;
+import com.dawn.render.LightColor;
+import com.dawn.render.TileLighting;
 import com.dawn.world.World;
 import java.util.List;
 
@@ -12,13 +15,47 @@ public final class DrawContext {
     private final OcclusionFadePlan fadePlan;
     private final float pixelAlignOffsetX;
     private final float pixelAlignOffsetY;
+    private final TileLighting.TileLight[][] lightCache;
+    private final int cacheMinX;
+    private final int cacheMinY;
+    private final int cacheWidth;
+    private final int cacheHeight;
+    private final float timeOfDay;
+    private final DayNightConfig dayNightConfig;
+    private final boolean localLightingEnabled;
+    private final boolean dayNightEnabled;
+    private final boolean displayGammaEnabled;
+    private final float displayGamma;
 
     private DrawContext(
-            World world, OcclusionFadePlan fadePlan, float pixelAlignOffsetX, float pixelAlignOffsetY) {
+            World world,
+            OcclusionFadePlan fadePlan,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY,
+            TileLighting.TileLight[][] lightCache,
+            int cacheMinX,
+            int cacheMinY,
+            float timeOfDay,
+            DayNightConfig dayNightConfig,
+            boolean localLightingEnabled,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma) {
         this.world = world;
         this.fadePlan = fadePlan;
         this.pixelAlignOffsetX = pixelAlignOffsetX;
         this.pixelAlignOffsetY = pixelAlignOffsetY;
+        this.lightCache = lightCache;
+        this.cacheMinX = cacheMinX;
+        this.cacheMinY = cacheMinY;
+        this.cacheWidth = lightCache == null ? 0 : lightCache.length;
+        this.cacheHeight = lightCache == null || lightCache.length == 0 ? 0 : lightCache[0].length;
+        this.timeOfDay = timeOfDay;
+        this.dayNightConfig = dayNightConfig;
+        this.localLightingEnabled = localLightingEnabled;
+        this.dayNightEnabled = dayNightEnabled;
+        this.displayGammaEnabled = displayGammaEnabled;
+        this.displayGamma = displayGamma;
     }
 
     public static DrawContext create(
@@ -31,7 +68,17 @@ public final class DrawContext {
             DawnAssets assets,
             boolean occlusionFadeEnabled,
             float pixelAlignOffsetX,
-            float pixelAlignOffsetY) {
+            float pixelAlignOffsetY,
+            int minX,
+            int minY,
+            int maxX,
+            int maxY,
+            float timeOfDay,
+            DayNightConfig dayNightConfig,
+            boolean localLightingEnabled,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma) {
         OcclusionFadePlan fadePlan =
                 occlusionFadeEnabled
                         ? OcclusionFadePlan.build(
@@ -42,7 +89,33 @@ public final class DrawContext {
                                 playerSprite,
                                 assets)
                         : OcclusionFadePlan.disabled();
-        return new DrawContext(world, fadePlan, pixelAlignOffsetX, pixelAlignOffsetY);
+        TileLighting.TileLight[][] cache =
+                TileLighting.buildCache(
+                        world,
+                        minX,
+                        minY,
+                        maxX,
+                        maxY,
+                        timeOfDay,
+                        dayNightConfig,
+                        localLightingEnabled,
+                        dayNightEnabled,
+                        displayGammaEnabled,
+                        displayGamma);
+        return new DrawContext(
+                world,
+                fadePlan,
+                pixelAlignOffsetX,
+                pixelAlignOffsetY,
+                cache,
+                minX,
+                minY,
+                timeOfDay,
+                dayNightConfig,
+                localLightingEnabled,
+                dayNightEnabled,
+                displayGammaEnabled,
+                displayGamma);
     }
 
     public World world() {
@@ -59,5 +132,31 @@ public final class DrawContext {
 
     public float pixelAlignOffsetY() {
         return pixelAlignOffsetY;
+    }
+
+    public TileLighting.TileLight tileLight(int cellX, int cellY) {
+        if (lightCache == null || !localLightingEnabled) {
+            return TileLighting.TileLight.fullWhite();
+        }
+        int lx = cellX - cacheMinX;
+        int ly = cellY - cacheMinY;
+        if (lx >= 0 && ly >= 0 && lx < cacheWidth && ly < cacheHeight) {
+            return lightCache[lx][ly];
+        }
+        return TileLighting.sample(
+                world,
+                cellX,
+                cellY,
+                timeOfDay,
+                dayNightConfig,
+                localLightingEnabled,
+                dayNightEnabled,
+                displayGammaEnabled,
+                displayGamma);
+    }
+
+    public float tileBrightness(int cellX, int cellY) {
+        TileLighting.TileLight light = tileLight(cellX, cellY);
+        return LightColor.maxChannel(new float[] {light.r(), light.g(), light.b()});
     }
 }

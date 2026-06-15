@@ -5,6 +5,8 @@ import com.dawn.world.block.BlockDefinitions;
 import com.dawn.world.block.BlockId;
 import com.dawn.world.block.Layer;
 import com.dawn.world.block.SurfaceRules;
+import com.dawn.world.light.LightEngine;
+import com.dawn.world.light.LightMap;
 import com.dawn.world.structure.StructureRegistry;
 
 public class World {
@@ -15,6 +17,8 @@ public class World {
     private final BlockId[][] objects;
     private final StructureRegistry structures = new StructureRegistry();
     private final BlockDamageStore blockDamage = new BlockDamageStore();
+    private final WorldClock clock = new WorldClock();
+    private final LightMap lightMap;
 
     public World(int width, int height) {
         this.width = width;
@@ -22,7 +26,9 @@ public class World {
         this.ground = new BlockId[width][height];
         this.floor = new BlockId[width][height];
         this.objects = new BlockId[width][height];
+        this.lightMap = new LightMap(width, height);
         WorldMaps.fillPlayground(this);
+        LightEngine.rebuildFull(this);
     }
 
     public static World createDefault() {
@@ -43,6 +49,14 @@ public class World {
 
     public BlockDamageStore getBlockDamage() {
         return blockDamage;
+    }
+
+    public WorldClock clock() {
+        return clock;
+    }
+
+    public LightMap lightMap() {
+        return lightMap;
     }
 
     public boolean inBounds(int x, int y) {
@@ -67,6 +81,7 @@ public class World {
             if (id == BlockId.PIT) {
                 blockDamage.clear(Layer.GROUND, x, y);
             }
+            lightMap.markDirty(x, y);
         }
     }
 
@@ -76,6 +91,7 @@ public class World {
             if (id == BlockId.AIR) {
                 blockDamage.clear(Layer.FLOOR, x, y);
             }
+            lightMap.markDirty(x, y);
         }
     }
 
@@ -85,6 +101,7 @@ public class World {
             if (id == BlockId.AIR) {
                 blockDamage.clear(Layer.OBJECT, x, y);
             }
+            lightMap.markDirty(x, y);
         }
     }
 

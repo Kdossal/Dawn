@@ -2,7 +2,10 @@ package com.dawn.world.render;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dawn.assets.DawnAssets;
+import com.dawn.render.TileLighting;
 import com.dawn.world.block.BlockId;
+import com.dawn.world.block.autotile.AutotileDraw;
+import com.dawn.world.block.autotile.AutotileRegistry;
 import com.dawn.world.block.visual.BlockSpriteDraw;
 import com.dawn.world.block.visual.BlockVisualDef;
 import com.dawn.world.block.visual.BlockVisualRegistry;
@@ -54,17 +57,40 @@ public final class BlockWorldDrawable implements WorldDrawable {
     @Override
     public void draw(SpriteBatch batch, DawnAssets assets, DrawContext context) {
         BlockVisualDef visual = BlockVisualRegistry.get(blockId);
-        if (visual != null) {
-            float alpha = context.fadePlan().blockDrawAlpha(blockId, cellX, cellY);
-            BlockSpriteDraw.drawBlock(
+        if (visual == null) {
+            return;
+        }
+        float alpha = context.fadePlan().blockDrawAlpha(blockId, cellX, cellY);
+        TileLighting.TileLight light = context.tileLight(cellX, cellY);
+        var family = AutotileRegistry.familyFor(blockId);
+        if (family != null) {
+            AutotileDraw.drawColored(
                     batch,
                     assets,
-                    visual,
+                    context.world(),
+                    family,
                     cellX,
                     cellY,
+                    visual,
+                    light.r(),
+                    light.g(),
+                    light.b(),
                     alpha,
                     context.pixelAlignOffsetX(),
                     context.pixelAlignOffsetY());
+            return;
         }
+        BlockSpriteDraw.drawColoredBlock(
+                batch,
+                assets,
+                visual,
+                cellX,
+                cellY,
+                light.r(),
+                light.g(),
+                light.b(),
+                alpha,
+                context.pixelAlignOffsetX(),
+                context.pixelAlignOffsetY());
     }
 }

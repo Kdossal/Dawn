@@ -41,4 +41,72 @@ class GameSettingsTest {
         settings.setZoomLevel(99);
         assertEquals(10, settings.zoomLevel);
     }
+
+    @Test
+    void defaultUiSizeIsMedium() {
+        GameSettings settings = new GameSettings();
+        assertEquals(GameSettings.UiSize.MEDIUM, settings.uiSize);
+    }
+
+    @Test
+    void slotMultipliersAreIntegerSteps() {
+        assertEquals(2, GameSettings.slotMultiplier(GameSettings.UiSize.SMALL));
+        assertEquals(3, GameSettings.slotMultiplier(GameSettings.UiSize.MEDIUM));
+        assertEquals(4, GameSettings.slotMultiplier(GameSettings.UiSize.LARGE));
+    }
+
+    @Test
+    void cycleUiSizeOrder() {
+        GameSettings settings = new GameSettings();
+        settings.setUiSize(GameSettings.UiSize.SMALL);
+        settings.cycleUiSize();
+        assertEquals(GameSettings.UiSize.MEDIUM, settings.uiSize);
+        settings.cycleUiSize();
+        assertEquals(GameSettings.UiSize.LARGE, settings.uiSize);
+        settings.cycleUiSize();
+        assertEquals(GameSettings.UiSize.SMALL, settings.uiSize);
+    }
+
+    @Test
+    void uiSizeLabels() {
+        assertEquals("Small", GameSettings.uiSizeLabel(GameSettings.UiSize.SMALL));
+        assertEquals("Medium", GameSettings.uiSizeLabel(GameSettings.UiSize.MEDIUM));
+        assertEquals("Large", GameSettings.uiSizeLabel(GameSettings.UiSize.LARGE));
+    }
+
+    @Test
+    void displayGammaDefaultIsDark() {
+        GameSettings settings = new GameSettings();
+        assertEquals(-1, settings.displayGammaPreset);
+        assertEquals("Dark", GameSettings.displayGammaLabel(settings.displayGammaPreset));
+    }
+
+    @Test
+    void cycleDisplayGammaPresetOrder() {
+        GameSettings settings = new GameSettings();
+        settings.cycleDisplayGammaPreset();
+        assertEquals(0, settings.displayGammaPreset);
+        assertEquals("Normal", GameSettings.displayGammaLabel(settings.displayGammaPreset));
+        settings.cycleDisplayGammaPreset();
+        assertEquals(1, settings.displayGammaPreset);
+        assertEquals("Bright", GameSettings.displayGammaLabel(settings.displayGammaPreset));
+        settings.cycleDisplayGammaPreset();
+        assertEquals(2, settings.displayGammaPreset);
+        assertEquals("Brighter", GameSettings.displayGammaLabel(settings.displayGammaPreset));
+        settings.cycleDisplayGammaPreset();
+        assertEquals(-1, settings.displayGammaPreset);
+    }
+
+    @Test
+    void applyDisplayGamma_updatesRenderSettings() {
+        GameSettings settings = new GameSettings();
+        RenderSettings render = new RenderSettings();
+        settings.displayGammaPreset = 0;
+        settings.applyDisplayGamma(render);
+        assertEquals(true, render.displayGammaEnabled);
+        assertEquals(0.92f, render.displayGamma, 0.001f);
+        settings.displayGammaPreset = -1;
+        settings.applyDisplayGamma(render);
+        assertEquals(false, render.displayGammaEnabled);
+    }
 }

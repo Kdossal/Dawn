@@ -35,16 +35,50 @@ public final class BlockSpriteDraw {
             float alphaMultiplier,
             float alignOffsetX,
             float alignOffsetY) {
+        drawBrightBlock(batch, assets, visual, cellX, cellY, 1f, alphaMultiplier, alignOffsetX, alignOffsetY);
+    }
+
+    public static void drawBrightBlock(
+            SpriteBatch batch,
+            DawnAssets assets,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            float brightness,
+            float alphaMultiplier,
+            float alignOffsetX,
+            float alignOffsetY) {
         TextureRegion region = assets.tile(visual.texture());
         if (region == null) {
             return;
         }
         float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
-        float drawW = rect[2];
-        float drawH = rect[3];
         float alpha = visual.defaultAlpha() * alphaMultiplier;
-        batch.setColor(1f, 1f, 1f, alpha);
-        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, drawW, drawH);
+        batch.setColor(brightness, brightness, brightness, alpha);
+        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
+        batch.setColor(Color.WHITE);
+    }
+
+    public static void drawColoredBlock(
+            SpriteBatch batch,
+            DawnAssets assets,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            float r,
+            float g,
+            float b,
+            float alphaMultiplier,
+            float alignOffsetX,
+            float alignOffsetY) {
+        TextureRegion region = assets.tile(visual.texture());
+        if (region == null) {
+            return;
+        }
+        float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
+        float alpha = visual.defaultAlpha() * alphaMultiplier;
+        batch.setColor(r, g, b, alpha);
+        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
         batch.setColor(Color.WHITE);
     }
 
@@ -96,12 +130,83 @@ public final class BlockSpriteDraw {
             int cellY,
             float alignOffsetX,
             float alignOffsetY) {
+        drawBrightRegion(batch, assets, region, visual, cellX, cellY, 1f, alignOffsetX, alignOffsetY);
+    }
+
+    public static void drawBrightRegion(
+            SpriteBatch batch,
+            DawnAssets assets,
+            TextureRegion region,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            float brightness,
+            float alignOffsetX,
+            float alignOffsetY) {
         if (region == null) {
             return;
         }
         float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
         float alpha = visual.defaultAlpha();
-        batch.setColor(1f, 1f, 1f, alpha);
+        batch.setColor(brightness, brightness, brightness, alpha);
+        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
+        batch.setColor(Color.WHITE);
+    }
+
+    public static void drawColoredRegion(
+            SpriteBatch batch,
+            DawnAssets assets,
+            TextureRegion region,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            float r,
+            float g,
+            float b,
+            float alignOffsetX,
+            float alignOffsetY) {
+        drawColoredRegion(batch, assets, region, visual, cellX, cellY, r, g, b, 1f, alignOffsetX, alignOffsetY);
+    }
+
+    public static void drawColoredRegion(
+            SpriteBatch batch,
+            DawnAssets assets,
+            TextureRegion region,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            float r,
+            float g,
+            float b,
+            float alphaMultiplier,
+            float alignOffsetX,
+            float alignOffsetY) {
+        if (region == null) {
+            return;
+        }
+        float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
+        float alpha = visual.defaultAlpha() * alphaMultiplier;
+        batch.setColor(r, g, b, alpha);
+        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
+        batch.setColor(Color.WHITE);
+    }
+
+    public static void drawTintedRegion(
+            SpriteBatch batch,
+            DawnAssets assets,
+            TextureRegion region,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            Color tint,
+            float alignOffsetX,
+            float alignOffsetY) {
+        if (region == null) {
+            return;
+        }
+        float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
+        float alpha = visual.defaultAlpha() * tint.a;
+        batch.setColor(tint.r, tint.g, tint.b, alpha);
         batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
         batch.setColor(Color.WHITE);
     }

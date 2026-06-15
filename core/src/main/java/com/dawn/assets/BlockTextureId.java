@@ -16,7 +16,9 @@ public enum BlockTextureId {
     SPRUCE_STUMP("spruce_stump"),
     CRATE("crate"),
     BED_FOOT("bed_foot"),
-    BED_HEAD("bed_head");
+    BED_HEAD("bed_head"),
+    LANTERN("latern"),
+    STONE_WALL("stone_wall");
 
     public final String fileName;
 

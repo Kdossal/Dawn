@@ -136,8 +136,6 @@ public class InteractionSystem {
             return;
         }
         lastMessage = message.get();
-        if (id == BlockId.DIRT || id == BlockId.SAND) {
-            spawnLoot(world, x, y, Layer.GROUND, id);
-        }
+        spawnLoot(world, x, y, Layer.GROUND, id);
     }
 }

@@ -16,5 +16,7 @@ public enum BlockId {
     SPRUCE_STUMP,
     CRATE,
     BED_FOOT,
-    BED_HEAD
+    BED_HEAD,
+    LANTERN,
+    STONE_WALL
 }

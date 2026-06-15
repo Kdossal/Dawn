@@ -20,11 +20,6 @@ public final class ReachResolver {
         return Math.round(radiusCellsFloatForHeld(held));
     }
 
-    @Deprecated
-    public static float radiusForHeld(ItemStack held) {
-        return radiusCellsFloatForHeld(held);
-    }
-
     public static float radiusCellsFloatForHeld(ItemStack held) {
         GameConfig cfg = GameConfig.get();
         if (held == null || held.isEmpty()) {

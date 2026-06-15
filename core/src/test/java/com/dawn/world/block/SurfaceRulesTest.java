@@ -37,6 +37,8 @@ class SurfaceRulesTest {
     void placeGround_onPitOnly() {
         World world = TestWorlds.smallClear(4, 4);
         assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.DIRT));
+        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.SAND));
+        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.STONE));
         TestWorlds.setSolidDirt(world, 2, 2);
         assertFalse(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.DIRT));
     }

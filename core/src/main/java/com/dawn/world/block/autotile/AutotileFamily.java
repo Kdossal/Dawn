@@ -11,11 +11,13 @@ public record AutotileFamily(
         BlockTextureId texture,
         int cols,
         int rows,
-        int tileSizePx,
+        int tileWidthPx,
+        int tileHeightPx,
         Layer neighborLayer,
         BlockId neighborBlockId,
         AutotileCell[] maskTiles,
-        AutotileCell[] centerTiles) {
+        AutotileCell[] centerTiles,
+        NeighborRule[] neighborRules) {
 
     public static final int MASK_COUNT = 16;
     public static final int FULL_SURROUND_MASK = 15;
@@ -41,5 +43,9 @@ public record AutotileFamily(
 
     public boolean hasCenterVariants() {
         return centerTiles.length > 0;
+    }
+
+    public boolean hasNeighborRules() {
+        return neighborRules.length > 0;
     }
 }

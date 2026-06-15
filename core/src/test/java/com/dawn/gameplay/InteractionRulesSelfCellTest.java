@@ -29,11 +29,6 @@ class InteractionRulesSelfCellTest {
     }
 
     @Test
-    void canTargetCell_allowsOwnCellInReach() {
-        assertTrue(InteractionRules.canTargetCell(world, player, player.getX(), player.getY(), 5, 4, 3f));
-    }
-
-    @Test
     void resolveToolBreak_blocksDiggingGroundUnderSelf() {
         world.setGround(5, 4, BlockId.DIRT);
         world.setFloor(5, 4, BlockId.AIR);

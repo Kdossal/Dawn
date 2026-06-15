@@ -7,6 +7,7 @@ import com.dawn.item.ItemDef;
 import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
 import com.dawn.item.PlaceableExecutor;
+import com.dawn.item.PlaceableResolver;
 import com.dawn.world.World;
 import java.util.List;
 
@@ -27,8 +28,14 @@ public final class PlacementPreviewResolver {
         if (result == null) {
             return List.of();
         }
+        var previewTarget =
+                PlaceableResolver.resolve(world, entity, def.placeable(), hover.x(), hover.y());
+        if (previewTarget == null) {
+            return List.of();
+        }
         PlacementPreview preview =
-                PlaceableExecutor.toPreview(result.placeable(), result.anchorX(), result.anchorY(), result.valid());
+                PlaceableExecutor.toPreview(
+                        previewTarget, result.anchorX(), result.anchorY(), result.valid());
         return preview == null ? List.of() : List.of(preview);
     }
 }

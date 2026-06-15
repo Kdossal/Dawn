@@ -64,7 +64,13 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   bed.png
 
-  tree_sapling.png
+  oak_sapling.png
+
+  spruce_sapling.png
+
+  stone.png
+
+  canned_food.png
 
 
 

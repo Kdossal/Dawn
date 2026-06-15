@@ -11,11 +11,11 @@ class BlockDefinitionsMovementTest {
 
     @Test
     void treesAndStumps_blockMovement_bushDoesNot() {
-        assertFalse(BlockDefinitions.isPassThroughBlock(BlockId.OAK_TREE));
-        assertFalse(BlockDefinitions.isPassThroughBlock(BlockId.OAK_STUMP));
-        assertFalse(BlockDefinitions.isPassThroughBlock(BlockId.SPRUCE_TREE));
-        assertFalse(BlockDefinitions.isPassThroughBlock(BlockId.SPRUCE_STUMP));
-        assertTrue(BlockDefinitions.isPassThroughBlock(BlockId.BUSH));
+        assertFalse(BlockDefinitions.isPassThroughObject(BlockId.OAK_TREE));
+        assertFalse(BlockDefinitions.isPassThroughObject(BlockId.OAK_STUMP));
+        assertFalse(BlockDefinitions.isPassThroughObject(BlockId.SPRUCE_TREE));
+        assertFalse(BlockDefinitions.isPassThroughObject(BlockId.SPRUCE_STUMP));
+        assertTrue(BlockDefinitions.isPassThroughObject(BlockId.BUSH));
     }
 
     @Test

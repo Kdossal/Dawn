@@ -19,13 +19,14 @@ public final class PlayerInventory {
         setSlot(InventoryConstants.HOTBAR_ROW, 0, ItemStack.of(ItemId.PICKAXE));
         setSlot(InventoryConstants.HOTBAR_ROW, 1, ItemStack.of(ItemId.AXE));
         setSlot(InventoryConstants.HOTBAR_ROW, 2, ItemStack.of(ItemId.SHOVEL));
-        setSlot(InventoryConstants.HOTBAR_ROW, 3, ItemStack.of(ItemId.CRATE, 16));
+        setSlot(InventoryConstants.HOTBAR_ROW, 3, ItemStack.of(ItemId.CRATE, 4));
         setSlot(InventoryConstants.HOTBAR_ROW, 4, ItemStack.of(ItemId.BED, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 5, ItemStack.of(ItemId.OAK_SAPLING, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 6, ItemStack.of(ItemId.SPRUCE_SAPLING, 6));
-        setSlot(InventoryConstants.HOTBAR_ROW, 7, ItemStack.of(ItemId.DIRT_CLUMP, 32));
-        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.SAND, 32));
-        setSlot(0, 0, ItemStack.of(ItemId.LEATHER_CAP));
+        setSlot(InventoryConstants.HOTBAR_ROW, 5, ItemStack.of(ItemId.LANTERN, 4));
+        setSlot(InventoryConstants.HOTBAR_ROW, 6, ItemStack.of(ItemId.SPRUCE_SAPLING, 4));
+        setSlot(InventoryConstants.HOTBAR_ROW, 7, ItemStack.of(ItemId.DIRT_CLUMP, 4));
+        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.SAND, 4));
+        setSlot(0, 0, ItemStack.of(ItemId.LEATHER_HOOD));
+        setSlot(0, 1, ItemStack.of(ItemId.CANNED_FOOD, 4));
     }
 
     public ItemStack[] backingArray() {

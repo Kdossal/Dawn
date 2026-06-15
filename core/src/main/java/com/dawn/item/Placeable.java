@@ -10,4 +10,7 @@ public sealed interface Placeable {
     record Block(BlockId blockId) implements Placeable {}
 
     record Structure(StructureKind kind) implements Placeable {}
+
+    /** Ground fill on pit; wall object on solid open cells (e.g. stone item). */
+    record GroundOrObject(BlockId groundBlockId, BlockId objectBlockId) implements Placeable {}
 }

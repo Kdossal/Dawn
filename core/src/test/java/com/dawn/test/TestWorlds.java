@@ -2,6 +2,7 @@ package com.dawn.test;
 
 import com.dawn.world.World;
 import com.dawn.world.block.BlockId;
+import com.dawn.world.light.LightEngine;
 
 /** Minimal worlds for unit tests. */
 public final class TestWorlds {
@@ -16,6 +17,7 @@ public final class TestWorlds {
                 world.setObject(x, y, BlockId.AIR);
             }
         }
+        LightEngine.rebuildFull(world);
         return world;
     }
 
@@ -34,6 +36,7 @@ public final class TestWorlds {
                 world.setObject(x, y, BlockId.AIR);
             }
         }
+        LightEngine.rebuildFull(world);
     }
 
     /** Pit cell with solid dirt ground (no floor overlay). */

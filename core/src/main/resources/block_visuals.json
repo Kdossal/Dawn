@@ -2,9 +2,9 @@
   "entries": [
     { "blockId": "PIT", "textureId": "PIT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "GRASS", "textureId": "GRASS", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
-    { "blockId": "DIRT", "textureId": "DIRT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
-    { "blockId": "SAND", "textureId": "SAND", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
-    { "blockId": "STONE", "textureId": "STONE", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "DIRT", "textureId": "DIRT", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
+    { "blockId": "SAND", "textureId": "SAND", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
+    { "blockId": "STONE", "textureId": "STONE", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
     { "blockId": "WATER", "textureId": "WATER", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "ROCK", "textureId": "ROCK", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "BUSH", "textureId": "BUSH", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT", "alpha": 1 },
@@ -14,6 +14,8 @@
     { "blockId": "SPRUCE_STUMP", "textureId": "SPRUCE_STUMP", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "CRATE", "textureId": "CRATE", "width": 16, "height": 20, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "BED_FOOT", "textureId": "BED_FOOT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
-    { "blockId": "BED_HEAD", "textureId": "BED_HEAD", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" }
+    { "blockId": "BED_HEAD", "textureId": "BED_HEAD", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "LANTERN", "textureId": "LANTERN", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "STONE_WALL", "textureId": "STONE_WALL", "width": 16, "height": 32, "anchor": "CELL_BOTTOM_LEFT" }
   ]
 }

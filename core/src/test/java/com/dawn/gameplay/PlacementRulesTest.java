@@ -49,4 +49,28 @@ class PlacementRulesTest {
         assertFalse(result.valid());
         assertEquals("Can't place that on yourself", result.failureMessage());
     }
+
+    @Test
+    void stoneOnPitPlacesGround() {
+        World world = TestWorlds.smallClear(8, 8);
+        Entity player = new EntityManager().spawn(EntityId.PLAYER, 4f, 4f);
+        PlacementRules.Result result =
+                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE), 5, 4);
+        assertNotNull(result);
+        assertTrue(result.valid());
+        assertTrue(result.placeable() instanceof com.dawn.item.Placeable.Ground);
+    }
+
+    @Test
+    void stoneOnSolidGroundPlacesWall() {
+        World world = TestWorlds.smallClear(8, 8);
+        TestWorlds.setSolidDirt(world, 5, 4);
+        Entity player = new EntityManager().spawn(EntityId.PLAYER, 4f, 4f);
+        PlacementRules.Result result =
+                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE), 5, 4);
+        assertNotNull(result);
+        assertTrue(result.valid());
+        assertTrue(result.placeable() instanceof com.dawn.item.Placeable.Block block
+                && block.blockId() == BlockId.STONE_WALL);
+    }
 }

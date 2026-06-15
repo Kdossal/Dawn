@@ -38,6 +38,10 @@ public final class DoubleTapRunTracker {
         return running;
     }
 
+    public void cancelRun() {
+        running = false;
+    }
+
     /** Package-private for tests. */
     void reset() {
         lastTapKey = -1;

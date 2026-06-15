@@ -24,7 +24,7 @@ public final class InteractionHighlight {
         if (hover == null) {
             return List.of();
         }
-        float reach = ReachResolver.radiusForHeld(held);
+        float reach = ReachResolver.radiusCellsFloatForHeld(held);
         if (!InteractionRules.canTargetCell(world, entity, playerX, playerY, hover.x(), hover.y(), reach)) {
             return List.of();
         }

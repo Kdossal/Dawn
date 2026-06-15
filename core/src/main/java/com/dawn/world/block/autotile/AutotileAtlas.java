@@ -26,8 +26,8 @@ public final class AutotileAtlas {
     }
 
     private void registerSheet(AutotileFamily family, TextureRegion sheet) {
-        int expectedW = family.cols() * family.tileSizePx();
-        int expectedH = family.rows() * family.tileSizePx();
+        int expectedW = family.cols() * family.tileWidthPx();
+        int expectedH = family.rows() * family.tileHeightPx();
         if (sheet.getRegionWidth() != expectedW || sheet.getRegionHeight() != expectedH) {
             throw new IllegalStateException(
                     "Autotile sheet tiles/"
@@ -41,7 +41,7 @@ public final class AutotileAtlas {
                             + "x"
                             + sheet.getRegionHeight());
         }
-        TextureRegion[][] split = sheet.split(family.tileSizePx(), family.tileSizePx());
+        TextureRegion[][] split = sheet.split(family.tileWidthPx(), family.tileHeightPx());
         if (split == null || split.length != family.rows() || split[0].length != family.cols()) {
             throw new IllegalStateException(
                     "Failed to split autotile sheet tiles/" + family.texture().fileName + ".png");
@@ -74,4 +74,5 @@ public final class AutotileAtlas {
         }
         return cells[col][row];
     }
+
 }

@@ -36,8 +36,7 @@ public final class SurfaceRules {
         if (world.getObject(x, y) != BlockId.AIR) {
             return false;
         }
-        GroundKind kind = BlockDefinitions.groundKind(groundToPlace);
-        return kind == GroundKind.SOLID && (groundToPlace == BlockId.DIRT || groundToPlace == BlockId.SAND);
+        return BlockDefinitions.groundKind(groundToPlace) == GroundKind.SOLID;
     }
 
     public static boolean canPlaceFloor(World world, int x, int y, BlockId floorToPlace) {

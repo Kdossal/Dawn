@@ -1,5 +1,6 @@
 package com.dawn.world.block;
 
+import com.dawn.world.World;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
@@ -17,7 +18,13 @@ public final class BlockDefinitions {
             Set<InteractionTag> breakTags,
             float breakHealth,
             boolean fadeWhenPlayerBehind,
-            boolean triggersOcclusionFade) {
+            boolean triggersOcclusionFade,
+            boolean blocksLight,
+            float lightEmission,
+            int lightRadius,
+            float lightColorR,
+            float lightColorG,
+            float lightColorB) {
 
         public InteractionTag primaryBreakTag() {
             if (breakTags.contains(InteractionTag.NONE)) {
@@ -60,7 +67,12 @@ public final class BlockDefinitions {
                 false,
                 true,
                 EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
-                20f);
+                20f,
+                false,
+                false,
+                true,
+                0f,
+                0);
         def(
                 BlockId.BED_FOOT,
                 Layer.OBJECT,
@@ -79,6 +91,37 @@ public final class BlockDefinitions {
                 true,
                 EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
                 20f);
+        def(
+                BlockId.LANTERN,
+                Layer.OBJECT,
+                GroundKind.NONE,
+                false,
+                true,
+                true,
+                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
+                8f,
+                false,
+                false,
+                false,
+                1f,
+                28,
+                1.0f,
+                0.72f,
+                0.50f);
+        def(
+                BlockId.STONE_WALL,
+                Layer.OBJECT,
+                GroundKind.NONE,
+                false,
+                false,
+                true,
+                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
+                45f,
+                false,
+                false,
+                true,
+                0f,
+                0);
     }
 
     private BlockDefinitions() {}
@@ -106,6 +149,75 @@ public final class BlockDefinitions {
             float breakHealth,
             boolean fadeWhenPlayerBehind,
             boolean triggersOcclusionFade) {
+        def(
+                id,
+                layer,
+                groundKind,
+                walkableFloor,
+                passThroughObject,
+                breakable,
+                breakTags,
+                breakHealth,
+                fadeWhenPlayerBehind,
+                triggersOcclusionFade,
+                false,
+                0f,
+                0,
+                1f,
+                1f,
+                1f);
+    }
+
+    private static void def(
+            BlockId id,
+            Layer layer,
+            GroundKind groundKind,
+            boolean walkableFloor,
+            boolean passThroughObject,
+            boolean breakable,
+            Set<InteractionTag> breakTags,
+            float breakHealth,
+            boolean fadeWhenPlayerBehind,
+            boolean triggersOcclusionFade,
+            boolean blocksLight,
+            float lightEmission,
+            int lightRadius) {
+        def(
+                id,
+                layer,
+                groundKind,
+                walkableFloor,
+                passThroughObject,
+                breakable,
+                breakTags,
+                breakHealth,
+                fadeWhenPlayerBehind,
+                triggersOcclusionFade,
+                blocksLight,
+                lightEmission,
+                lightRadius,
+                1f,
+                1f,
+                1f);
+    }
+
+    private static void def(
+            BlockId id,
+            Layer layer,
+            GroundKind groundKind,
+            boolean walkableFloor,
+            boolean passThroughObject,
+            boolean breakable,
+            Set<InteractionTag> breakTags,
+            float breakHealth,
+            boolean fadeWhenPlayerBehind,
+            boolean triggersOcclusionFade,
+            boolean blocksLight,
+            float lightEmission,
+            int lightRadius,
+            float lightColorR,
+            float lightColorG,
+            float lightColorB) {
         DEFS.put(
                 id,
                 new BlockDef(
@@ -118,7 +230,13 @@ public final class BlockDefinitions {
                         breakTags,
                         breakHealth,
                         fadeWhenPlayerBehind,
-                        triggersOcclusionFade));
+                        triggersOcclusionFade,
+                        blocksLight,
+                        lightEmission,
+                        lightRadius,
+                        lightColorR,
+                        lightColorG,
+                        lightColorB));
     }
 
     public static BlockDef get(BlockId id) {
@@ -148,12 +266,6 @@ public final class BlockDefinitions {
         return d != null && d.passThroughObject();
     }
 
-    /** @deprecated use {@link #isPassThroughObject} */
-    @Deprecated
-    public static boolean isPassThroughBlock(BlockId id) {
-        return isPassThroughObject(id);
-    }
-
     public static boolean fadeWhenPlayerBehind(BlockId id) {
         BlockDef d = get(id);
         return d != null && d.fadeWhenPlayerBehind();
@@ -162,5 +274,61 @@ public final class BlockDefinitions {
     public static boolean triggersOcclusionFade(BlockId id) {
         BlockDef d = get(id);
         return d != null && d.triggersOcclusionFade();
+    }
+
+    public static boolean blocksLight(BlockId id) {
+        BlockDef d = get(id);
+        return d != null && d.blocksLight();
+    }
+
+    public static float lightEmission(BlockId id) {
+        BlockDef d = get(id);
+        return d == null ? 0f : d.lightEmission();
+    }
+
+    public static int lightRadius(BlockId id) {
+        BlockDef d = get(id);
+        return d == null ? 0 : d.lightRadius();
+    }
+
+    public static float lightColorR(BlockId id) {
+        BlockDef d = get(id);
+        return d == null ? 1f : d.lightColorR();
+    }
+
+    public static float lightColorG(BlockId id) {
+        BlockDef d = get(id);
+        return d == null ? 1f : d.lightColorG();
+    }
+
+    public static float lightColorB(BlockId id) {
+        BlockDef d = get(id);
+        return d == null ? 1f : d.lightColorB();
+    }
+
+    public static float[] lightColor(BlockId id) {
+        return new float[] {lightColorR(id), lightColorG(id), lightColorB(id)};
+    }
+
+    public static float[] lightColorAt(World world, int x, int y) {
+        if (!world.inBounds(x, y)) {
+            return new float[] {1f, 1f, 1f};
+        }
+        return lightColor(world.getObject(x, y));
+    }
+
+    /** OBJECT layer only for v1. */
+    public static boolean isLightBlockerAt(World world, int x, int y) {
+        if (!world.inBounds(x, y)) {
+            return true;
+        }
+        return blocksLight(world.getObject(x, y));
+    }
+
+    public static float lightEmissionAt(World world, int x, int y) {
+        if (!world.inBounds(x, y)) {
+            return 0f;
+        }
+        return lightEmission(world.getObject(x, y));
     }
 }

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dawn.assets.DawnAssets;
 import com.dawn.gameplay.drops.DropRenderer;
 import com.dawn.gameplay.drops.WorldDrop;
+import com.dawn.render.TileLighting;
 
 public final class DropWorldDrawable implements WorldDrawable {
     private final WorldDrop drop;
@@ -38,6 +39,9 @@ public final class DropWorldDrawable implements WorldDrawable {
 
     @Override
     public void draw(SpriteBatch batch, DawnAssets assets, DrawContext context) {
-        DropRenderer.drawOne(batch, assets, drop);
+        int cellX = (int) Math.floor(drop.x);
+        int cellY = (int) Math.floor(drop.y);
+        TileLighting.TileLight light = context.tileLight(cellX, cellY);
+        DropRenderer.drawOne(batch, assets, drop, light.r(), light.g(), light.b());
     }
 }

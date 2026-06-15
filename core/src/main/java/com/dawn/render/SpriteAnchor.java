@@ -33,4 +33,14 @@ public final class SpriteAnchor {
         float px = cellPx + Constants.CELL_SIZE_PX / 2f - spriteWidthPx / 2f;
         return new float[] {px, baseY};
     }
+
+    /** Block sprite: centered on the occupancy cell (equal bleed on all sides when larger than the cell). */
+    public static float[] cellCenter(int cellX, int cellY, float spriteWidthPx, float spriteHeightPx) {
+        float cellPx = cellX * Constants.CELL_SIZE_PX;
+        float cellPy = cellY * Constants.CELL_SIZE_PX;
+        float halfCell = Constants.CELL_SIZE_PX / 2f;
+        float px = cellPx + halfCell - spriteWidthPx / 2f;
+        float py = cellPy + halfCell - spriteHeightPx / 2f;
+        return new float[] {px, py};
+    }
 }

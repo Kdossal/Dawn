@@ -64,6 +64,15 @@ public class InputController extends InputAdapter {
         return runTracker.isRunning() && (getMoveX() != 0f || getMoveY() != 0f);
     }
 
+    /** Sprint active and entity has energy to keep running this frame. */
+    public boolean isRunningWithEnergy(float currentEnergy) {
+        return currentEnergy > 0f && isRunning();
+    }
+
+    public void cancelRun() {
+        runTracker.cancelRun();
+    }
+
     private boolean isAnyMovementHeld() {
         for (int key : MovementKeys.all()) {
             if (isHeld(key)) {
@@ -105,6 +114,10 @@ public class InputController extends InputAdapter {
 
     public boolean placeHeld() {
         return Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
+    }
+
+    public boolean placeJustPressed() {
+        return Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT);
     }
 
     public boolean dropPressed() {

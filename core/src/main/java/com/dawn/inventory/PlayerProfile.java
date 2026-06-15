@@ -1,7 +1,7 @@
 package com.dawn.inventory;
 
 import com.dawn.entity.Entity;
-import com.dawn.entity.StatId;
+import com.dawn.entity.AttributeId;
 
 /** Player progression and UI sheet data for the equipment tab. */
 public final class PlayerProfile {
@@ -20,12 +20,10 @@ public final class PlayerProfile {
         return expToNext <= 0 ? 0f : Math.min(1f, exp / (float) expToNext);
     }
 
-    public static final String[] STAT_NAMES = StatId.DISPLAY_NAMES;
-
-    public int statValue(int index) {
-        if (entity == null || index < 0 || index >= StatId.ALL.length) {
+    public int attributeValue(int index) {
+        if (entity == null || index < 0 || index >= AttributeId.ALL.length) {
             return 0;
         }
-        return entity.getStats().get(StatId.ALL[index]);
+        return entity.getStats().get(AttributeId.ALL[index]);
     }
 }

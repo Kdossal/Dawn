@@ -54,13 +54,13 @@ class InventoryCursorControllerTest {
 
     @Test
     void lmbMerge_stacksSameItem() {
-        inventory.setSlotAtIndex(0, ItemStack.of(ItemId.SAND, 20));
-        inventory.setSlotAtIndex(1, ItemStack.of(ItemId.SAND, 10));
+        inventory.setSlotAtIndex(0, ItemStack.of(ItemId.SAND, 3));
+        inventory.setSlotAtIndex(1, ItemStack.of(ItemId.SAND, 1));
         controller.onSlotClick(InventorySlotRef.grid(0), true);
         controller.onSlotClick(InventorySlotRef.grid(1), true);
 
         assertFalse(controller.hasCursor());
-        assertEquals(30, inventory.getSlotAtIndex(1).count);
+        assertEquals(4, inventory.getSlotAtIndex(1).count);
         assertTrue(inventory.getSlotAtIndex(0).isEmpty());
     }
 

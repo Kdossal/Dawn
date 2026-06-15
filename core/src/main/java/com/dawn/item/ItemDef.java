@@ -2,15 +2,18 @@ package com.dawn.item;
 
 import com.dawn.inventory.EquipmentSlot;
 import com.dawn.world.block.InteractionTag;
+import java.util.Set;
 
 public record ItemDef(
         ItemId id,
         String displayName,
         String iconId,
         int maxStack,
+        float weightPerItem,
+        float eatHungerRestore,
         InteractionTag interactionTag,
         int reachCells,
-        int toolPowerPercent,
+        float weaponDamage,
         Placeable placeable,
         EquipmentSlot equipmentSlot) {
 
@@ -22,8 +25,8 @@ public record ItemDef(
         return placeable != null;
     }
 
-    public boolean canEquip() {
-        return equipmentSlot != null;
+    public boolean isEdible() {
+        return eatHungerRestore > 0f;
     }
 
     public boolean matches(InteractionTag required) {
@@ -34,5 +37,18 @@ public record ItemDef(
             return true;
         }
         return interactionTag == required;
+    }
+
+    /** True when this tool matches any non-NONE tag in {@code requiredTags}. */
+    public boolean matchesAny(Set<InteractionTag> requiredTags) {
+        if (requiredTags == null || requiredTags.isEmpty()) {
+            return false;
+        }
+        for (InteractionTag tag : requiredTags) {
+            if (tag != InteractionTag.NONE && matches(tag)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

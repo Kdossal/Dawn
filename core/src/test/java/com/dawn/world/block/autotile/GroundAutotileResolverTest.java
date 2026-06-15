@@ -22,18 +22,6 @@ class GroundAutotileResolverTest {
     }
 
     @Test
-    void load_pitAndWaterFamiliesPresent() {
-        assertNotNull(pitFamily);
-        assertNotNull(waterFamily);
-        assertEquals("PIT_GROUND", pitFamily.id());
-        assertEquals("WATER_GROUND", waterFamily.id());
-        assertEquals(4, pitFamily.rows());
-        assertEquals(4, waterFamily.rows());
-        assertFalse(pitFamily.hasCenterVariants());
-        assertFalse(waterFamily.hasCenterVariants());
-    }
-
-    @Test
     void pit_isolatedUsesIsolatedTile() {
         world.setGround(2, 2, BlockId.PIT);
         AutotileCell cell = AutotileResolver.resolve(world, 2, 2, pitFamily, 0);

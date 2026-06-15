@@ -2,7 +2,7 @@ package com.dawn.ui;
 
 /** Shared item icon sizing inside slot chrome (hotbar is the reference). */
 public final class SlotUi {
-    public static final float SLOT_PX = Hotbar.SLOT_W;
+    public static final float SLOT_PX = 48f;
     public static final float ICON_PX = 36f;
 
     private SlotUi() {}

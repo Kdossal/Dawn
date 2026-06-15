@@ -6,6 +6,27 @@ import com.dawn.world.block.BlockId;
 public final class WorldMaps {
     private WorldMaps() {}
 
+    private static void placeBushes(
+            World world,
+            int minX,
+            int maxX,
+            int minY,
+            int maxY,
+            int stepX,
+            int stepY,
+            int offsetY) {
+        for (int x = minX; x < maxX; x += stepX) {
+            for (int y = minY + offsetY; y < maxY; y += stepY) {
+                if (!world.inBounds(x, y)) {
+                    continue;
+                }
+                if (world.getFloor(x, y) == BlockId.GRASS && world.getObject(x, y) == BlockId.AIR) {
+                    world.setObject(x, y, BlockId.BUSH);
+                }
+            }
+        }
+    }
+
     public static void fillPlayground(World world) {
         int width = world.getWidth();
         int height = world.getHeight();
@@ -63,13 +84,9 @@ public final class WorldMaps {
             }
         }
 
-        for (int x = 5; x < 40; x += 5) {
-            for (int y = 5; y < 40; y += 7) {
-                if (world.inBounds(x, y + 1)) {
-                    world.setObject(x, y, BlockId.BUSH);
-                }
-            }
-        }
+        placeBushes(world, 5, 40, 5, 40, 3, 4, 0);
+        placeBushes(world, 7, 38, 7, 38, 3, 4, 2);
+        placeBushes(world, 42, 68, 8, 38, 4, 5, 1);
 
         int[][] oakSpots = {{20, 60}, {25, 61}, {80, 20}, {82, 21}};
         for (int[] spot : oakSpots) {

@@ -61,10 +61,6 @@ public final class InteractionRules {
     }
 
     /** Break target at {@code (x,y)} only if {@code held} is a matching tool (or hands for NONE-tagged blocks). */
-    public static BreakTarget resolveToolBreak(World world, ItemStack held, int x, int y) {
-        return resolveToolBreak(world, held, x, y, null);
-    }
-
     public static BreakTarget resolveToolBreak(World world, ItemStack held, int x, int y, Entity entity) {
         BreakTarget target = inspectBreak(world, x, y);
         if (target == null) {
@@ -88,10 +84,8 @@ public final class InteractionRules {
         if (toolDef == null) {
             return needToolMessage(requiredTags);
         }
-        for (InteractionTag tag : requiredTags) {
-            if (tag != InteractionTag.NONE && toolDef.matches(tag)) {
-                return null;
-            }
+        if (toolDef.matchesAny(requiredTags)) {
+            return null;
         }
         return needToolMessage(requiredTags);
     }

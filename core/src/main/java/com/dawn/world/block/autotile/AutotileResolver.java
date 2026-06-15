@@ -12,6 +12,12 @@ public final class AutotileResolver {
     }
 
     public static AutotileCell resolve(World world, int x, int y, AutotileFamily family, int seed) {
+        if (family.hasNeighborRules()) {
+            int present =
+                    EightNeighborMask.compute(
+                            world, x, y, family.neighborLayer(), family.neighborBlockId());
+            return NeighborRuleMatcher.match(present, family.neighborRules());
+        }
         int mask = CardinalMask.compute(world, x, y, family.neighborLayer(), family.neighborBlockId());
         if (mask == AutotileFamily.FULL_SURROUND_MASK) {
             return family.tileForFullSurround(x, y, seed);

@@ -5,6 +5,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dawn.assets.DawnAssets;
 import com.dawn.gameplay.placement.PlacementPreview;
 import com.dawn.render.RenderColors;
+import com.dawn.world.World;
+import com.dawn.world.block.autotile.AutotileDraw;
+import com.dawn.world.block.autotile.AutotileRegistry;
 import com.dawn.world.block.visual.BlockSpriteDraw;
 import com.dawn.world.block.visual.BlockVisualDef;
 import com.dawn.world.block.visual.BlockVisualRegistry;
@@ -22,6 +25,7 @@ public final class PlacementGhostRenderer {
     public void render(
             SpriteBatch batch,
             DawnAssets assets,
+            World world,
             List<PlacementPreview> previews,
             float alignOffsetX,
             float alignOffsetY) {
@@ -33,7 +37,23 @@ public final class PlacementGhostRenderer {
             } else if (preview instanceof PlacementPreview.BlockSprite block) {
                 Color tint = block.valid() ? RenderColors.PLACEMENT_VALID : RenderColors.PLACEMENT_INVALID;
                 BlockVisualDef visual = BlockVisualRegistry.get(block.blockId());
-                if (visual != null) {
+                if (visual == null) {
+                    continue;
+                }
+                var family = AutotileRegistry.familyFor(block.blockId());
+                if (family != null) {
+                    AutotileDraw.drawTinted(
+                            batch,
+                            assets,
+                            world,
+                            family,
+                            block.cellX(),
+                            block.cellY(),
+                            visual,
+                            tint,
+                            alignOffsetX,
+                            alignOffsetY);
+                } else {
                     BlockSpriteDraw.drawTintedBlock(
                             batch, assets, visual, block.cellX(), block.cellY(), tint, alignOffsetX, alignOffsetY);
                 }
