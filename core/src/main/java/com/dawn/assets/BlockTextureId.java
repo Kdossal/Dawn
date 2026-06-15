@@ -17,7 +17,7 @@ public enum BlockTextureId {
     CRATE("crate"),
     BED_FOOT("bed_foot"),
     BED_HEAD("bed_head"),
-    LANTERN("latern"),
+    LANTERN("lantern"),
     STONE_WALL("stone_wall");
 
     public final String fileName;

@@ -28,7 +28,7 @@ public final class ItemRegistry {
         register(placeable(ItemId.SAND, "Sand", "sand", new Placeable.Ground(BlockId.SAND), ItemWeightTier.NORMAL));
         register(placeable(ItemId.CRATE, "Crate", "crate", new Placeable.Block(BlockId.CRATE), ItemWeightTier.LARGE));
         register(placeable(
-                ItemId.LANTERN, "Lantern", "latern", new Placeable.Block(BlockId.LANTERN), ItemWeightTier.SMALL));
+                ItemId.LANTERN, "Lantern", "lantern", new Placeable.Block(BlockId.LANTERN), ItemWeightTier.SMALL));
         register(placeable(ItemId.BED, "Bed", "bed", new Placeable.Structure(StructureKind.BED), ItemWeightTier.LARGE));
         register(placeable(
                 ItemId.OAK_SAPLING,
