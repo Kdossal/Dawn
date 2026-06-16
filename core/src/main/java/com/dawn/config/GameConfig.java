@@ -58,16 +58,16 @@ public final class GameConfig {
      * Global minimum light level: night ambient floor on the time-of-day curve and luma floor on
      * final per-tile tint. Color comes from chroma keyframes, not this scalar.
      */
-    public float minLightLevel = 0.2f;
+    public float minLightLevel = 0.12f;
 
     /** Max block-light propagation distance and dirty-region halo (cells). */
     public int maxLightRadius = 32;
 
     /** Block light multiplied per cardinal propagation step. */
-    public float lightCardinalFalloff = 0.9f;
+    public float lightCardinalFalloff = 0.85f;
 
     /** Block light multiplied per diagonal propagation step. */
-    public float lightDiagonalFalloff = 0.85f;
+    public float lightDiagonalFalloff = 0.78f;
 
     /** Propagation stops when strength drops below this threshold. */
     public float lightMinThreshold = 0.02f;

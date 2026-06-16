@@ -50,6 +50,106 @@ public final class TileLighting {
         return TileLight.fromRgb(rgb);
     }
 
+    /** Samples four render corners for a cell from corner-grid light simulation. */
+    public static TileLightCorners sampleCorners(
+            World world,
+            int cellX,
+            int cellY,
+            float timeOfDay,
+            DayNightConfig config,
+            boolean localLightingEnabled,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma) {
+        return sampleCornersFromCache(
+                world,
+                cellX,
+                cellY,
+                timeOfDay,
+                config,
+                localLightingEnabled,
+                dayNightEnabled,
+                displayGammaEnabled,
+                displayGamma,
+                null,
+                0,
+                0);
+    }
+
+    /**
+     * Cache-aware corner sampler.
+     */
+    public static TileLightCorners sampleCornersFromCache(
+            World world,
+            int cellX,
+            int cellY,
+            float timeOfDay,
+            DayNightConfig config,
+            boolean localLightingEnabled,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma,
+            TileLight[][] centerCache,
+            int cacheMinX,
+            int cacheMinY) {
+        if (!localLightingEnabled) {
+            return TileLightCorners.uniform(TileLight.fullWhite());
+        }
+        TileLight bottomLeft =
+                TileLight.fromRgb(
+                        computeCornerRgb(
+                                world,
+                                cellX,
+                                cellY,
+                                cellX,
+                                cellY,
+                                timeOfDay,
+                                config,
+                                dayNightEnabled,
+                                displayGammaEnabled,
+                                displayGamma));
+        TileLight bottomRight =
+                TileLight.fromRgb(
+                        computeCornerRgb(
+                                world,
+                                cellX,
+                                cellY,
+                                cellX + 1,
+                                cellY,
+                                timeOfDay,
+                                config,
+                                dayNightEnabled,
+                                displayGammaEnabled,
+                                displayGamma));
+        TileLight topLeft =
+                TileLight.fromRgb(
+                        computeCornerRgb(
+                                world,
+                                cellX,
+                                cellY,
+                                cellX,
+                                cellY + 1,
+                                timeOfDay,
+                                config,
+                                dayNightEnabled,
+                                displayGammaEnabled,
+                                displayGamma));
+        TileLight topRight =
+                TileLight.fromRgb(
+                        computeCornerRgb(
+                                world,
+                                cellX,
+                                cellY,
+                                cellX + 1,
+                                cellY + 1,
+                                timeOfDay,
+                                config,
+                                dayNightEnabled,
+                                displayGammaEnabled,
+                                displayGamma));
+        return new TileLightCorners(bottomLeft, bottomRight, topLeft, topRight);
+    }
+
     public static float brightness(
             World world,
             int cellX,
@@ -136,6 +236,71 @@ public final class TileLighting {
                 dayNightEnabled ? AmbientLighting.ambientChroma(timeOfDay, config) : WHITE_CHROMA;
         float[] ambientBaseline = LightColor.scale(ambientLevel, ambientChroma);
 
+        float blockLevel = world.lightMap().sample(cellX, cellY);
+        float[] blockChroma = LightColor.normalizeChroma(world.lightMap().sampleColor(cellX, cellY));
+        return computeRgbWithBlockSample(
+                world,
+                cellX,
+                cellY,
+                ambientLevel,
+                ambientChroma,
+                ambientBaseline,
+                minLightLevel,
+                displayGammaEnabled,
+                displayGamma,
+                blockLevel,
+                blockChroma);
+    }
+
+    private static float[] computeCornerRgb(
+            World world,
+            int cellX,
+            int cellY,
+            int cornerX,
+            int cornerY,
+            float timeOfDay,
+            DayNightConfig config,
+            boolean dayNightEnabled,
+            boolean displayGammaEnabled,
+            float displayGamma) {
+        float minLightLevel = config.minLightLevel;
+        float ambientLevel =
+                dayNightEnabled
+                        ? AmbientLighting.ambientLevel(timeOfDay, config)
+                                * AmbientLighting.sunFactorAt(cellX, cellY, world)
+                        : 1f;
+        float[] ambientChroma =
+                dayNightEnabled ? AmbientLighting.ambientChroma(timeOfDay, config) : WHITE_CHROMA;
+        float[] ambientBaseline = LightColor.scale(ambientLevel, ambientChroma);
+
+        float blockLevel = world.lightMap().sampleCorner(cornerX, cornerY);
+        float[] blockChroma = LightColor.normalizeChroma(world.lightMap().sampleCornerColor(cornerX, cornerY));
+        return computeRgbWithBlockSample(
+                world,
+                cellX,
+                cellY,
+                ambientLevel,
+                ambientChroma,
+                ambientBaseline,
+                minLightLevel,
+                displayGammaEnabled,
+                displayGamma,
+                blockLevel,
+                blockChroma);
+    }
+
+    private static float[] computeRgbWithBlockSample(
+            World world,
+            int cellX,
+            int cellY,
+            float ambientLevel,
+            float[] ambientChroma,
+            float[] ambientBaseline,
+            float minLightLevel,
+            boolean displayGammaEnabled,
+            float displayGamma,
+            float blockLevel,
+            float[] blockChroma) {
         BlockId object = world.getObject(cellX, cellY);
         if (BlockDefinitions.lightEmission(object) > 0f) {
             float[] rgb =
@@ -147,9 +312,6 @@ public final class TileLighting {
                     displayGammaEnabled,
                     displayGamma);
         }
-
-        float blockLevel = world.lightMap().sample(cellX, cellY);
-        float[] blockChroma = LightColor.normalizeChroma(world.lightMap().sampleColor(cellX, cellY));
 
         float level = LightColor.maxLevel(ambientLevel, blockLevel);
         float chromaWeight = blockLevel / Math.max(level, 1e-5f);
@@ -177,4 +339,5 @@ public final class TileLighting {
         float[] floored = LightColor.applyMinLightLevel(rgb, minLightLevel);
         return LightColor.applyDisplayGamma(floored, displayGammaEnabled, displayGamma);
     }
+
 }

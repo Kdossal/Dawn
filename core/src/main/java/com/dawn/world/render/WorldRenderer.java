@@ -15,6 +15,7 @@ import com.dawn.gameplay.InteractionHighlight;
 import com.dawn.gameplay.drops.WorldDrop;
 import com.dawn.gameplay.placement.PlacementPreview;
 import com.dawn.render.RenderColors;
+import com.dawn.render.TileLightCorners;
 import com.dawn.render.TileLighting;
 import com.dawn.world.World;
 import com.dawn.world.block.BlockId;
@@ -94,7 +95,19 @@ public class WorldRenderer implements Disposable {
                                 world,
                                 x,
                                 y,
-                                lightCache[x - minX][y - minY],
+                                TileLighting.sampleCornersFromCache(
+                                        world,
+                                        x,
+                                        y,
+                                        timeOfDay,
+                                        dayNightConfig,
+                                        localLightingEnabled,
+                                        dayNightEnabled,
+                                        displayGammaEnabled,
+                                        displayGamma,
+                                        lightCache,
+                                        minX,
+                                        minY),
                                 0f,
                                 0f);
                     }
@@ -108,7 +121,19 @@ public class WorldRenderer implements Disposable {
                             world,
                             x,
                             y,
-                            lightCache[x - minX][y - minY],
+                            TileLighting.sampleCornersFromCache(
+                                    world,
+                                    x,
+                                    y,
+                                    timeOfDay,
+                                    dayNightConfig,
+                                    localLightingEnabled,
+                                    dayNightEnabled,
+                                    displayGammaEnabled,
+                                    displayGamma,
+                                    lightCache,
+                                    minX,
+                                    minY),
                             0f,
                             0f);
                 }
@@ -171,27 +196,37 @@ public class WorldRenderer implements Disposable {
     }
 
     private void drawGround(
-            World world, int x, int y, TileLighting.TileLight light, float alignOffsetX, float alignOffsetY) {
+            World world,
+            int x,
+            int y,
+            TileLightCorners corners,
+            float alignOffsetX,
+            float alignOffsetY) {
         BlockId ground = world.getGround(x, y);
         AutotileFamily groundAutotile = AutotileRegistry.familyFor(ground);
         if (groundAutotile != null) {
-            drawAutotile(world, groundAutotile, x, y, light, alignOffsetX, alignOffsetY);
+            drawAutotile(world, groundAutotile, x, y, corners, alignOffsetX, alignOffsetY);
         } else {
-            drawBlockId(ground, x, y, light, alignOffsetX, alignOffsetY);
+            drawBlockId(ground, x, y, corners, alignOffsetX, alignOffsetY);
         }
     }
 
     private void drawFloor(
-            World world, int x, int y, TileLighting.TileLight light, float alignOffsetX, float alignOffsetY) {
+            World world,
+            int x,
+            int y,
+            TileLightCorners corners,
+            float alignOffsetX,
+            float alignOffsetY) {
         BlockId floor = world.getFloor(x, y);
         if (floor == BlockId.AIR) {
             return;
         }
         AutotileFamily floorAutotile = AutotileRegistry.familyFor(floor);
         if (floorAutotile != null) {
-            drawAutotile(world, floorAutotile, x, y, light, alignOffsetX, alignOffsetY);
+            drawAutotile(world, floorAutotile, x, y, corners, alignOffsetX, alignOffsetY);
         } else {
-            drawBlockId(floor, x, y, light, alignOffsetX, alignOffsetY);
+            drawBlockId(floor, x, y, corners, alignOffsetX, alignOffsetY);
         }
     }
 
@@ -200,14 +235,14 @@ public class WorldRenderer implements Disposable {
             AutotileFamily family,
             int cellX,
             int cellY,
-            TileLighting.TileLight light,
+            TileLightCorners corners,
             float alignOffsetX,
             float alignOffsetY) {
         BlockVisualDef visual = BlockVisualRegistry.get(family.blockId());
         if (visual == null) {
             return;
         }
-        AutotileDraw.drawColored(
+        AutotileDraw.drawColoredCorners(
                 batch,
                 assets,
                 world,
@@ -215,27 +250,28 @@ public class WorldRenderer implements Disposable {
                 cellX,
                 cellY,
                 visual,
-                light.r(),
-                light.g(),
-                light.b(),
+                corners,
                 1f,
                 alignOffsetX,
                 alignOffsetY);
     }
 
     private void drawBlockId(
-            BlockId id, int cellX, int cellY, TileLighting.TileLight light, float alignOffsetX, float alignOffsetY) {
+            BlockId id,
+            int cellX,
+            int cellY,
+            TileLightCorners corners,
+            float alignOffsetX,
+            float alignOffsetY) {
         BlockVisualDef visual = BlockVisualRegistry.get(id);
         if (visual != null) {
-            BlockSpriteDraw.drawColoredBlock(
+            BlockSpriteDraw.drawColoredBlockCorners(
                     batch,
                     assets,
                     visual,
                     cellX,
                     cellY,
-                    light.r(),
-                    light.g(),
-                    light.b(),
+                    corners,
                     1f,
                     alignOffsetX,
                     alignOffsetY);

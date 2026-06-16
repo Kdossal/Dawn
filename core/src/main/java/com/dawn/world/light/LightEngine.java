@@ -8,14 +8,14 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Rebuilds block-light values via multi-source 8-direction multiplicative BFS. */
+/** Rebuilds block-light values via multi-source corner-grid multiplicative BFS. */
 public final class LightEngine {
     private static final int[][] NEIGHBORS = {
         {1, 0}, {-1, 0}, {0, 1}, {0, -1},
         {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
     };
 
-    private record LightNode(int x, int y, float strength) {}
+    private record LightNode(int vx, int vy, float strength) {}
 
     private record LightSource(int x, int y, float emission, int radius, float colorR, float colorG, float colorB) {}
 
@@ -63,10 +63,22 @@ public final class LightEngine {
             writeMaxX = Math.max(writeMaxX, source.x());
             writeMaxY = Math.max(writeMaxY, source.y());
         }
-        map.clearBlockLight(writeMinX, writeMinY, writeMaxX, writeMaxY);
+        int writeMinVx = writeMinX;
+        int writeMinVy = writeMinY;
+        int writeMaxVx = writeMaxX + 1;
+        int writeMaxVy = writeMaxY + 1;
+        map.clearCornerLight(writeMinVx, writeMinVy, writeMaxVx, writeMaxVy);
 
         for (LightSource source : sources) {
-            propagateFromSource(world, map, source, cfg, writeMinX, writeMinY, writeMaxX, writeMaxY);
+            propagateFromSource(
+                    world,
+                    map,
+                    source,
+                    cfg,
+                    writeMinVx,
+                    writeMinVy,
+                    writeMaxVx,
+                    writeMaxVy);
         }
     }
 
@@ -100,92 +112,86 @@ public final class LightEngine {
             LightMap map,
             LightSource source,
             GameConfig cfg,
-            int writeMinX,
-            int writeMinY,
-            int writeMaxX,
-            int writeMaxY) {
+            int writeMinVx,
+            int writeMinVy,
+            int writeMaxVx,
+            int writeMaxVy) {
         ArrayDeque<LightNode> queue = new ArrayDeque<>();
+        tryEnqueue(map, queue, source, cfg, source.x(), source.y(), source.emission(), writeMinVx, writeMinVy, writeMaxVx, writeMaxVy);
+        tryEnqueue(
+                map,
+                queue,
+                source,
+                cfg,
+                source.x() + 1,
+                source.y(),
+                source.emission(),
+                writeMinVx,
+                writeMinVy,
+                writeMaxVx,
+                writeMaxVy);
         tryEnqueue(
                 map,
                 queue,
                 source,
                 cfg,
                 source.x(),
-                source.y(),
+                source.y() + 1,
                 source.emission(),
-                writeMinX,
-                writeMinY,
-                writeMaxX,
-                writeMaxY);
+                writeMinVx,
+                writeMinVy,
+                writeMaxVx,
+                writeMaxVy);
+        tryEnqueue(
+                map,
+                queue,
+                source,
+                cfg,
+                source.x() + 1,
+                source.y() + 1,
+                source.emission(),
+                writeMinVx,
+                writeMinVy,
+                writeMaxVx,
+                writeMaxVy);
 
         while (!queue.isEmpty()) {
             LightNode node = queue.removeFirst();
             for (int[] dir : NEIGHBORS) {
                 int dx = dir[0];
                 int dy = dir[1];
-                int nx = node.x() + dx;
-                int ny = node.y() + dy;
-                if (!world.inBounds(nx, ny)) {
+                int nvx = node.vx() + dx;
+                int nvy = node.vy() + dy;
+                if (!inCornerBounds(world, nvx, nvy)) {
                     continue;
                 }
-                boolean diagonal = dx != 0 && dy != 0;
-                if (diagonal) {
-                    if (BlockDefinitions.isLightBlockerAt(world, node.x() + dx, node.y())) {
-                        continue;
-                    }
-                    if (BlockDefinitions.isLightBlockerAt(world, node.x(), node.y() + dy)) {
-                        continue;
-                    }
+                if (edgeBlocked(world, node.vx(), node.vy(), nvx, nvy)) {
+                    continue;
                 }
-                int chebyshev = Math.max(Math.abs(nx - source.x()), Math.abs(ny - source.y()));
+                int chebyshev = Math.max(Math.abs(nvx - source.x()), Math.abs(nvy - source.y()));
                 if (chebyshev > source.radius()) {
                     continue;
                 }
+                boolean diagonal = dx != 0 && dy != 0;
                 float factor = diagonal ? cfg.lightDiagonalFalloff : cfg.lightCardinalFalloff;
-                float nextStrength = node.strength() * factor;
+                float transmission = edgeTransmission(world, node.vx(), node.vy(), nvx, nvy);
+                float nextStrength = node.strength() * factor * transmission;
                 if (nextStrength < cfg.lightMinThreshold) {
                     continue;
                 }
-                if (BlockDefinitions.isLightBlockerAt(world, nx, ny)) {
-                    applyLightAt(
-                            map,
-                            source,
-                            cfg,
-                            nx,
-                            ny,
-                            nextStrength,
-                            writeMinX,
-                            writeMinY,
-                            writeMaxX,
-                            writeMaxY);
-                    continue;
-                }
                 tryEnqueue(
-                        map, queue, source, cfg, nx, ny, nextStrength, writeMinX, writeMinY, writeMaxX, writeMaxY);
+                        map,
+                        queue,
+                        source,
+                        cfg,
+                        nvx,
+                        nvy,
+                        nextStrength,
+                        writeMinVx,
+                        writeMinVy,
+                        writeMaxVx,
+                        writeMaxVy);
             }
-        }
-    }
-
-    /** Writes light onto a cell without enqueueing further propagation (occluder surface). */
-    private static void applyLightAt(
-            LightMap map,
-            LightSource source,
-            GameConfig cfg,
-            int x,
-            int y,
-            float strength,
-            int minX,
-            int minY,
-            int maxX,
-            int maxY) {
-        if (x < minX || y < minY || x > maxX || y > maxY) {
-            return;
-        }
-        if (strength >= cfg.lightMinThreshold) {
-            map.addColorContribution(x, y, strength, source.colorR(), source.colorG(), source.colorB());
-        }
-        if (map.sample(x, y) < strength) {
-            map.setBlockLight(x, y, strength);
         }
     }
 
@@ -194,24 +200,96 @@ public final class LightEngine {
             ArrayDeque<LightNode> queue,
             LightSource source,
             GameConfig cfg,
-            int x,
-            int y,
+            int vx,
+            int vy,
             float strength,
-            int minX,
-            int minY,
-            int maxX,
-            int maxY) {
-        if (x < minX || y < minY || x > maxX || y > maxY) {
+            int minVx,
+            int minVy,
+            int maxVx,
+            int maxVy) {
+        if (vx < minVx || vy < minVy || vx > maxVx || vy > maxVy) {
             return false;
         }
-        if (strength >= cfg.lightMinThreshold) {
-            map.addColorContribution(x, y, strength, source.colorR(), source.colorG(), source.colorB());
-        }
-        if (map.sample(x, y) >= strength) {
+        if (strength < cfg.lightMinThreshold) {
             return false;
         }
-        map.setBlockLight(x, y, strength);
-        queue.addLast(new LightNode(x, y, strength));
+        boolean winnerChanged =
+                map.applyCornerSample(vx, vy, strength, source.colorR(), source.colorG(), source.colorB());
+        if (!winnerChanged) {
+            return false;
+        }
+        queue.addLast(new LightNode(vx, vy, strength));
         return true;
+    }
+
+    private static boolean inCornerBounds(World world, int vx, int vy) {
+        return vx >= 0 && vy >= 0 && vx <= world.getWidth() && vy <= world.getHeight();
+    }
+
+    private static boolean edgeBlocked(World world, int vx, int vy, int nvx, int nvy) {
+        int dx = Integer.compare(nvx, vx);
+        int dy = Integer.compare(nvy, vy);
+        if (dx != 0 && dy != 0) {
+            // The diagonal edge physically passes through the single cell whose lower-left
+            // corner is the lower-left of the two vertices. A solid cell there blocks light
+            // outright; without this check light leaks straight through enclosed walls.
+            if (isBlockingCell(world, Math.min(vx, nvx), Math.min(vy, nvy))) {
+                return true;
+            }
+            // Also prevent light from squeezing diagonally past a wall corner.
+            return isBlockingCell(world, vx + dx, vy) || isBlockingCell(world, vx, vy + dy);
+        }
+        if (dx != 0) {
+            int edgeX = Math.min(vx, nvx);
+            int y = vy;
+            // Traversing along a horizontal vertex edge should only be blocked when both
+            // cells sharing that edge are blockers; otherwise light can graze along one side.
+            return isBlockingCell(world, edgeX, y - 1) && isBlockingCell(world, edgeX, y);
+        }
+        int edgeY = Math.min(vy, nvy);
+        int x = vx;
+        // Traversing along a vertical vertex edge follows the same rule.
+        return isBlockingCell(world, x - 1, edgeY) && isBlockingCell(world, x, edgeY);
+    }
+
+    private static boolean isBlockingCell(World world, int cellX, int cellY) {
+        return world.inBounds(cellX, cellY) && BlockDefinitions.isLightBlockerAt(world, cellX, cellY);
+    }
+
+    /**
+     * Returns the combined light transmission factor for crossing the edge from (vx,vy) to
+     * (nvx,nvy). Fully opaque cells (transmission == 0) are excluded from this calculation
+     * because their blocking role is already handled by {@link #edgeBlocked}; only partial
+     * blockers contribute attenuation here.
+     */
+    private static float edgeTransmission(World world, int vx, int vy, int nvx, int nvy) {
+        int dx = Integer.compare(nvx, vx);
+        int dy = Integer.compare(nvy, vy);
+        if (dx != 0 && dy != 0) {
+            return partialTransmission(world, Math.min(vx, nvx), Math.min(vy, nvy));
+        }
+        if (dx != 0) {
+            int edgeX = Math.min(vx, nvx);
+            return Math.min(
+                    partialTransmission(world, edgeX, vy - 1),
+                    partialTransmission(world, edgeX, vy));
+        }
+        int edgeY = Math.min(vy, nvy);
+        return Math.min(
+                partialTransmission(world, vx - 1, edgeY),
+                partialTransmission(world, vx, edgeY));
+    }
+
+    /**
+     * Returns the cell's light transmission, treating fully opaque cells as 1.0 so that
+     * grazing-along-wall paths (which are allowed by the cardinal {@code &&} blocking rule)
+     * are not additionally penalised by the opaque cell they run beside.
+     */
+    private static float partialTransmission(World world, int cellX, int cellY) {
+        if (!world.inBounds(cellX, cellY)) {
+            return 1f;
+        }
+        float t = BlockDefinitions.lightTransmission(world.getObject(cellX, cellY));
+        return t <= 0f ? 1f : t;
     }
 }

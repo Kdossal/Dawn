@@ -1,13 +1,13 @@
 package com.dawn.world.render;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.dawn.assets.DawnAssets;
 import com.dawn.config.Constants;
 import com.dawn.entity.sprite.EntitySpriteFrame;
+import com.dawn.render.LitQuadDraw;
 import com.dawn.render.SpriteAnchor;
-import com.dawn.render.TileLighting;
+import com.dawn.render.TileLightCorners;
 
 public final class EntityWorldDrawable implements WorldDrawable {
     private final float feetX;
@@ -65,14 +65,10 @@ public final class EntityWorldDrawable implements WorldDrawable {
         float[] origin = SpriteAnchor.feetBottomCenter(feetX, feetY, w, h);
         int cellX = (int) Math.floor(feetX);
         int cellY = (int) Math.floor(feetY);
-        TileLighting.TileLight light = context.tileLight(cellX, cellY);
-        batch.setColor(light.r(), light.g(), light.b(), 1f);
-        if (sprite.flipX()) {
-            float originX = w / 2f;
-            batch.draw(region, origin[0], origin[1], originX, 0f, w, h, -1f, 1f, 0f);
-        } else {
-            batch.draw(region, origin[0], origin[1], w, h);
-        }
-        batch.setColor(Color.WHITE);
+        TileLightCorners corners = context.tileLightCorners(cellX, cellY);
+        float left = origin[0];
+        float bottom = origin[1];
+        boolean flipX = sprite.flipX();
+        LitQuadDraw.drawRegion(batch, region, left, bottom, w, h, corners, 1f, flipX);
     }
 }

@@ -204,4 +204,128 @@ class TileLightingTest {
         float withMax = LightColor.maxChannel(new float[] {with.r(), with.g(), with.b()});
         assertTrue(withMax > withoutMax, "enabled gamma should lift shadow values");
     }
+
+    @Test
+    void sampleCorners_nearLantern_blendsTowardLightSourceSide() {
+        World world = TestWorlds.smallWalkable(16, 16);
+        world.setObject(8, 8, BlockId.LANTERN);
+        LightEngine.rebuildFull(world);
+
+        DayNightConfig config = DayNightConfig.from(GameConfig.get());
+        TileLightCorners corners =
+                TileLighting.sampleCorners(
+                        world,
+                        9,
+                        8,
+                        0.9f,
+                        config,
+                        true,
+                        true,
+                        NO_GAMMA,
+                        GAMMA);
+
+        assertTrue(
+                maxChannel(corners.bottomLeft()) > maxChannel(corners.bottomRight()),
+                "east-of-lantern cell should be brighter on left edge");
+        assertTrue(
+                maxChannel(corners.topLeft()) > maxChannel(corners.topRight()),
+                "east-of-lantern cell should be brighter on left edge");
+        assertTrue(corners.bottomLeft().r() > corners.bottomLeft().b(), "lantern-side corner should stay warm");
+        assertTrue(corners.bottomLeft().r() >= corners.bottomRight().r(), "left corner should be redder than right");
+    }
+
+    @Test
+    void sampleCorners_cornerCut_excludesDiagonalContributor() {
+        DayNightConfig config = DayNightConfig.from(GameConfig.get());
+
+        World clear = TestWorlds.smallWalkable(16, 16);
+        clear.setObject(8, 8, BlockId.LANTERN);
+        LightEngine.rebuildFull(clear);
+        TileLightCorners clearCorners =
+                TileLighting.sampleCorners(
+                        clear,
+                        10,
+                        10,
+                        0.9f,
+                        config,
+                        true,
+                        true,
+                        NO_GAMMA,
+                        GAMMA);
+
+        World blocked = TestWorlds.smallWalkable(16, 16);
+        blocked.setObject(8, 8, BlockId.LANTERN);
+        blocked.setObject(9, 8, BlockId.CRATE);
+        blocked.setObject(8, 9, BlockId.CRATE);
+        LightEngine.rebuildFull(blocked);
+        TileLightCorners blockedCorners =
+                TileLighting.sampleCorners(
+                        blocked,
+                        10,
+                        10,
+                        0.9f,
+                        config,
+                        true,
+                        true,
+                        NO_GAMMA,
+                        GAMMA);
+
+        float clearCorner = maxChannel(clearCorners.bottomLeft());
+        float blockedCorner = maxChannel(blockedCorners.bottomLeft());
+        assertTrue(
+                blockedCorner <= clearCorner + 0.1f,
+                "corner-cut blockers should not significantly amplify diagonal influence");
+    }
+
+    @Test
+    void sampleCorners_blockerCellStillReceivesLocalLightContribution() {
+        World world = TestWorlds.smallWalkable(16, 16);
+        world.setObject(8, 8, BlockId.LANTERN);
+        world.setObject(9, 8, BlockId.STONE_WALL);
+        LightEngine.rebuildFull(world);
+
+        DayNightConfig config = DayNightConfig.from(GameConfig.get());
+        TileLightCorners corners =
+                TileLighting.sampleCorners(
+                        world,
+                        9,
+                        8,
+                        0.9f,
+                        config,
+                        true,
+                        true,
+                        NO_GAMMA,
+                        GAMMA);
+
+        assertTrue(
+                maxChannel(corners.bottomLeft()) > config.minLightLevel,
+                "wall cell corners should keep local surface lighting above ambient floor");
+    }
+
+    @Test
+    void sampleCorners_twoSources_showWarmToCoolDirectionality() {
+        World world = TestWorlds.smallWalkable(24, 24);
+        world.setObject(6, 12, BlockId.LANTERN);
+        world.lightMap().updateHeldSource(16, 12, 0.8f, 24, 0.35f, 0.65f, 1.0f, true);
+        LightEngine.rebuildFull(world);
+
+        DayNightConfig config = DayNightConfig.from(GameConfig.get());
+        TileLightCorners corners =
+                TileLighting.sampleCorners(
+                        world,
+                        11,
+                        12,
+                        0.9f,
+                        config,
+                        true,
+                        true,
+                        NO_GAMMA,
+                        GAMMA);
+
+        assertTrue(corners.bottomLeft().r() >= corners.bottomRight().r(), "left side should stay warmer");
+    }
+
+    private static float maxChannel(TileLighting.TileLight light) {
+        return LightColor.maxChannel(new float[] {light.r(), light.g(), light.b()});
+    }
 }

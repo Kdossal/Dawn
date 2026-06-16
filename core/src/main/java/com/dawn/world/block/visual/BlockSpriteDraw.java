@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.dawn.assets.DawnAssets;
 import com.dawn.config.Constants;
 import com.dawn.render.BatchDraw;
+import com.dawn.render.LitQuadDraw;
+import com.dawn.render.TileLightCorners;
+import com.dawn.render.TileLighting;
 
 /** Draws block visuals at world pixel positions. */
 public final class BlockSpriteDraw {
@@ -71,15 +74,37 @@ public final class BlockSpriteDraw {
             float alphaMultiplier,
             float alignOffsetX,
             float alignOffsetY) {
+        drawColoredBlockCorners(
+                batch,
+                assets,
+                visual,
+                cellX,
+                cellY,
+                TileLightCorners.uniform(new TileLighting.TileLight(r, g, b)),
+                alphaMultiplier,
+                alignOffsetX,
+                alignOffsetY);
+    }
+
+    public static void drawColoredBlockCorners(
+            SpriteBatch batch,
+            DawnAssets assets,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            TileLightCorners corners,
+            float alphaMultiplier,
+            float alignOffsetX,
+            float alignOffsetY) {
         TextureRegion region = assets.tile(visual.texture());
         if (region == null) {
             return;
         }
         float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
         float alpha = visual.defaultAlpha() * alphaMultiplier;
-        batch.setColor(r, g, b, alpha);
-        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
-        batch.setColor(Color.WHITE);
+        float x = rect[0] + alignOffsetX;
+        float y = rect[1] + alignOffsetY;
+        LitQuadDraw.drawRegion(batch, region, x, y, rect[2], rect[3], corners, alpha, false);
     }
 
     public static void drawTintedBlock(
@@ -181,14 +206,38 @@ public final class BlockSpriteDraw {
             float alphaMultiplier,
             float alignOffsetX,
             float alignOffsetY) {
+        drawColoredRegionCorners(
+                batch,
+                assets,
+                region,
+                visual,
+                cellX,
+                cellY,
+                TileLightCorners.uniform(new TileLighting.TileLight(r, g, b)),
+                alphaMultiplier,
+                alignOffsetX,
+                alignOffsetY);
+    }
+
+    public static void drawColoredRegionCorners(
+            SpriteBatch batch,
+            DawnAssets assets,
+            TextureRegion region,
+            BlockVisualDef visual,
+            int cellX,
+            int cellY,
+            TileLightCorners corners,
+            float alphaMultiplier,
+            float alignOffsetX,
+            float alignOffsetY) {
         if (region == null) {
             return;
         }
         float[] rect = BlockVisualLayout.rectPx(visual, cellX, cellY);
         float alpha = visual.defaultAlpha() * alphaMultiplier;
-        batch.setColor(r, g, b, alpha);
-        batch.draw(region, rect[0] + alignOffsetX, rect[1] + alignOffsetY, rect[2], rect[3]);
-        batch.setColor(Color.WHITE);
+        float x = rect[0] + alignOffsetX;
+        float y = rect[1] + alignOffsetY;
+        LitQuadDraw.drawRegion(batch, region, x, y, rect[2], rect[3], corners, alpha, false);
     }
 
     public static void drawTintedRegion(

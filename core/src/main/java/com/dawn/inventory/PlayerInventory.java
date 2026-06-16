@@ -24,7 +24,8 @@ public final class PlayerInventory {
         setSlot(InventoryConstants.HOTBAR_ROW, 5, ItemStack.of(ItemId.LANTERN, 4));
         setSlot(InventoryConstants.HOTBAR_ROW, 6, ItemStack.of(ItemId.SPRUCE_SAPLING, 4));
         setSlot(InventoryConstants.HOTBAR_ROW, 7, ItemStack.of(ItemId.DIRT_CLUMP, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.SAND, 4));
+        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.STONE, 8));
+        setSlot(InventoryConstants.HOTBAR_ROW, 9, ItemStack.of(ItemId.STONE, 8));
         setSlot(0, 0, ItemStack.of(ItemId.LEATHER_HOOD));
         setSlot(0, 1, ItemStack.of(ItemId.CANNED_FOOD, 4));
     }

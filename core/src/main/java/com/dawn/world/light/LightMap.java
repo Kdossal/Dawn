@@ -2,9 +2,10 @@ package com.dawn.world.light;
 
 import com.dawn.config.GameConfig;
 
-/** Per-cell block light storage with region-based dirty tracking. */
+/** Corner-grid block light storage with region-based dirty tracking. */
 public final class LightMap {
     private static final float[] NEUTRAL_COLOR = {1f, 1f, 1f};
+    private static final float LIGHT_EPSILON = 1e-4f;
 
     private final int width;
     private final int height;
@@ -12,11 +13,11 @@ public final class LightMap {
     private final int regionsWide;
     private final int regionsHigh;
     private final int haloRegions;
-    private final float[][] blockLight;
-    private final float[][] colorSumR;
-    private final float[][] colorSumG;
-    private final float[][] colorSumB;
-    private final float[][] colorSumWeight;
+    private final float[][] cornerLight;
+    private final float[][] cornerColorSumR;
+    private final float[][] cornerColorSumG;
+    private final float[][] cornerColorSumB;
+    private final float[][] cornerColorSumWeight;
     private final boolean[][] regionDirty;
     private HeldLightSource heldSource;
     private int lastHeldCellX = -1;
@@ -34,11 +35,11 @@ public final class LightMap {
         this.regionsWide = (width + regionSize - 1) / regionSize;
         this.regionsHigh = (height + regionSize - 1) / regionSize;
         this.haloRegions = Math.max(1, (cfg.maxLightRadius + regionSize - 1) / regionSize);
-        this.blockLight = new float[width][height];
-        this.colorSumR = new float[width][height];
-        this.colorSumG = new float[width][height];
-        this.colorSumB = new float[width][height];
-        this.colorSumWeight = new float[width][height];
+        this.cornerLight = new float[width + 1][height + 1];
+        this.cornerColorSumR = new float[width + 1][height + 1];
+        this.cornerColorSumG = new float[width + 1][height + 1];
+        this.cornerColorSumB = new float[width + 1][height + 1];
+        this.cornerColorSumWeight = new float[width + 1][height + 1];
         this.regionDirty = new boolean[regionsWide][regionsHigh];
     }
 
@@ -54,7 +55,11 @@ public final class LightMap {
         if (x < 0 || y < 0 || x >= width || y >= height) {
             return 0f;
         }
-        return blockLight[x][y];
+        float bl = sampleCorner(x, y);
+        float br = sampleCorner(x + 1, y);
+        float tl = sampleCorner(x, y + 1);
+        float tr = sampleCorner(x + 1, y + 1);
+        return Math.max(Math.max(bl, br), Math.max(tl, tr));
     }
 
     /** Weighted-average RGB of contributing sources; neutral white when unlit. */
@@ -62,43 +67,144 @@ public final class LightMap {
         if (x < 0 || y < 0 || x >= width || y >= height) {
             return NEUTRAL_COLOR;
         }
-        float weight = colorSumWeight[x][y];
+        final float epsilon = 1e-4f;
+        float[] bl = sampleCornerColor(x, y);
+        float[] br = sampleCornerColor(x + 1, y);
+        float[] tl = sampleCornerColor(x, y + 1);
+        float[] tr = sampleCornerColor(x + 1, y + 1);
+
+        float wBl = sampleCorner(x, y);
+        float wBr = sampleCorner(x + 1, y);
+        float wTl = sampleCorner(x, y + 1);
+        float wTr = sampleCorner(x + 1, y + 1);
+        float max = Math.max(Math.max(wBl, wBr), Math.max(wTl, wTr));
+        if (max <= 1e-6f) {
+            return NEUTRAL_COLOR;
+        }
+        float r = 0f;
+        float g = 0f;
+        float b = 0f;
+        int contributors = 0;
+
+        if (Math.abs(wBl - max) <= epsilon) {
+            r += bl[0];
+            g += bl[1];
+            b += bl[2];
+            contributors++;
+        }
+        if (Math.abs(wBr - max) <= epsilon) {
+            r += br[0];
+            g += br[1];
+            b += br[2];
+            contributors++;
+        }
+        if (Math.abs(wTl - max) <= epsilon) {
+            r += tl[0];
+            g += tl[1];
+            b += tl[2];
+            contributors++;
+        }
+        if (Math.abs(wTr - max) <= epsilon) {
+            r += tr[0];
+            g += tr[1];
+            b += tr[2];
+            contributors++;
+        }
+        if (contributors == 0) {
+            return NEUTRAL_COLOR;
+        }
+        return new float[] {r / contributors, g / contributors, b / contributors};
+    }
+
+    public float sampleCorner(int vx, int vy) {
+        if (vx < 0 || vy < 0 || vx > width || vy > height) {
+            return 0f;
+        }
+        return cornerLight[vx][vy];
+    }
+
+    /** Weighted-average RGB at a corner vertex; neutral white when unlit. */
+    public float[] sampleCornerColor(int vx, int vy) {
+        if (vx < 0 || vy < 0 || vx > width || vy > height) {
+            return NEUTRAL_COLOR;
+        }
+        float weight = cornerColorSumWeight[vx][vy];
         if (weight <= 0f) {
             return NEUTRAL_COLOR;
         }
-        return new float[] {colorSumR[x][y] / weight, colorSumG[x][y] / weight, colorSumB[x][y] / weight};
+        return new float[] {
+            cornerColorSumR[vx][vy] / weight,
+            cornerColorSumG[vx][vy] / weight,
+            cornerColorSumB[vx][vy] / weight
+        };
     }
 
-    void setBlockLight(int x, int y, float value) {
-        if (x >= 0 && y >= 0 && x < width && y < height) {
-            blockLight[x][y] = value;
+    void setCornerLight(int vx, int vy, float value) {
+        if (vx >= 0 && vy >= 0 && vx <= width && vy <= height) {
+            cornerLight[vx][vy] = value;
         }
     }
 
-    void addColorContribution(int x, int y, float strength, float colorR, float colorG, float colorB) {
-        if (x < 0 || y < 0 || x >= width || y >= height || strength <= 0f) {
+    void addCornerColorContribution(int vx, int vy, float strength, float colorR, float colorG, float colorB) {
+        if (vx < 0 || vy < 0 || vx > width || vy > height || strength <= 0f) {
             return;
         }
-        colorSumR[x][y] += strength * colorR;
-        colorSumG[x][y] += strength * colorG;
-        colorSumB[x][y] += strength * colorB;
-        colorSumWeight[x][y] += strength;
+        cornerColorSumR[vx][vy] += strength * colorR;
+        cornerColorSumG[vx][vy] += strength * colorG;
+        cornerColorSumB[vx][vy] += strength * colorB;
+        cornerColorSumWeight[vx][vy] += strength;
     }
 
-    void clearBlockLight(int minX, int minY, int maxX, int maxY) {
-        int x0 = Math.max(0, minX);
-        int y0 = Math.max(0, minY);
-        int x1 = Math.min(width - 1, maxX);
-        int y1 = Math.min(height - 1, maxY);
-        for (int x = x0; x <= x1; x++) {
-            for (int y = y0; y <= y1; y++) {
-                blockLight[x][y] = 0f;
-                colorSumR[x][y] = 0f;
-                colorSumG[x][y] = 0f;
-                colorSumB[x][y] = 0f;
-                colorSumWeight[x][y] = 0f;
+    /**
+     * Applies a corner light sample using winner-consistent semantics.
+     *
+     * <p>- Stronger sample replaces corner level and resets corner chroma to the new winner.
+     *
+     * <p>- Equal-strength sample blends chroma as a tie.
+     *
+     * <p>- Weaker sample is ignored.
+     *
+     * @return true when level winner changed and propagation should continue from this corner.
+     */
+    boolean applyCornerSample(int vx, int vy, float strength, float colorR, float colorG, float colorB) {
+        if (vx < 0 || vy < 0 || vx > width || vy > height || strength <= 0f) {
+            return false;
+        }
+        float existing = cornerLight[vx][vy];
+        if (strength < existing - LIGHT_EPSILON) {
+            return false;
+        }
+        if (strength > existing + LIGHT_EPSILON) {
+            cornerLight[vx][vy] = strength;
+            cornerColorSumR[vx][vy] = strength * colorR;
+            cornerColorSumG[vx][vy] = strength * colorG;
+            cornerColorSumB[vx][vy] = strength * colorB;
+            cornerColorSumWeight[vx][vy] = strength;
+            return true;
+        }
+        addCornerColorContribution(vx, vy, strength, colorR, colorG, colorB);
+        return false;
+    }
+
+    void clearCornerLight(int minVx, int minVy, int maxVx, int maxVy) {
+        int x0 = Math.max(0, minVx);
+        int y0 = Math.max(0, minVy);
+        int x1 = Math.min(width, maxVx);
+        int y1 = Math.min(height, maxVy);
+        for (int vx = x0; vx <= x1; vx++) {
+            for (int vy = y0; vy <= y1; vy++) {
+                cornerLight[vx][vy] = 0f;
+                cornerColorSumR[vx][vy] = 0f;
+                cornerColorSumG[vx][vy] = 0f;
+                cornerColorSumB[vx][vy] = 0f;
+                cornerColorSumWeight[vx][vy] = 0f;
             }
         }
+    }
+
+    /** Backward-compatible clear method accepting cell bounds. */
+    void clearBlockLight(int minX, int minY, int maxX, int maxY) {
+        clearCornerLight(minX, minY, maxX + 1, maxY + 1);
     }
 
     public boolean hasDirty() {
@@ -150,7 +256,15 @@ public final class LightMap {
             float colorB,
             boolean active) {
         if (active) {
-            if (heldSource == null || cellX != lastHeldCellX || cellY != lastHeldCellY) {
+            boolean moved = heldSource == null || cellX != lastHeldCellX || cellY != lastHeldCellY;
+            boolean paramsChanged =
+                    heldSource != null
+                            && (Math.abs(heldSource.emission() - emission) > 1e-6f
+                                    || heldSource.radius() != radius
+                                    || Math.abs(heldSource.colorR() - colorR) > 1e-6f
+                                    || Math.abs(heldSource.colorG() - colorG) > 1e-6f
+                                    || Math.abs(heldSource.colorB() - colorB) > 1e-6f);
+            if (moved || paramsChanged) {
                 if (heldSource != null) {
                     markDirty(lastHeldCellX, lastHeldCellY);
                 }

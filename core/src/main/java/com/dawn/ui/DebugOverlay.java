@@ -17,6 +17,7 @@ import com.dawn.render.AmbientLighting;
 import com.dawn.world.World;
 import com.dawn.world.WorldClock;
 import com.dawn.world.block.Layer;
+import com.dawn.world.light.LightMap;
 
 public class DebugOverlay implements Disposable {
     public static final int TOGGLE_KEY = Input.Keys.F3;
@@ -111,6 +112,11 @@ public class DebugOverlay implements Disposable {
         y = line("Pos: " + fmt(entity.getX()) + ", " + fmt(entity.getY()), 8f, y, line);
         y = line("Mouse: " + screenX + ", " + screenY, 8f, y, line);
         y = line(formatHoverBlock(world, hoverBreak, hoverSimActive), 8f, y, line);
+        y = line(
+                formatLightStats(world, entity, hoverBreak, clock, dayNight),
+                8f,
+                y,
+                line);
 
         hud.batch.end();
     }
@@ -232,6 +238,27 @@ public class DebugOverlay implements Disposable {
 
     private static String fmtInt(float v) {
         return String.valueOf(Math.round(v));
+    }
+
+    private static String formatLightStats(
+            World world,
+            Entity entity,
+            BreakTarget hoverBreak,
+            WorldClock clock,
+            DayNightConfig dayNight) {
+        int sampleX = hoverBreak != null ? hoverBreak.x() : (int) Math.floor(entity.getX());
+        int sampleY = hoverBreak != null ? hoverBreak.y() : (int) Math.floor(entity.getY());
+        float cellLight = world.lightMap().sample(sampleX, sampleY);
+        float ambient = AmbientLighting.ambientLevel(clock.timeOfDay(), dayNight);
+        String phase = AmbientLighting.phaseLabel(clock.timeOfDay(), dayNight);
+        LightMap.HeldLightSource held = world.lightMap().heldSource();
+        String heldStr = held == null
+                ? "none"
+                : String.format("r=%d e=%.2f rgb=(%.2f,%.2f,%.2f)", held.radius(), held.emission(), held.colorR(), held.colorG(), held.colorB());
+        return "Light  cell("
+                + sampleX + "," + sampleY + "): " + fmt(cellLight)
+                + "  ambient: " + fmt(ambient) + " [" + phase + "]"
+                + "  held: " + heldStr;
     }
 
     private static String formatHoverBlock(World world, BreakTarget hoverBreak, Boolean hoverSimActive) {

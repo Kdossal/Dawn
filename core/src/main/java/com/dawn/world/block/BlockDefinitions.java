@@ -19,7 +19,8 @@ public final class BlockDefinitions {
             float breakHealth,
             boolean fadeWhenPlayerBehind,
             boolean triggersOcclusionFade,
-            boolean blocksLight,
+            /** Fraction of light that passes through (0 = fully opaque, 1 = fully transparent). */
+            float lightTransmission,
             float lightEmission,
             int lightRadius,
             float lightColorR,
@@ -54,11 +55,11 @@ public final class BlockDefinitions {
         def(BlockId.WATER, Layer.GROUND, GroundKind.WATER, false, false, true, Set.of(InteractionTag.DIG), 8f);
         def(BlockId.GRASS, Layer.FLOOR, GroundKind.NONE, true, false, true, Set.of(InteractionTag.DIG), 10f);
         def(BlockId.ROCK, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.MINE), 55f);
-        def(BlockId.BUSH, Layer.OBJECT, GroundKind.NONE, false, true, true, Set.of(InteractionTag.NONE), 8f, true, true);
-        def(BlockId.OAK_TREE, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 22f, true, true);
-        def(BlockId.OAK_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 45f, true, false);
-        def(BlockId.SPRUCE_TREE, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 22f, true, true);
-        def(BlockId.SPRUCE_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 45f, true, false);
+        def(BlockId.BUSH, Layer.OBJECT, GroundKind.NONE, false, true, true, Set.of(InteractionTag.NONE), 8f, true, true, 0.15f);
+        def(BlockId.OAK_TREE, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 22f, true, true, 0.15f);
+        def(BlockId.OAK_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 45f, true, false, 0.15f);
+        def(BlockId.SPRUCE_TREE, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 22f, true, true, 0.15f);
+        def(BlockId.SPRUCE_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 45f, true, false, 0.15f);
         def(
                 BlockId.CRATE,
                 Layer.OBJECT,
@@ -70,7 +71,7 @@ public final class BlockDefinitions {
                 20f,
                 false,
                 false,
-                true,
+                0.5f,
                 0f,
                 0);
         def(
@@ -102,7 +103,7 @@ public final class BlockDefinitions {
                 8f,
                 false,
                 false,
-                false,
+                1.0f,
                 1f,
                 28,
                 1.0f,
@@ -119,7 +120,7 @@ public final class BlockDefinitions {
                 45f,
                 false,
                 false,
-                true,
+                0.1f,
                 0f,
                 0);
     }
@@ -160,7 +161,7 @@ public final class BlockDefinitions {
                 breakHealth,
                 fadeWhenPlayerBehind,
                 triggersOcclusionFade,
-                false,
+                1.0f,
                 0f,
                 0,
                 1f,
@@ -179,7 +180,38 @@ public final class BlockDefinitions {
             float breakHealth,
             boolean fadeWhenPlayerBehind,
             boolean triggersOcclusionFade,
-            boolean blocksLight,
+            float lightTransmission) {
+        def(
+                id,
+                layer,
+                groundKind,
+                walkableFloor,
+                passThroughObject,
+                breakable,
+                breakTags,
+                breakHealth,
+                fadeWhenPlayerBehind,
+                triggersOcclusionFade,
+                lightTransmission,
+                0f,
+                0,
+                1f,
+                1f,
+                1f);
+    }
+
+    private static void def(
+            BlockId id,
+            Layer layer,
+            GroundKind groundKind,
+            boolean walkableFloor,
+            boolean passThroughObject,
+            boolean breakable,
+            Set<InteractionTag> breakTags,
+            float breakHealth,
+            boolean fadeWhenPlayerBehind,
+            boolean triggersOcclusionFade,
+            float lightTransmission,
             float lightEmission,
             int lightRadius) {
         def(
@@ -193,7 +225,7 @@ public final class BlockDefinitions {
                 breakHealth,
                 fadeWhenPlayerBehind,
                 triggersOcclusionFade,
-                blocksLight,
+                lightTransmission,
                 lightEmission,
                 lightRadius,
                 1f,
@@ -212,7 +244,7 @@ public final class BlockDefinitions {
             float breakHealth,
             boolean fadeWhenPlayerBehind,
             boolean triggersOcclusionFade,
-            boolean blocksLight,
+            float lightTransmission,
             float lightEmission,
             int lightRadius,
             float lightColorR,
@@ -231,7 +263,7 @@ public final class BlockDefinitions {
                         breakHealth,
                         fadeWhenPlayerBehind,
                         triggersOcclusionFade,
-                        blocksLight,
+                        lightTransmission,
                         lightEmission,
                         lightRadius,
                         lightColorR,
@@ -276,9 +308,10 @@ public final class BlockDefinitions {
         return d != null && d.triggersOcclusionFade();
     }
 
-    public static boolean blocksLight(BlockId id) {
+    /** Fraction of light that passes through this block (0 = fully opaque, 1 = fully transparent). */
+    public static float lightTransmission(BlockId id) {
         BlockDef d = get(id);
-        return d != null && d.blocksLight();
+        return d == null ? 1.0f : d.lightTransmission();
     }
 
     public static float lightEmission(BlockId id) {
@@ -317,12 +350,12 @@ public final class BlockDefinitions {
         return lightColor(world.getObject(x, y));
     }
 
-    /** OBJECT layer only for v1. */
+    /** Returns true when the cell is fully opaque (transmission == 0). OBJECT layer only for v1. */
     public static boolean isLightBlockerAt(World world, int x, int y) {
         if (!world.inBounds(x, y)) {
             return true;
         }
-        return blocksLight(world.getObject(x, y));
+        return lightTransmission(world.getObject(x, y)) <= 0f;
     }
 
     public static float lightEmissionAt(World world, int x, int y) {

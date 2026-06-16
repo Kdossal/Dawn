@@ -2,6 +2,7 @@ package com.dawn.world.render;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dawn.assets.DawnAssets;
+import com.dawn.render.TileLightCorners;
 import com.dawn.render.TileLighting;
 import com.dawn.world.block.BlockId;
 import com.dawn.world.block.autotile.AutotileDraw;
@@ -61,10 +62,10 @@ public final class BlockWorldDrawable implements WorldDrawable {
             return;
         }
         float alpha = context.fadePlan().blockDrawAlpha(blockId, cellX, cellY);
-        TileLighting.TileLight light = context.tileLight(cellX, cellY);
+        TileLightCorners corners = context.tileLightCorners(cellX, cellY);
         var family = AutotileRegistry.familyFor(blockId);
         if (family != null) {
-            AutotileDraw.drawColored(
+            AutotileDraw.drawColoredCorners(
                     batch,
                     assets,
                     context.world(),
@@ -72,23 +73,19 @@ public final class BlockWorldDrawable implements WorldDrawable {
                     cellX,
                     cellY,
                     visual,
-                    light.r(),
-                    light.g(),
-                    light.b(),
+                    corners,
                     alpha,
                     context.pixelAlignOffsetX(),
                     context.pixelAlignOffsetY());
             return;
         }
-        BlockSpriteDraw.drawColoredBlock(
+        BlockSpriteDraw.drawColoredBlockCorners(
                 batch,
                 assets,
                 visual,
                 cellX,
                 cellY,
-                light.r(),
-                light.g(),
-                light.b(),
+                corners,
                 alpha,
                 context.pixelAlignOffsetX(),
                 context.pixelAlignOffsetY());

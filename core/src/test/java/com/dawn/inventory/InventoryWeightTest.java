@@ -46,6 +46,6 @@ class InventoryWeightTest {
     void startingInventory_isBelowBurdenThreshold() {
         PlayerInventory inventory = new PlayerInventory();
 
-        assertEquals(10.75f, InventoryWeight.totalWeight(inventory, new EquipmentInventory()), 0.01f);
+        assertEquals(12.25f, InventoryWeight.totalWeight(inventory, new EquipmentInventory()), 0.01f);
     }
 }

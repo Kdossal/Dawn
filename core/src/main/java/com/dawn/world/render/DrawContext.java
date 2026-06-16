@@ -5,6 +5,7 @@ import com.dawn.config.DayNightConfig;
 import com.dawn.entity.EntityBounds;
 import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.dawn.render.LightColor;
+import com.dawn.render.TileLightCorners;
 import com.dawn.render.TileLighting;
 import com.dawn.world.World;
 import java.util.List;
@@ -153,6 +154,22 @@ public final class DrawContext {
                 dayNightEnabled,
                 displayGammaEnabled,
                 displayGamma);
+    }
+
+    public TileLightCorners tileLightCorners(int cellX, int cellY) {
+        return TileLighting.sampleCornersFromCache(
+                world,
+                cellX,
+                cellY,
+                timeOfDay,
+                dayNightConfig,
+                localLightingEnabled,
+                dayNightEnabled,
+                displayGammaEnabled,
+                displayGamma,
+                lightCache,
+                cacheMinX,
+                cacheMinY);
     }
 
     public float tileBrightness(int cellX, int cellY) {

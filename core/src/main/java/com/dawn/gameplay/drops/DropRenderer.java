@@ -8,6 +8,9 @@ import com.dawn.config.Constants;
 import com.dawn.item.ItemDef;
 import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
+import com.dawn.render.LitQuadDraw;
+import com.dawn.render.TileLightCorners;
+import com.dawn.render.TileLighting;
 import java.util.List;
 
 public final class DropRenderer {
@@ -36,6 +39,18 @@ public final class DropRenderer {
 
     public static void drawOne(
             SpriteBatch batch, DawnAssets assets, WorldDrop drop, float r, float g, float b) {
+        drawOne(
+                batch,
+                assets,
+                drop,
+                TileLightCorners.uniform(new TileLighting.TileLight(r, g, b)));
+    }
+
+    public static void drawOne(
+            SpriteBatch batch,
+            DawnAssets assets,
+            WorldDrop drop,
+            TileLightCorners corners) {
         if (drop.stack.isEmpty()) {
             return;
         }
@@ -50,8 +65,6 @@ public final class DropRenderer {
         float cellSize = Constants.CELL_SIZE_PX;
         float px = drop.x * cellSize - ICON_SIZE_PX / 2f;
         float py = drop.y * cellSize - ICON_SIZE_PX / 2f;
-        batch.setColor(r, g, b, 1f);
-        batch.draw(icon, px, py, ICON_SIZE_PX, ICON_SIZE_PX);
-        batch.setColor(Color.WHITE);
+        LitQuadDraw.drawRegion(batch, icon, px, py, ICON_SIZE_PX, ICON_SIZE_PX, corners, 1f, false);
     }
 }

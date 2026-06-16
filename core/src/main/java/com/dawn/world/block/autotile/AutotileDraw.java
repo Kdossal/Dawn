@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.dawn.assets.DawnAssets;
+import com.dawn.render.TileLightCorners;
+import com.dawn.render.TileLighting;
 import com.dawn.world.World;
 import com.dawn.world.block.visual.BlockSpriteDraw;
 import com.dawn.world.block.visual.BlockVisualDef;
@@ -43,18 +45,42 @@ public final class AutotileDraw {
             float alpha,
             float alignOffsetX,
             float alignOffsetY) {
+        drawColoredCorners(
+                batch,
+                assets,
+                world,
+                family,
+                cellX,
+                cellY,
+                visual,
+                TileLightCorners.uniform(new TileLighting.TileLight(r, g, b)),
+                alpha,
+                alignOffsetX,
+                alignOffsetY);
+    }
+
+    public static void drawColoredCorners(
+            SpriteBatch batch,
+            DawnAssets assets,
+            World world,
+            AutotileFamily family,
+            int cellX,
+            int cellY,
+            BlockVisualDef visual,
+            TileLightCorners corners,
+            float alpha,
+            float alignOffsetX,
+            float alignOffsetY) {
         AutotileCell cell = AutotileResolver.resolve(world, cellX, cellY, family);
         TextureRegion region = assets.autotileRegion(family.texture(), cell);
-        BlockSpriteDraw.drawColoredRegion(
+        BlockSpriteDraw.drawColoredRegionCorners(
                 batch,
                 assets,
                 region,
                 visual,
                 cellX,
                 cellY,
-                r,
-                g,
-                b,
+                corners,
                 alpha,
                 alignOffsetX,
                 alignOffsetY);
