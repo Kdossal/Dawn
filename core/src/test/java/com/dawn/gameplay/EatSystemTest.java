@@ -44,7 +44,7 @@ class EatSystemTest {
     void cannotEatNonEdible() {
         Entity player = new Entity(EntityId.PLAYER, 50f, 50f);
         var inventory = TestInventories.empty();
-        inventory.setSlot(2, 0, ItemStack.of(ItemId.PICKAXE));
+        inventory.setSlot(2, 0, ItemStack.of(ItemId.HAMMER));
 
         assertFalse(EatSystem.canEat(player, inventory.getHeld()));
     }

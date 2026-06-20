@@ -83,3 +83,7 @@ assets/
 [`GameConfig.java`](core/src/main/java/com/dawn/config/GameConfig.java) — movement, reach, pickup radius/cooldown, simulation.
 
 [`RenderColors.java`](core/src/main/java/com/dawn/render/RenderColors.java) — highlight and HUD overlay alphas.
+
+## Runtime Architecture
+
+See [`docs/game-loop-phases.md`](docs/game-loop-phases.md) for the current `GameScreen` phase pipeline and behavior-preserving ordering contract.

@@ -2,7 +2,7 @@ package com.dawn.world.block;
 
 public enum InteractionTag {
     DIG,
-    MINE,
+    BREAK,
     CHOP,
     NONE
 }

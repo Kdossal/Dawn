@@ -49,42 +49,77 @@ class ClickHintResolverTest {
     }
 
     @Test
-    void pickaxe_stone_mine() {
+    void hammer_stone_mine() {
         world.setObject(5, 4, BlockId.ROCK);
         ClickHints hints =
                 ClickHintResolver.resolve(
-                        world, player, ItemStack.of(ItemId.PICKAXE), new TargetCell(5, 4, false));
-        assertEquals(ClickVerb.MINE, hints.left());
+                        world, player, ItemStack.of(ItemId.HAMMER), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.BREAK, hints.left());
     }
 
     @Test
-    void pickaxe_grass_attack() {
+    void hammer_grass_attack() {
         world.setFloor(5, 4, BlockId.GRASS); // dirt ground from setUp
         ClickHints hints =
                 ClickHintResolver.resolve(
-                        world, player, ItemStack.of(ItemId.PICKAXE), new TargetCell(5, 4, false));
+                        world, player, ItemStack.of(ItemId.HAMMER), new TargetCell(5, 4, false));
         assertEquals(ClickVerb.ATTACK, hints.left());
     }
 
     @Test
-    void axe_tree_chop() {
+    void saw_tree_chop() {
         world.setObject(5, 4, BlockId.OAK_TREE);
         ClickHints hints =
-                ClickHintResolver.resolve(world, player, ItemStack.of(ItemId.AXE), new TargetCell(5, 4, false));
+                ClickHintResolver.resolve(world, player, ItemStack.of(ItemId.SAW), new TargetCell(5, 4, false));
         assertEquals(ClickVerb.CHOP, hints.left());
     }
 
     @Test
-    void axe_stone_attack() {
+    void shovel_stump_dig() {
+        world.setObject(5, 4, BlockId.OAK_STUMP);
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world, player, ItemStack.of(ItemId.SHOVEL), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.DIG, hints.left());
+    }
+
+    @Test
+    void saw_stone_attack() {
         world.setObject(5, 4, BlockId.ROCK);
         ClickHints hints =
-                ClickHintResolver.resolve(world, player, ItemStack.of(ItemId.AXE), new TargetCell(5, 4, false));
+                ClickHintResolver.resolve(world, player, ItemStack.of(ItemId.SAW), new TargetCell(5, 4, false));
         assertEquals(ClickVerb.ATTACK, hints.left());
     }
 
     @Test
+    void emptyHand_lantern_grab() {
+        world.setObject(5, 4, BlockId.LANTERN);
+        ClickHints hints =
+                ClickHintResolver.resolve(world, player, ItemStack.empty(), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.GRAB, hints.left());
+    }
+
+    @Test
+    void saw_crate_attack() {
+        world.setObject(5, 4, BlockId.CRATE);
+        ClickHints hints =
+                ClickHintResolver.resolve(world, player, ItemStack.of(ItemId.SAW), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.ATTACK, hints.left());
+    }
+
+    @Test
+    void hammer_crate_mine() {
+        world.setObject(5, 4, BlockId.CRATE);
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world, player, ItemStack.of(ItemId.HAMMER), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.BREAK, hints.left());
+    }
+
+    @Test
     void shovel_dirt_dig() {
-        world.setFloor(5, 4, BlockId.DIRT);
+        world.setGround(5, 4, BlockId.DIRT_GROUND);
+        world.setFloor(5, 4, BlockId.AIR);
         ClickHints hints =
                 ClickHintResolver.resolve(
                         world, player, ItemStack.of(ItemId.SHOVEL), new TargetCell(5, 4, false));
@@ -101,6 +136,26 @@ class ClickHintResolverTest {
     }
 
     @Test
+    void hammer_groundStone_attack() {
+        world.setGround(5, 4, BlockId.STONE_GROUND);
+        world.setFloor(5, 4, BlockId.AIR);
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world, player, ItemStack.of(ItemId.HAMMER), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.ATTACK, hints.left());
+    }
+
+    @Test
+    void shovel_groundStone_dig() {
+        world.setGround(5, 4, BlockId.STONE_GROUND);
+        world.setFloor(5, 4, BlockId.AIR);
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world, player, ItemStack.of(ItemId.SHOVEL), new TargetCell(5, 4, false));
+        assertEquals(ClickVerb.DIG, hints.left());
+    }
+
+    @Test
     void cannedFood_showsEatOnRight() {
         ClickHints hints =
                 ClickHintResolver.resolve(
@@ -113,14 +168,14 @@ class ClickHintResolverTest {
     void placeable_showsPlaceOnRight() {
         ClickHints hints =
                 ClickHintResolver.resolve(
-                        world, player, ItemStack.of(ItemId.DIRT_CLUMP), new TargetCell(5, 4, false));
+                        world, player, ItemStack.of(ItemId.STONE_GROUND), new TargetCell(5, 4, false));
         assertEquals(ClickVerb.ATTACK, hints.left());
         assertEquals(ClickVerb.PLACE, hints.rightOrNull());
     }
 
     @Test
     void placeable_onDirtGround_leftDig() {
-        world.setGround(5, 4, BlockId.DIRT);
+        world.setGround(5, 4, BlockId.DIRT_GROUND);
         world.setFloor(5, 4, BlockId.AIR);
         ClickHints hints =
                 ClickHintResolver.resolve(

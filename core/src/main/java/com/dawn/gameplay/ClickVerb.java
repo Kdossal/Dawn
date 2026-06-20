@@ -5,7 +5,7 @@ public enum ClickVerb {
     ATTACK,
     GRAB,
     DIG,
-    MINE,
+    BREAK,
     CHOP,
     PLACE,
     EAT;
@@ -15,7 +15,7 @@ public enum ClickVerb {
             case ATTACK -> "Attack";
             case GRAB -> "Grab";
             case DIG -> "Dig";
-            case MINE -> "Mine";
+            case BREAK -> "Break";
             case CHOP -> "Chop";
             case PLACE -> "Place";
             case EAT -> "Eat";

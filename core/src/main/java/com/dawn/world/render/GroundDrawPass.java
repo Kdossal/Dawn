@@ -7,9 +7,9 @@ import com.dawn.world.block.Layer;
 /** Back-to-front ground draw order for layered terrain rendering. */
 public enum GroundDrawPass {
     FLUID(BlockId.PIT, BlockId.WATER),
-    STONE(BlockId.STONE),
-    SAND(BlockId.SAND),
-    DIRT(BlockId.DIRT);
+    STONE(BlockId.STONE_GROUND),
+    SAND(BlockId.SAND_GROUND),
+    DIRT(BlockId.DIRT_GROUND);
 
     private static final GroundDrawPass[] GROUND_PASSES = values();
 

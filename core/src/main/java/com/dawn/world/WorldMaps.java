@@ -33,7 +33,7 @@ public final class WorldMaps {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                world.setGround(x, y, BlockId.DIRT);
+                world.setGround(x, y, BlockId.DIRT_GROUND);
                 world.setFloor(x, y, BlockId.GRASS);
                 world.setObject(x, y, BlockId.AIR);
             }
@@ -50,7 +50,7 @@ public final class WorldMaps {
 
         for (int x = 10; x < 25; x++) {
             for (int y = 10; y < 25; y++) {
-                world.setGround(x, y, BlockId.SAND);
+                world.setGround(x, y, BlockId.SAND_GROUND);
                 world.setFloor(x, y, BlockId.AIR);
             }
         }
@@ -71,7 +71,7 @@ public final class WorldMaps {
 
         for (int x = 48; x < 58; x++) {
             for (int y = 42; y < 52; y++) {
-                world.setGround(x, y, BlockId.STONE);
+                world.setGround(x, y, BlockId.STONE_GROUND);
                 world.setFloor(x, y, BlockId.AIR);
             }
         }

@@ -43,7 +43,7 @@ class PlacementSystemTest {
     void successfulPlace_startsInteractPulse() {
         world.setGround(5, 4, BlockId.PIT);
         TargetCell target = new TargetCell(5, 4, false);
-        placement.update(world, player, inventory, target, ItemStack.of(com.dawn.item.ItemId.DIRT_CLUMP), true, 0f);
+        placement.update(world, player, inventory, target, ItemStack.of(com.dawn.item.ItemId.STONE_GROUND), true, 0f);
         assertTrue(placement.isInteracting());
     }
 
@@ -51,7 +51,7 @@ class PlacementSystemTest {
     void interactPulse_decaysOverTime() {
         world.setGround(5, 4, BlockId.PIT);
         TargetCell target = new TargetCell(5, 4, false);
-        placement.update(world, player, inventory, target, ItemStack.of(com.dawn.item.ItemId.DIRT_CLUMP), true, 0f);
+        placement.update(world, player, inventory, target, ItemStack.of(com.dawn.item.ItemId.STONE_GROUND), true, 0f);
         placement.tick(0.13f);
         assertFalse(placement.isInteracting());
     }

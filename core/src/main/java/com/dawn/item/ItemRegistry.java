@@ -12,20 +12,28 @@ public final class ItemRegistry {
     private static final Map<ItemId, ItemDef> DEFS = new EnumMap<>(ItemId.class);
 
     static {
-        register(tool(ItemId.PICKAXE, "Pickaxe", "pickaxe", InteractionTag.MINE, 2f));
-        register(tool(ItemId.AXE, "Axe", "axe", InteractionTag.CHOP, 2f));
+        register(tool(ItemId.HAMMER, "Hammer", "hammer", InteractionTag.BREAK, 2f));
+        register(tool(ItemId.SAW, "Saw", "saw", InteractionTag.CHOP, 2f));
         register(tool(ItemId.SHOVEL, "Shovel", "shovel", InteractionTag.DIG, 2f));
         register(tiered(ItemId.ROCK, "Rock", "rock", ItemWeightTier.NORMAL));
-        register(tiered(ItemId.WOOD, "Wood", "wood", ItemWeightTier.NORMAL));
+        register(new ItemDef(ItemId.LOG, "Log", "log", 4, ItemWeightTier.NORMAL.weightPerItem, 0f, null, 0, 0, null, null));
+        register(tiered(ItemId.DIRT, "Dirt", "dirt", ItemWeightTier.NORMAL));
+        register(tiered(ItemId.SAND, "Sand", "sand", ItemWeightTier.NORMAL));
+        register(tiered(ItemId.LUMBER, "Lumber", "lumber", ItemWeightTier.NORMAL));
+        register(tiered(ItemId.HARDWARE, "Hardware", "hardware", ItemWeightTier.SMALL));
+        register(tiered(ItemId.CLOTH, "Cloth", "cloth", ItemWeightTier.SMALL));
         register(placeable(
-                ItemId.STONE,
-                "Stone",
-                "stone",
-                new Placeable.GroundOrObject(BlockId.STONE, BlockId.STONE_WALL),
+                ItemId.STONE_GROUND,
+                "Stone Ground",
+                "stone_ground",
+                new Placeable.Ground(BlockId.STONE_GROUND),
                 ItemWeightTier.NORMAL));
         register(placeable(
-                ItemId.DIRT_CLUMP, "Dirt", "dirt_clump", new Placeable.Ground(BlockId.DIRT), ItemWeightTier.NORMAL));
-        register(placeable(ItemId.SAND, "Sand", "sand", new Placeable.Ground(BlockId.SAND), ItemWeightTier.NORMAL));
+                ItemId.STONE_WALL,
+                "Stone Wall",
+                "stone_wall",
+                new Placeable.Block(BlockId.STONE_WALL),
+                ItemWeightTier.NORMAL));
         register(placeable(ItemId.CRATE, "Crate", "crate", new Placeable.Block(BlockId.CRATE), ItemWeightTier.LARGE));
         register(placeable(
                 ItemId.LANTERN, "Lantern", "lantern", new Placeable.Block(BlockId.LANTERN), ItemWeightTier.SMALL));

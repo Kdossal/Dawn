@@ -34,7 +34,7 @@ public final class BlockBreakEffects {
     /** Clears solid/water ground down to pit. */
     public static Optional<String> digGround(World world, int x, int y, BlockId id) {
         return switch (id) {
-            case DIRT, SAND, STONE -> {
+            case DIRT_GROUND, SAND_GROUND, STONE_GROUND -> {
                 world.setFloor(x, y, BlockId.AIR);
                 world.setGround(x, y, BlockId.PIT);
                 yield Optional.of("Dug ground");

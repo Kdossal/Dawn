@@ -1,14 +1,18 @@
 package com.dawn.item;
 
 public enum ItemId {
-    PICKAXE,
-    AXE,
+    HAMMER,
+    SAW,
     SHOVEL,
     ROCK,
-    WOOD,
-    STONE,
-    DIRT_CLUMP,
+    LOG,
+    DIRT,
     SAND,
+    STONE_GROUND,
+    STONE_WALL,
+    LUMBER,
+    HARDWARE,
+    CLOTH,
     LEATHER_HOOD,
     CRATE,
     BED,

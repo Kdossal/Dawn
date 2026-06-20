@@ -32,14 +32,14 @@ class BlockBreakEffectsTest {
         world.setFloor(3, 4, BlockId.GRASS);
         assertTrue(BlockBreakEffects.digFloor(world, 3, 4, BlockId.GRASS).isPresent());
         assertEquals(BlockId.AIR, world.getFloor(3, 4));
-        assertEquals(BlockId.DIRT, world.getGround(3, 4));
+        assertEquals(BlockId.DIRT_GROUND, world.getGround(3, 4));
     }
 
     @Test
     void groundDig_clearsToPit() {
         World world = TestWorlds.smallClear(8, 8);
         TestWorlds.setSolidDirt(world, 3, 4);
-        assertTrue(BlockBreakEffects.digGround(world, 3, 4, BlockId.DIRT).isPresent());
+        assertTrue(BlockBreakEffects.digGround(world, 3, 4, BlockId.DIRT_GROUND).isPresent());
         assertEquals(BlockId.PIT, world.getGround(3, 4));
     }
 

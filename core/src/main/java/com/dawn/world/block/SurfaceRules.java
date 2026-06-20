@@ -50,7 +50,7 @@ public final class SurfaceRules {
             return false;
         }
         if (floorToPlace == BlockId.GRASS) {
-            return world.getGround(x, y) == BlockId.DIRT;
+            return world.getGround(x, y) == BlockId.DIRT_GROUND;
         }
         return false;
     }

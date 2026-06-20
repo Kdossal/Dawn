@@ -54,7 +54,7 @@ class TargetResolverTest {
                         player.getY(),
                         12,
                         4,
-                        ItemStack.of(com.dawn.item.ItemId.PICKAXE));
+                        ItemStack.of(com.dawn.item.ItemId.HAMMER));
         assertNull(cell);
     }
 

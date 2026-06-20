@@ -275,7 +275,7 @@ public class SimulationSystem {
             if (!isRegionActive(nx, ny)) {
                 continue;
             }
-            if (world.getGround(nx, ny) == BlockId.DIRT
+            if (world.getGround(nx, ny) == BlockId.DIRT_GROUND
                     && world.getFloor(nx, ny) == BlockId.AIR
                     && world.getObject(nx, ny) == BlockId.AIR) {
                 world.setFloor(nx, ny, BlockId.GRASS);

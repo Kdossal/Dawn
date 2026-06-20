@@ -11,8 +11,8 @@ class BlockVisualDefinitionsLoaderTest {
         String dup =
                 """
                 {"entries":[
-                  {"blockId":"STONE","textureId":"STONE","width":16,"height":16,"anchor":"CELL_BOTTOM_LEFT"},
-                  {"blockId":"STONE","textureId":"STONE","width":16,"height":16,"anchor":"CELL_BOTTOM_LEFT"}
+                  {"blockId":"STONE_GROUND","textureId":"STONE","width":16,"height":16,"anchor":"CELL_BOTTOM_LEFT"},
+                  {"blockId":"STONE_GROUND","textureId":"STONE","width":16,"height":16,"anchor":"CELL_BOTTOM_LEFT"}
                 ]}""";
         assertThrows(IllegalArgumentException.class, () -> BlockVisualDefinitionsLoader.parseJson(
                 new java.io.ByteArrayInputStream(dup.getBytes(java.nio.charset.StandardCharsets.UTF_8))));

@@ -31,7 +31,7 @@ public final class TestWorlds {
     public static void fillDirtGround(World world) {
         for (int x = 0; x < world.getWidth(); x++) {
             for (int y = 0; y < world.getHeight(); y++) {
-                world.setGround(x, y, BlockId.DIRT);
+                world.setGround(x, y, BlockId.DIRT_GROUND);
                 world.setFloor(x, y, BlockId.AIR);
                 world.setObject(x, y, BlockId.AIR);
             }
@@ -41,7 +41,7 @@ public final class TestWorlds {
 
     /** Pit cell with solid dirt ground (no floor overlay). */
     public static void setSolidDirt(World world, int x, int y) {
-        world.setGround(x, y, BlockId.DIRT);
+        world.setGround(x, y, BlockId.DIRT_GROUND);
         world.setFloor(x, y, BlockId.AIR);
         world.setObject(x, y, BlockId.AIR);
     }

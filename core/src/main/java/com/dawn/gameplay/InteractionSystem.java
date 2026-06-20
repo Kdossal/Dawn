@@ -100,7 +100,7 @@ public class InteractionSystem {
     }
 
     private void spawnLoot(World world, int x, int y, Layer layer, BlockId idBeforeBreak) {
-        List<ItemStack> loot = lootTable.roll(idBeforeBreak, layer);
+        List<ItemStack> loot = lootTable.roll(new LootTable.DropContext(idBeforeBreak, layer));
         for (ItemStack stack : loot) {
             dropSystem.spawnAtCell(world, stack, x, y);
         }

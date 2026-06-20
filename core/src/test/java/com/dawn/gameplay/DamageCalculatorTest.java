@@ -27,7 +27,7 @@ class DamageCalculatorTest {
     void purposeDamage_wrongTool_isZero() {
         Stats stats = TestStats.uniform(10);
         float dps = DamageCalculator.purposeDamagePerSec(
-                stats, ItemStack.of(ItemId.SHOVEL), EnumSet.of(InteractionTag.MINE));
+                stats, ItemStack.of(ItemId.SHOVEL), EnumSet.of(InteractionTag.BREAK));
         assertEquals(0f, dps, 0.001f);
     }
 

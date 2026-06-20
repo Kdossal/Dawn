@@ -2,7 +2,6 @@ package com.dawn.world.block;
 
 import com.dawn.world.World;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,8 +30,8 @@ public final class BlockDefinitions {
             if (breakTags.contains(InteractionTag.NONE)) {
                 return InteractionTag.NONE;
             }
-            if (breakTags.contains(InteractionTag.MINE)) {
-                return InteractionTag.MINE;
+            if (breakTags.contains(InteractionTag.BREAK)) {
+                return InteractionTag.BREAK;
             }
             if (breakTags.contains(InteractionTag.CHOP)) {
                 return InteractionTag.CHOP;
@@ -49,17 +48,17 @@ public final class BlockDefinitions {
     static {
         def(BlockId.AIR, Layer.FLOOR, GroundKind.NONE, false, true, false, Set.of(), 0f);
         def(BlockId.PIT, Layer.GROUND, GroundKind.PIT, false, false, false, Set.of(), 0f);
-        def(BlockId.DIRT, Layer.GROUND, GroundKind.SOLID, false, false, true, Set.of(InteractionTag.DIG), 14f);
-        def(BlockId.SAND, Layer.GROUND, GroundKind.SOLID, false, false, true, Set.of(InteractionTag.DIG), 12f);
-        def(BlockId.STONE, Layer.GROUND, GroundKind.SOLID, false, false, true, Set.of(InteractionTag.DIG), 55f);
+        def(BlockId.DIRT_GROUND, Layer.GROUND, GroundKind.SOLID, false, false, true, Set.of(InteractionTag.DIG), 14f);
+        def(BlockId.SAND_GROUND, Layer.GROUND, GroundKind.SOLID, false, false, true, Set.of(InteractionTag.DIG), 12f);
+        def(BlockId.STONE_GROUND, Layer.GROUND, GroundKind.SOLID, false, false, true, Set.of(InteractionTag.DIG), 55f);
         def(BlockId.WATER, Layer.GROUND, GroundKind.WATER, false, false, true, Set.of(InteractionTag.DIG), 8f);
         def(BlockId.GRASS, Layer.FLOOR, GroundKind.NONE, true, false, true, Set.of(InteractionTag.DIG), 10f);
-        def(BlockId.ROCK, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.MINE), 55f);
+        def(BlockId.ROCK, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.BREAK), 55f);
         def(BlockId.BUSH, Layer.OBJECT, GroundKind.NONE, false, true, true, Set.of(InteractionTag.NONE), 8f, true, true, 0.15f);
         def(BlockId.OAK_TREE, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 22f, true, true, 0.15f);
-        def(BlockId.OAK_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 45f, true, false, 0.15f);
+        def(BlockId.OAK_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.DIG), 45f, true, false, 0.15f);
         def(BlockId.SPRUCE_TREE, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 22f, true, true, 0.15f);
-        def(BlockId.SPRUCE_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.CHOP), 45f, true, false, 0.15f);
+        def(BlockId.SPRUCE_STUMP, Layer.OBJECT, GroundKind.NONE, false, false, true, Set.of(InteractionTag.DIG), 45f, true, false, 0.15f);
         def(
                 BlockId.CRATE,
                 Layer.OBJECT,
@@ -67,7 +66,7 @@ public final class BlockDefinitions {
                 false,
                 false,
                 true,
-                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
+                Set.of(InteractionTag.BREAK),
                 20f,
                 false,
                 false,
@@ -81,7 +80,7 @@ public final class BlockDefinitions {
                 false,
                 false,
                 true,
-                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
+                Set.of(InteractionTag.BREAK),
                 20f);
         def(
                 BlockId.BED_HEAD,
@@ -90,7 +89,7 @@ public final class BlockDefinitions {
                 false,
                 false,
                 true,
-                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
+                Set.of(InteractionTag.BREAK),
                 20f);
         def(
                 BlockId.LANTERN,
@@ -99,8 +98,8 @@ public final class BlockDefinitions {
                 false,
                 true,
                 true,
-                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
-                8f,
+                Set.of(InteractionTag.NONE),
+                1f,
                 false,
                 false,
                 1.0f,
@@ -116,7 +115,7 @@ public final class BlockDefinitions {
                 false,
                 false,
                 true,
-                EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP),
+                Set.of(InteractionTag.BREAK),
                 45f,
                 false,
                 false,

@@ -16,16 +16,16 @@ public final class PlayerInventory {
         for (int i = 0; i < slots.length; i++) {
             slots[i] = ItemStack.empty();
         }
-        setSlot(InventoryConstants.HOTBAR_ROW, 0, ItemStack.of(ItemId.PICKAXE));
-        setSlot(InventoryConstants.HOTBAR_ROW, 1, ItemStack.of(ItemId.AXE));
+        setSlot(InventoryConstants.HOTBAR_ROW, 0, ItemStack.of(ItemId.HAMMER));
+        setSlot(InventoryConstants.HOTBAR_ROW, 1, ItemStack.of(ItemId.SAW));
         setSlot(InventoryConstants.HOTBAR_ROW, 2, ItemStack.of(ItemId.SHOVEL));
         setSlot(InventoryConstants.HOTBAR_ROW, 3, ItemStack.of(ItemId.CRATE, 4));
         setSlot(InventoryConstants.HOTBAR_ROW, 4, ItemStack.of(ItemId.BED, 4));
         setSlot(InventoryConstants.HOTBAR_ROW, 5, ItemStack.of(ItemId.LANTERN, 4));
         setSlot(InventoryConstants.HOTBAR_ROW, 6, ItemStack.of(ItemId.SPRUCE_SAPLING, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 7, ItemStack.of(ItemId.DIRT_CLUMP, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.STONE, 8));
-        setSlot(InventoryConstants.HOTBAR_ROW, 9, ItemStack.of(ItemId.STONE, 8));
+        setSlot(InventoryConstants.HOTBAR_ROW, 7, ItemStack.of(ItemId.STONE_GROUND, 4));
+        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.STONE_WALL, 8));
+        setSlot(InventoryConstants.HOTBAR_ROW, 9, ItemStack.of(ItemId.STONE_WALL, 8));
         setSlot(0, 0, ItemStack.of(ItemId.LEATHER_HOOD));
         setSlot(0, 1, ItemStack.of(ItemId.CANNED_FOOD, 4));
     }

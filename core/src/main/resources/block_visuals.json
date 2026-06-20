@@ -2,9 +2,9 @@
   "entries": [
     { "blockId": "PIT", "textureId": "PIT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "GRASS", "textureId": "GRASS", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
-    { "blockId": "DIRT", "textureId": "DIRT", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
-    { "blockId": "SAND", "textureId": "SAND", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
-    { "blockId": "STONE", "textureId": "STONE", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
+    { "blockId": "DIRT_GROUND", "textureId": "DIRT", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
+    { "blockId": "SAND_GROUND", "textureId": "SAND", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
+    { "blockId": "STONE_GROUND", "textureId": "STONE", "width": 24, "height": 24, "anchor": "CELL_CENTER" },
     { "blockId": "WATER", "textureId": "WATER", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "ROCK", "textureId": "ROCK", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "BUSH", "textureId": "BUSH", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT", "alpha": 1 },

@@ -78,7 +78,7 @@ public final class ClickHintResolver {
         }
         return switch (tag) {
             case DIG -> ClickVerb.DIG;
-            case MINE -> ClickVerb.MINE;
+            case BREAK -> ClickVerb.BREAK;
             case CHOP -> ClickVerb.CHOP;
             case NONE -> ClickVerb.GRAB;
         };

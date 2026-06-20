@@ -31,7 +31,7 @@ class InteractionPresentationTest {
         presentation.update(
                 world,
                 player,
-                ItemStack.of(com.dawn.item.ItemId.DIRT_CLUMP),
+                ItemStack.of(com.dawn.item.ItemId.STONE_GROUND),
                 new TargetCell(5, 4, false),
                 false);
         assertFalse(presentation.showPlacementGhosts());

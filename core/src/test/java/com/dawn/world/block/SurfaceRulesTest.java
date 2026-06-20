@@ -36,11 +36,11 @@ class SurfaceRulesTest {
     @Test
     void placeGround_onPitOnly() {
         World world = TestWorlds.smallClear(4, 4);
-        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.DIRT));
-        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.SAND));
-        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.STONE));
+        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.DIRT_GROUND));
+        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.SAND_GROUND));
+        assertTrue(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.STONE_GROUND));
         TestWorlds.setSolidDirt(world, 2, 2);
-        assertFalse(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.DIRT));
+        assertFalse(SurfaceRules.canPlaceGround(world, 2, 2, BlockId.DIRT_GROUND));
     }
 
     @Test
@@ -48,7 +48,7 @@ class SurfaceRulesTest {
         World world = TestWorlds.smallClear(4, 4);
         TestWorlds.setSolidDirt(world, 2, 2);
         assertTrue(SurfaceRules.canPlaceFloor(world, 2, 2, BlockId.GRASS));
-        world.setGround(2, 2, BlockId.SAND);
+        world.setGround(2, 2, BlockId.SAND_GROUND);
         assertFalse(SurfaceRules.canPlaceFloor(world, 2, 2, BlockId.GRASS));
     }
 

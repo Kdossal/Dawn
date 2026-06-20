@@ -2,27 +2,13 @@ package com.dawn.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Vector3;
-import com.dawn.world.light.LightEngine;
 import com.dawn.config.DayNightConfig;
 import com.dawn.config.GameConfig;
 import com.dawn.config.Constants;
-import com.dawn.entity.Entity;
-import com.dawn.gameplay.EatSystem;
-import com.dawn.item.ItemId;
-import com.dawn.item.ItemStack;
-import com.dawn.world.block.BlockDefinitions;
-import com.dawn.world.block.BlockId;
-import com.dawn.entity.status.StatusId;
-import com.dawn.entity.status.StatusSystem;
-import com.dawn.entity.VitalSystem;
-import com.dawn.entity.sprite.PlayerAnimContext;
-import com.dawn.gameplay.TargetResolver.TargetCell;
 import com.dawn.input.GameCursor;
 import com.dawn.render.GameViewport;
 import com.dawn.render.HudViewport;
@@ -34,14 +20,15 @@ public class GameScreen extends ScreenAdapter {
     private final GameViewport gameViewport = new GameViewport();
     private final HudViewport hudViewport = new HudViewport();
     private final ScreenRenderer screenRenderer = new ScreenRenderer();
-    private final Vector3 mouseWorld = new Vector3();
+    private final FrameState frame = new FrameState();
+    private final UiModePhase uiModePhase = new UiModePhase();
+    private final PlayerAndInteractionPhase playerAndInteractionPhase = new PlayerAndInteractionPhase();
+    private final SimulationLightingPhase simulationLightingPhase = new SimulationLightingPhase();
+    private final CameraTargetPhase cameraTargetPhase = new CameraTargetPhase();
 
     private GameContext ctx;
     private final GameCursor gameCursor = new GameCursor();
     private InputAdapter hotbarInput;
-    private float lastMoveX;
-    private float lastMoveY;
-    private TargetCell target;
 
     @Override
     public void show() {
@@ -54,12 +41,12 @@ public class GameScreen extends ScreenAdapter {
                         return ctx.hotbar.handleClick(screenX, screenY);
                     }
                 };
-        refreshInputProcessors();
+        uiModePhase.applyInputProcessor(ctx, hotbarInput);
 
         worldCamera = new OrthographicCamera();
         applyHudCameraSize();
         ctx.zoomController.applyTo(worldCamera, gameViewport);
-        updateCamera();
+        cameraTargetPhase.syncCamera(ctx, worldCamera);
         ctx.inventoryOverlay.onResize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         ctx.pauseOverlay.onResize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         ctx.pauseOverlay.setCallbacks(this::resumeFromPause, Gdx.app::exit);
@@ -76,18 +63,9 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glClearColor(0.12f, 0.14f, 0.18f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        boolean wasPaused = ctx.pauseOverlay.isPaused();
-        ctx.pauseOverlay.handleToggleKey();
-        if (!wasPaused && ctx.pauseOverlay.isPaused()) {
-            ctx.inventoryOverlay.close();
-            ctx.mining.reset();
-            ctx.interactionPresentation.clear();
-            refreshInputProcessors();
-        } else if (wasPaused && !ctx.pauseOverlay.isPaused()) {
-            refreshInputProcessors();
-        }
+        uiModePhase.processModeToggles(ctx, frame, hotbarInput);
 
-        if (!ctx.pauseOverlay.isPaused()) {
+        if (!frame.paused) {
             if (Gdx.input.isKeyJustPressed(DebugOverlay.TOGGLE_KEY)) {
                 ctx.debug.cycleMode();
             }
@@ -101,30 +79,15 @@ public class GameScreen extends ScreenAdapter {
                 }
             }
 
-            boolean wasOpen = ctx.inventoryOverlay.isOpen();
-            ctx.inventoryOverlay.handleToggleKey();
-            if (wasOpen != ctx.inventoryOverlay.isOpen()) {
-                refreshInputProcessors();
-            }
-
-            int prevActiveRow = ctx.inventory.getActiveRow();
-            ctx.hotbar.update();
-            if (ctx.inventoryOverlay.isOpen() && prevActiveRow != ctx.inventory.getActiveRow()) {
-                ctx.inventoryOverlay.refreshAll();
-            }
-
-            float scrollY = ctx.input.consumeScrollY();
-            if (scrollY != 0f && !ctx.inventoryOverlay.isOpen()) {
-                ctx.hotbar.applyScroll(scrollY);
-            }
+            uiModePhase.processHotbarAndScroll(ctx);
         }
 
         ctx.zoomController.update(delta);
         ctx.zoomController.applyTo(worldCamera, gameViewport);
 
-        if (ctx.pauseOverlay.isPaused()) {
+        if (frame.paused) {
             updatePaused(delta);
-            updateCamera();
+            cameraTargetPhase.syncCamera(ctx, worldCamera);
         } else {
             update(delta);
         }
@@ -135,19 +98,19 @@ public class GameScreen extends ScreenAdapter {
                 hudViewport,
                 worldCamera,
                 hudCamera,
-                target,
-                mouseWorld,
+                frame.target,
+                frame.mouseWorld,
                 ctx.input,
                 ctx.entities.getPlayer(),
-                lastMoveX,
-                lastMoveY,
+                frame.lastMoveX,
+                frame.lastMoveY,
                 delta,
                 ctx.interaction.getLastMessage(),
                 ctx.gameLoop.getSimulation().getCurrentTick());
     }
 
     private void resumeFromPause() {
-        refreshInputProcessors();
+        uiModePhase.applyInputProcessor(ctx, hotbarInput);
     }
 
     private void updatePaused(float delta) {
@@ -156,206 +119,14 @@ public class GameScreen extends ScreenAdapter {
 
     private void update(float delta) {
         ctx.world.clock().advance(delta, DayNightConfig.from(GameConfig.get()));
-
-        Entity player = ctx.entities.getPlayer();
-        player.tickEffects(delta);
-        StatusSystem.refresh(player, ctx.inventory, ctx.equipment);
-        lastMoveX = ctx.input.getMoveX();
-        lastMoveY = ctx.input.getMoveY();
-        boolean running = ctx.input.isRunningWithEnergy(player.getCurrentEnergy());
-        boolean immobile = player.getStatuses().has(StatusId.IMMOBILE);
-        if (immobile) {
-            ctx.input.cancelRun();
-        }
-        if (!immobile && (lastMoveX != 0f || lastMoveY != 0f)) {
-            float len = (float) Math.sqrt(lastMoveX * lastMoveX + lastMoveY * lastMoveY);
-            lastMoveX /= len;
-            lastMoveY /= len;
-            float speed = player.getMoveSpeedCellsPerSec(running) * delta;
-            player.move(lastMoveX * speed, lastMoveY * speed, ctx.world);
-        }
-
-        VitalSystem.update(player, delta, running);
-        if (player.getCurrentEnergy() <= 0f) {
-            ctx.input.cancelRun();
-        }
-
-        updateCamera();
-        unprojectMouseWorld();
-        target = ctx.input.updateTarget(ctx.world, player, mouseWorld, ctx.hotbar.getHeld());
-        ctx.placement.tick(delta);
-        ctx.eat.tick(delta);
-
-        if (ctx.inventoryOverlay.isOpen()) {
-            ctx.mining.reset();
-            ctx.interactionPresentation.clear();
-            player.updateAnimation(delta, PlayerAnimContext.idle(player.getX(), player.getY()));
-            ctx.inventoryOverlay.act(delta);
-            updateSimulationRegions();
-            ctx.gameLoop.update(delta);
-            ctx.dropSystem.update(delta);
-            ctx.dropSystem.tryPickupAll(player, ctx.inventory);
-            syncHeldLight(player, ctx.hotbar.getHeld());
-            flushLighting();
-            return;
-        }
-
-        boolean overHotbar =
-                ctx.hotbar.hitTest(Gdx.input.getX(), Gdx.input.getY()) != null;
-        if (!overHotbar) {
-            ctx.mining.update(
-                    ctx.world,
-                    player,
-                    target,
-                    ctx.hotbar.getHeld(),
-                    ctx.input.miningHeld(),
-                    delta);
-
-            ItemStack held = ctx.hotbar.getHeld();
-            if (EatSystem.canEat(player, held)) {
-                ctx.eat.update(player, ctx.inventory, held, ctx.input.placeHeld(), delta);
-            } else {
-                ctx.placement.update(
-                        ctx.world,
-                        player,
-                        ctx.inventory,
-                        target,
-                        held,
-                        ctx.input.placeHeld(),
-                        delta);
-            }
-        } else {
-            ctx.mining.reset();
-        }
-
-        if (ctx.input.dropFullStackPressed()) {
-            ctx.dropSystem.dropFromEntity(player, ctx.inventory, true);
-        } else if (ctx.input.dropPressed()) {
-            ctx.dropSystem.dropFromEntity(player, ctx.inventory, false);
-        }
-
-        ctx.dropSystem.update(delta);
-        ctx.dropSystem.tryPickupAll(player, ctx.inventory);
-
-        ctx.interactionPresentation.update(
-                ctx.world,
-                player,
-                ctx.hotbar.getHeld(),
-                target,
-                !ctx.input.placeHeld());
-
-        boolean interacting =
-                !overHotbar
-                        && (ctx.mining.isActive()
-                                || ctx.eat.isInteracting()
-                                || ctx.placement.isInteracting()
-                                || (ctx.input.placeHeld()
-                                        && ctx.interactionPresentation.hasValidPlacementPreview()));
-        boolean moving = lastMoveX != 0f || lastMoveY != 0f;
-        player.updateAnimation(
-                delta,
-                new PlayerAnimContext(
-                        moving,
-                        interacting,
-                        player.getX(),
-                        player.getY(),
-                        lastMoveX,
-                        lastMoveY,
-                        target));
-
-        updateSimulationRegions();
-        ctx.gameLoop.update(delta);
-        syncHeldLight(player, ctx.hotbar.getHeld());
-        flushLighting();
-    }
-
-    private void syncHeldLight(Entity player, ItemStack held) {
-        boolean lanternHeld = !held.isEmpty() && held.itemId == ItemId.LANTERN;
-        if (lanternHeld) {
-            int cellX = (int) Math.floor(player.getX());
-            int cellY = (int) Math.floor(player.getY());
-            ctx.world.lightMap().updateHeldSource(
-                    cellX,
-                    cellY,
-                    BlockDefinitions.lightEmission(BlockId.LANTERN),
-                    BlockDefinitions.lightRadius(BlockId.LANTERN),
-                    BlockDefinitions.lightColorR(BlockId.LANTERN),
-                    BlockDefinitions.lightColorG(BlockId.LANTERN),
-                    BlockDefinitions.lightColorB(BlockId.LANTERN),
-                    true);
-        } else {
-            ctx.world.lightMap().updateHeldSource(0, 0, 0f, 0, 1f, 1f, 1f, false);
-        }
-    }
-
-    private void flushLighting() {
-        if (ctx.world.lightMap().hasDirty()) {
-            int[] bounds = ctx.world.lightMap().pollRebuildBounds();
-            LightEngine.rebuild(ctx.world, bounds[0], bounds[1], bounds[2], bounds[3]);
-        }
-    }
-
-    private void unprojectMouseWorld() {
-        gameViewport.apply(worldCamera);
-        mouseWorld.set(Gdx.input.getX(), Gdx.input.getY(), 0f);
-        gameViewport.unproject(mouseWorld);
-    }
-
-    private void updateSimulationRegions() {
-        Entity player = ctx.entities.getPlayer();
-        float halfW = ctx.zoomController.viewWidthPx() / 2f;
-        float halfH = ctx.zoomController.viewHeightPx() / 2f;
-        ctx.gameLoop
-                .getSimulation()
-                .updateActiveRegions(
-                        worldCamera.position.x - halfW,
-                        worldCamera.position.y - halfH,
-                        worldCamera.position.x + halfW,
-                        worldCamera.position.y + halfH,
-                        player.getX(),
-                        player.getY());
-    }
-
-    private void updateCamera() {
-        Entity player = ctx.entities.getPlayer();
-        float playerPxX = player.getX() * Constants.CELL_SIZE_PX;
-        float playerPxY = player.getY() * Constants.CELL_SIZE_PX;
-        worldCamera.position.x = playerPxX;
-        worldCamera.position.y = playerPxY;
-
-        float halfW = ctx.zoomController.viewWidthPx() / 2f;
-        float halfH = ctx.zoomController.viewHeightPx() / 2f;
-        float minX = halfW;
-        float maxX = Constants.MAP_WIDTH_PX - halfW;
-        float minY = halfH;
-        float maxY = Constants.MAP_HEIGHT_PX - halfH;
-
-        if (maxX < minX) {
-            worldCamera.position.x = Constants.MAP_WIDTH_PX / 2f;
-        } else {
-            worldCamera.position.x = Math.max(minX, Math.min(maxX, worldCamera.position.x));
-        }
-
-        if (maxY < minY) {
-            worldCamera.position.y = Constants.MAP_HEIGHT_PX / 2f;
-        } else {
-            worldCamera.position.y = Math.max(minY, Math.min(maxY, worldCamera.position.y));
-        }
+        playerAndInteractionPhase.tickPlayer(ctx, frame, delta);
+        cameraTargetPhase.tick(ctx, gameViewport, worldCamera, frame);
+        playerAndInteractionPhase.tickInteraction(ctx, frame, delta);
+        simulationLightingPhase.tick(ctx, worldCamera, delta);
     }
 
     private void applyHudCameraSize() {
         hudCamera.setToOrtho(false, Constants.HUD_WIDTH_PX, Constants.HUD_HEIGHT_PX);
-    }
-
-    private void refreshInputProcessors() {
-        if (ctx.pauseOverlay.isPaused()) {
-            Gdx.input.setInputProcessor(ctx.pauseOverlay.stage());
-        } else if (ctx.inventoryOverlay.isOpen()) {
-            Gdx.input.setInputProcessor(
-                    new InputMultiplexer(ctx.inventoryOverlay.stage(), ctx.input));
-        } else {
-            Gdx.input.setInputProcessor(new InputMultiplexer(hotbarInput, ctx.input));
-        }
     }
 
     @Override
@@ -367,7 +138,7 @@ public class GameScreen extends ScreenAdapter {
             ctx.zoomController.applyTo(worldCamera, gameViewport);
             ctx.inventoryOverlay.onResize(width, height);
             ctx.pauseOverlay.onResize(width, height);
-            updateCamera();
+            cameraTargetPhase.syncCamera(ctx, worldCamera);
         }
     }
 

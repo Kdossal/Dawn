@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Test;
 
 class PlacementRulesTest {
     @Test
-    void dirtOnEmptyPitIsValid() {
+    void stoneGroundOnEmptyPitIsValid() {
         World world = TestWorlds.smallClear(8, 8);
         Entity player = new EntityManager().spawn(EntityId.PLAYER, 4f, 4f);
         PlacementRules.Result result =
-                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.DIRT_CLUMP), 5, 4);
+                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE_GROUND), 5, 4);
         assertNotNull(result);
         assertTrue(result.valid());
     }
@@ -51,23 +51,23 @@ class PlacementRulesTest {
     }
 
     @Test
-    void stoneOnPitPlacesGround() {
+    void stoneGroundOnPitPlacesGround() {
         World world = TestWorlds.smallClear(8, 8);
         Entity player = new EntityManager().spawn(EntityId.PLAYER, 4f, 4f);
         PlacementRules.Result result =
-                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE), 5, 4);
+                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE_GROUND), 5, 4);
         assertNotNull(result);
         assertTrue(result.valid());
         assertTrue(result.placeable() instanceof com.dawn.item.Placeable.Ground);
     }
 
     @Test
-    void stoneOnSolidGroundPlacesWall() {
+    void stoneWallOnSolidGroundPlacesWall() {
         World world = TestWorlds.smallClear(8, 8);
         TestWorlds.setSolidDirt(world, 5, 4);
         Entity player = new EntityManager().spawn(EntityId.PLAYER, 4f, 4f);
         PlacementRules.Result result =
-                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE), 5, 4);
+                PlacementRules.evaluate(world, player, 4f, 4f, ItemStack.of(ItemId.STONE_WALL), 5, 4);
         assertNotNull(result);
         assertTrue(result.valid());
         assertTrue(result.placeable() instanceof com.dawn.item.Placeable.Block block

@@ -80,7 +80,7 @@ class SimulationSystemTest {
         drainCatchUpFully(sim, 0, 0);
 
         assertEquals(BlockId.AIR, world.getFloor(16, 8));
-        assertEquals(BlockId.DIRT, world.getGround(16, 8));
+        assertEquals(BlockId.DIRT_GROUND, world.getGround(16, 8));
     }
 
     @Test
@@ -232,7 +232,7 @@ class SimulationSystemTest {
         int n = 0;
         for (int x = 0; x < world.getWidth(); x++) {
             for (int y = 0; y < world.getHeight(); y++) {
-                if (world.getGround(x, y) == BlockId.DIRT && world.getFloor(x, y) == BlockId.AIR) {
+                if (world.getGround(x, y) == BlockId.DIRT_GROUND && world.getFloor(x, y) == BlockId.AIR) {
                     n++;
                 }
             }
@@ -246,7 +246,7 @@ class SimulationSystemTest {
         int maxX = Math.min(world.getWidth() - 1, (int) centerX + halfW);
         int n = 0;
         for (int x = minX; x <= maxX; x++) {
-            if (world.getGround(x, rowY) == BlockId.DIRT && world.getFloor(x, rowY) == BlockId.AIR) {
+            if (world.getGround(x, rowY) == BlockId.DIRT_GROUND && world.getFloor(x, rowY) == BlockId.AIR) {
                 n++;
             }
         }

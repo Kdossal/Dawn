@@ -15,9 +15,9 @@ class GroundDrawPassTest {
 
     @Test
     void forGround_solidGrounds_mapToMaterialPasses() {
-        assertEquals(GroundDrawPass.STONE, GroundDrawPass.forGround(BlockId.STONE));
-        assertEquals(GroundDrawPass.SAND, GroundDrawPass.forGround(BlockId.SAND));
-        assertEquals(GroundDrawPass.DIRT, GroundDrawPass.forGround(BlockId.DIRT));
+        assertEquals(GroundDrawPass.STONE, GroundDrawPass.forGround(BlockId.STONE_GROUND));
+        assertEquals(GroundDrawPass.SAND, GroundDrawPass.forGround(BlockId.SAND_GROUND));
+        assertEquals(GroundDrawPass.DIRT, GroundDrawPass.forGround(BlockId.DIRT_GROUND));
     }
 
     @Test
@@ -30,15 +30,15 @@ class GroundDrawPassTest {
     @Test
     void matches_onlyOwnBlockIds() {
         assertTrue(GroundDrawPass.FLUID.matches(BlockId.WATER));
-        assertFalse(GroundDrawPass.FLUID.matches(BlockId.STONE));
-        assertTrue(GroundDrawPass.DIRT.matches(BlockId.DIRT));
-        assertFalse(GroundDrawPass.DIRT.matches(BlockId.SAND));
+        assertFalse(GroundDrawPass.FLUID.matches(BlockId.STONE_GROUND));
+        assertTrue(GroundDrawPass.DIRT.matches(BlockId.DIRT_GROUND));
+        assertFalse(GroundDrawPass.DIRT.matches(BlockId.SAND_GROUND));
     }
 
     @Test
     void isFloorBlock_grassOnly() {
         assertTrue(GroundDrawPass.isFloorBlock(BlockId.GRASS));
-        assertFalse(GroundDrawPass.isFloorBlock(BlockId.DIRT));
+        assertFalse(GroundDrawPass.isFloorBlock(BlockId.DIRT_GROUND));
         assertFalse(GroundDrawPass.isFloorBlock(BlockId.AIR));
     }
 

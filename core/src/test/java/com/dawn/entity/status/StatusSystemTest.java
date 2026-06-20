@@ -57,7 +57,7 @@ class StatusSystemTest {
         PlayerInventory inventory = TestInventories.empty();
         // max weight 20; 80% = 16. Eight tools at 2 each = 16.
         for (int i = 0; i < 8; i++) {
-            inventory.setSlotAtIndex(i, ItemStack.of(ItemId.PICKAXE));
+            inventory.setSlotAtIndex(i, ItemStack.of(ItemId.HAMMER));
         }
 
         StatusSystem.refresh(player, inventory, new EquipmentInventory());
@@ -72,7 +72,7 @@ class StatusSystemTest {
         PlayerInventory inventory = TestInventories.empty();
         // Eleven tools at 2 each = 22 (> 20).
         for (int i = 0; i < 11; i++) {
-            inventory.setSlotAtIndex(i, ItemStack.of(ItemId.PICKAXE));
+            inventory.setSlotAtIndex(i, ItemStack.of(ItemId.HAMMER));
         }
 
         StatusSystem.refresh(player, inventory, new EquipmentInventory());

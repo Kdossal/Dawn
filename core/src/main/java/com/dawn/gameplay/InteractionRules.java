@@ -108,8 +108,8 @@ public final class InteractionRules {
 
     private static String toolDisplayName(InteractionTag tag) {
         return switch (tag) {
-            case MINE -> "pickaxe";
-            case CHOP -> "axe";
+            case BREAK -> "hammer";
+            case CHOP -> "saw";
             case DIG -> "shovel";
             default -> tag.name().toLowerCase();
         };

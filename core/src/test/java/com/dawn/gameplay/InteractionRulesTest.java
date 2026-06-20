@@ -18,12 +18,12 @@ class InteractionRulesTest {
 
     @Test
     void toolError_multiTagListsTools() {
-        String msg = InteractionRules.toolError(ItemStack.empty(), EnumSet.of(InteractionTag.MINE, InteractionTag.CHOP));
-        assertEquals("Need pickaxe or axe", msg);
+        String msg = InteractionRules.toolError(ItemStack.empty(), EnumSet.of(InteractionTag.BREAK, InteractionTag.CHOP));
+        assertEquals("Need hammer or saw", msg);
     }
 
     @Test
-    void toolError_pickaxeSatisfiesMine() {
-        assertNull(InteractionRules.toolError(ItemStack.of(ItemId.PICKAXE), EnumSet.of(InteractionTag.MINE)));
+    void toolError_hammerSatisfiesMine() {
+        assertNull(InteractionRules.toolError(ItemStack.of(ItemId.HAMMER), EnumSet.of(InteractionTag.BREAK)));
     }
 }

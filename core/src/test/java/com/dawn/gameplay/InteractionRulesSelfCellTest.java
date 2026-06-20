@@ -30,7 +30,7 @@ class InteractionRulesSelfCellTest {
 
     @Test
     void resolveToolBreak_blocksDiggingGroundUnderSelf() {
-        world.setGround(5, 4, BlockId.DIRT);
+        world.setGround(5, 4, BlockId.DIRT_GROUND);
         world.setFloor(5, 4, BlockId.AIR);
         BreakTarget target =
                 InteractionRules.resolveToolBreak(
@@ -59,7 +59,7 @@ class InteractionRulesSelfCellTest {
 
     @Test
     void canBreakOnOccupiedCell_groundIsBlocked() {
-        world.setGround(5, 4, BlockId.DIRT);
+        world.setGround(5, 4, BlockId.DIRT_GROUND);
         world.setFloor(5, 4, BlockId.AIR);
         assertFalse(InteractionRules.canBreakOnOccupiedCell(world, player, 5, 4));
     }
