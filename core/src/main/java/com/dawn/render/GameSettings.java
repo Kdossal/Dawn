@@ -27,18 +27,19 @@ public final class GameSettings {
     public static final float[] DISPLAY_GAMMA_VALUES = {0.92f, 0.85f, 0.75f};
 
     public void setUiSize(UiSize size) {
-        if (size != null) {
-            uiSize = size;
+        if (size == null) {
+            return;
         }
+        // Large UI is intentionally disabled for now.
+        uiSize = size == UiSize.LARGE ? UiSize.MEDIUM : size;
     }
 
-    /** SMALL → MEDIUM → LARGE → SMALL. */
+    /** SMALL ↔ MEDIUM (LARGE disabled). */
     public void cycleUiSize() {
         uiSize =
                 switch (uiSize) {
                     case SMALL -> UiSize.MEDIUM;
-                    case MEDIUM -> UiSize.LARGE;
-                    case LARGE -> UiSize.SMALL;
+                    case MEDIUM, LARGE -> UiSize.SMALL;
                 };
     }
 

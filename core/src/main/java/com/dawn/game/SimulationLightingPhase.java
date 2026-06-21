@@ -2,6 +2,7 @@ package com.dawn.game;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.dawn.entity.Entity;
+import com.dawn.inventory.EquipmentSlot;
 import com.dawn.item.ItemId;
 import com.dawn.item.ItemStack;
 import com.dawn.world.block.BlockId;
@@ -14,7 +15,7 @@ final class SimulationLightingPhase {
         updateSimulationRegions(ctx, worldCamera);
         ctx.gameLoop.update(delta);
         Entity player = ctx.entities.getPlayer();
-        syncHeldLight(ctx, player, ctx.hotbar.getHeld());
+        syncHeldLight(ctx, player, ctx.hotbar.getHeld(), ctx.equipment.get(EquipmentSlot.OFF_HAND));
         flushLighting(ctx);
     }
 
@@ -33,9 +34,11 @@ final class SimulationLightingPhase {
                         player.getY());
     }
 
-    private static void syncHeldLight(GameContext ctx, Entity player, ItemStack held) {
-        boolean lanternHeld = !held.isEmpty() && held.itemId == ItemId.LANTERN;
-        if (lanternHeld) {
+    private static void syncHeldLight(GameContext ctx, Entity player, ItemStack held, ItemStack offhand) {
+        boolean lanternActive =
+                (!held.isEmpty() && held.itemId == ItemId.LANTERN)
+                        || (!offhand.isEmpty() && offhand.itemId == ItemId.LANTERN);
+        if (lanternActive) {
             int cellX = (int) Math.floor(player.getX());
             int cellY = (int) Math.floor(player.getY());
             ctx.world.lightMap().updateHeldSource(

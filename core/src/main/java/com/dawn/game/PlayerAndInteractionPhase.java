@@ -7,6 +7,7 @@ import com.dawn.entity.status.StatusId;
 import com.dawn.entity.status.StatusSystem;
 import com.dawn.gameplay.EatSystem;
 import com.dawn.item.ItemStack;
+import java.util.function.IntFunction;
 
 /** Handles player-state progression and world interaction updates for a frame. */
 final class PlayerAndInteractionPhase {
@@ -49,19 +50,40 @@ final class PlayerAndInteractionPhase {
             return;
         }
 
-        frame.overHotbar = isOverHotbar(ctx);
-        if (!frame.overHotbar) {
-            ctx.mining.update(
-                    ctx.world,
-                    player,
-                    frame.target,
-                    ctx.hotbar.getHeld(),
-                    ctx.input.miningHeld(),
-                    delta);
+        if (ctx.equipmentSidebar.tryWorldDropOnClick()) {
+            ctx.mining.reset();
+            ctx.interactionPresentation.clear();
+            ctx.dropSystem.update(delta);
+            ctx.dropSystem.tryPickupAll(player, ctx.inventory);
+            frame.overHotbar = isOverHotbar(ctx);
+            frame.interacting = false;
+            frame.moving = isMoving(frame.lastMoveX, frame.lastMoveY);
+            player.updateAnimation(delta, buildAnimContext(frame, player));
+            return;
+        }
 
-            ItemStack held = ctx.hotbar.getHeld();
+        frame.overHotbar = isOverHotbar(ctx);
+        boolean cursorGrabbed = ctx.equipmentSidebar.hasHeldCursor();
+        ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
+        IntFunction<ItemStack> extractor =
+                cursorGrabbed
+                        ? amount -> ctx.equipmentSidebar.cursorController().extractFromCursor(amount)
+                        : amount -> ctx.inventory.extractFromHeld(amount);
+        if (!frame.overHotbar) {
+            if (!cursorGrabbed) {
+                ctx.mining.update(
+                        ctx.world,
+                        player,
+                        frame.target,
+                        held,
+                        ctx.input.miningHeld(),
+                        delta);
+            } else {
+                ctx.mining.reset();
+            }
+
             if (EatSystem.canEat(player, held)) {
-                ctx.eat.update(player, ctx.inventory, held, ctx.input.placeHeld(), delta);
+                ctx.eat.update(player, ctx.inventory, held, ctx.input.placeHeld(), delta, extractor);
             } else {
                 ctx.placement.update(
                         ctx.world,
@@ -70,15 +92,16 @@ final class PlayerAndInteractionPhase {
                         frame.target,
                         held,
                         ctx.input.placeHeld(),
-                        delta);
+                        delta,
+                        extractor);
             }
         } else {
             ctx.mining.reset();
         }
 
-        if (ctx.input.dropFullStackPressed()) {
+        if (!cursorGrabbed && ctx.input.dropFullStackPressed()) {
             ctx.dropSystem.dropFromEntity(player, ctx.inventory, true);
-        } else if (ctx.input.dropPressed()) {
+        } else if (!cursorGrabbed && ctx.input.dropPressed()) {
             ctx.dropSystem.dropFromEntity(player, ctx.inventory, false);
         }
 
@@ -88,9 +111,10 @@ final class PlayerAndInteractionPhase {
         ctx.interactionPresentation.update(
                 ctx.world,
                 player,
-                ctx.hotbar.getHeld(),
+                held,
                 frame.target,
-                !ctx.input.placeHeld());
+                !ctx.input.placeHeld(),
+                cursorGrabbed);
 
         frame.interacting = isInteracting(ctx, frame.overHotbar);
         frame.moving = isMoving(frame.lastMoveX, frame.lastMoveY);

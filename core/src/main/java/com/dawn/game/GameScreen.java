@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector2;
 import com.dawn.config.DayNightConfig;
 import com.dawn.config.GameConfig;
 import com.dawn.config.Constants;
@@ -29,16 +30,23 @@ public class GameScreen extends ScreenAdapter {
     private GameContext ctx;
     private final GameCursor gameCursor = new GameCursor();
     private InputAdapter hotbarInput;
+    private final Vector2 hudPointer = new Vector2();
 
     @Override
     public void show() {
-        ctx = GameContext.create();
+        ctx = GameContext.create(hudViewport);
 
         hotbarInput =
                 new InputAdapter() {
                     @Override
                     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                        return ctx.hotbar.handleClick(screenX, screenY);
+                        if (ctx.equipmentSidebar.isDragActive()
+                                || ctx.equipmentSidebar.isOpen()
+                                || ctx.equipmentSidebar.isAnimating()) {
+                            return false;
+                        }
+                        hudViewport.unproject(screenX, screenY, hudPointer);
+                        return ctx.hotbar.handleClick(hudPointer.x, hudPointer.y);
                     }
                 };
         uiModePhase.applyInputProcessor(ctx, hotbarInput);
@@ -48,6 +56,7 @@ public class GameScreen extends ScreenAdapter {
         ctx.zoomController.applyTo(worldCamera, gameViewport);
         cameraTargetPhase.syncCamera(ctx, worldCamera);
         ctx.inventoryOverlay.onResize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        ctx.equipmentSidebar.onResize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         ctx.pauseOverlay.onResize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         ctx.pauseOverlay.setCallbacks(this::resumeFromPause, Gdx.app::exit);
         gameCursor.apply(ctx.assets);
@@ -119,6 +128,7 @@ public class GameScreen extends ScreenAdapter {
 
     private void update(float delta) {
         ctx.world.clock().advance(delta, DayNightConfig.from(GameConfig.get()));
+        ctx.equipmentSidebar.act(delta);
         playerAndInteractionPhase.tickPlayer(ctx, frame, delta);
         cameraTargetPhase.tick(ctx, gameViewport, worldCamera, frame);
         playerAndInteractionPhase.tickInteraction(ctx, frame, delta);
@@ -137,6 +147,7 @@ public class GameScreen extends ScreenAdapter {
         if (ctx != null) {
             ctx.zoomController.applyTo(worldCamera, gameViewport);
             ctx.inventoryOverlay.onResize(width, height);
+            ctx.equipmentSidebar.onResize(width, height);
             ctx.pauseOverlay.onResize(width, height);
             cameraTargetPhase.syncCamera(ctx, worldCamera);
         }

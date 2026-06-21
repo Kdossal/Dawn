@@ -16,6 +16,7 @@ import com.dawn.world.block.Layer;
 import com.dawn.world.structure.StructureBreakResult;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.IntFunction;
 
 public class InteractionSystem {
     private final LootTable lootTable;
@@ -43,7 +44,8 @@ public class InteractionSystem {
             float playerY,
             int x,
             int y,
-            ItemStack held) {
+            ItemStack held,
+            IntFunction<ItemStack> extractor) {
         lastMessage = "";
         ItemDef def = held == null || held.isEmpty() ? null : ItemRegistry.get(held);
         if (def == null || !def.canPlace()) {
@@ -66,7 +68,7 @@ public class InteractionSystem {
             return false;
         }
 
-        ItemStack extracted = inventory.extractFromHeld(1);
+        ItemStack extracted = extractor != null ? extractor.apply(1) : inventory.extractFromHeld(1);
         if (extracted.isEmpty()) {
             rollbackPlacement(world, result.placeable(), result.anchorX(), result.anchorY());
             return false;

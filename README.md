@@ -26,18 +26,22 @@ py -3 tools/generate_assets.py
 
 See [tools/README.md](tools/README.md). Replace PNGs later; keep filenames in sync with `ItemRegistry` / `BlockTextureId`. The default generator run skips existing files and is safe after you add art. **Never use `--force` or `--only`** on hand-made PNGs — those flags overwrite existing files.
 
+## HUD bar
+
+All **15** inventory slots are shown in one row at the bottom of the screen (Don't Starve style). Slot order matches the inventory grid left-to-right, top row first. The overlay grid is for management until it is reworked.
+
 ## Controls
 
 | Input | Action |
 |--------|--------|
 | WASD / arrows | Move |
 | Double-tap WASD / arrows (while holding) | Run (+50% speed) |
-| **1**–**9**, **0** | Select hotbar slot (active row) |
-| Scroll wheel | Cycle hotbar slot |
+| **1**–**9**, **0** | Select inventory slots **1–10** (leftmost slots on the HUD bar) |
+| Scroll wheel | Cycle selected slot (all **15** slots; use for slots 11–15) |
+| Page Up / Page Down | Cycle selected slot |
 | **E** | Open / close inventory overlay (game keeps running) |
 | Inventory tabs | Equipment / Crafting (crafting panel blank for now) |
-| Page Up / Page Down | Switch inventory row (3 rows; works while inventory open) |
-| Click hotbar slot | Select slot |
+| Click HUD bar slot | Select slot |
 | Drag items in inventory | Move between grid and equipment slots |
 | Drop item outside inventory panel | Drop stack at player feet |
 | Left click (hold) | Mine tile (matching tool; bushes with bare hands) |

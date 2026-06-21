@@ -135,7 +135,8 @@ public final class ScreenRenderer {
         ctx.worldOverlay.setProjectionMatrix(worldCamera.combined);
         if (!paused && ctx.debug.isWorldDebugVisible()) {
             com.dawn.entity.EntityBounds entityBounds = player.bounds(ctx.assets);
-            float reach = ReachResolver.radiusCellsFloatForHeld(ctx.hotbar.getHeld());
+            ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
+            float reach = ReachResolver.radiusCellsFloatForHeld(held);
             ctx.worldRenderer.renderReachRing(entityBounds.moveCenterX(), entityBounds.moveCenterY(), reach);
             ctx.worldRenderer.renderEntityCollisionDebug(
                     ctx.world,
@@ -155,11 +156,18 @@ public final class ScreenRenderer {
         hudCamera.update();
         ctx.hud.setProjection(hudCamera.combined);
         if (!ctx.inventoryOverlay.isOpen()) {
+            ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
+            boolean cursorGrabbed = ctx.equipmentSidebar.hasHeldCursor();
             ctx.hotbar.render();
+            ctx.vitalsHud.render(player);
+            ctx.statusHud.render(player);
             ClickHintRenderer.render(
                     ctx.hud,
                     ctx.assets,
-                    ClickHintResolver.resolve(ctx.world, player, ctx.hotbar.getHeld(), target));
+                    ClickHintResolver.resolve(ctx.world, player, held, target, cursorGrabbed),
+                    !cursorGrabbed && !ctx.hotbar.getHeld().isEmpty(),
+                    true);
+            ctx.equipmentSidebar.draw();
         }
         ctx.inventoryOverlay.draw();
     }
@@ -179,7 +187,7 @@ public final class ScreenRenderer {
         hudViewport.apply(hudCamera);
         hudCamera.update();
         ctx.hud.setProjection(hudCamera.combined);
-        ItemStack held = ctx.hotbar.getHeld();
+        ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
         com.dawn.gameplay.BreakTarget hoverBreak =
                 target == null
                         ? null

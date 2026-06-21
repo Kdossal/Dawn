@@ -30,8 +30,6 @@ public final class InventoryDesign {
     public static final int CONTENT_W = GRID_PAD * 2 + SLOT_FIELD_W;
     public static final int GRID_PANEL_H = GRID_PAD * 2 + SLOT_FIELD_H;
 
-    public static final int HOTBAR_ROW_H = 20;
-
     public static final float GRID_X = (CHROME_W - CONTENT_W) / 2f;
     public static final int GRID_BOTTOM_PAD = GRID_PAD;
     public static final int GRID_Y = GRID_BOTTOM_PAD;

@@ -33,6 +33,9 @@ public final class EquipmentInventory {
         if (stack == null || stack.isEmpty()) {
             return false;
         }
+        if (target == EquipmentSlot.OFF_HAND) {
+            return true;
+        }
         ItemDef def = ItemRegistry.get(stack);
         return def != null && def.equipmentSlot() == target;
     }

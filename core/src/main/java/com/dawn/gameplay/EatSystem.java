@@ -6,6 +6,7 @@ import com.dawn.inventory.PlayerInventory;
 import com.dawn.item.ItemDef;
 import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
+import java.util.function.IntFunction;
 
 /** Hold right-click to eat edible held items (interact pose while channeling). */
 public final class EatSystem {
@@ -19,7 +20,12 @@ public final class EatSystem {
     }
 
     public void update(
-            Entity player, PlayerInventory inventory, ItemStack held, boolean eatHeld, float delta) {
+            Entity player,
+            PlayerInventory inventory,
+            ItemStack held,
+            boolean eatHeld,
+            float delta,
+            IntFunction<ItemStack> extractor) {
         if (!eatHeld || !canEat(player, held)) {
             eatProgressSec = 0f;
             return;
@@ -27,10 +33,15 @@ public final class EatSystem {
 
         eatProgressSec += delta;
         if (eatProgressSec >= GameConfig.get().eatDurationSec) {
-            completeEat(player, inventory, held);
+            completeEat(player, inventory, held, extractor);
             eatProgressSec = 0f;
             interactPulseRemaining = GameConfig.get().placeInteractPulseSec;
         }
+    }
+
+    public void update(
+            Entity player, PlayerInventory inventory, ItemStack held, boolean eatHeld, float delta) {
+        update(player, inventory, held, eatHeld, delta, null);
     }
 
     public boolean isEating() {
@@ -52,12 +63,20 @@ public final class EatSystem {
         return player.getCurrentHunger() < player.getMaxHunger();
     }
 
-    private static void completeEat(Entity player, PlayerInventory inventory, ItemStack held) {
+    private static void completeEat(
+            Entity player,
+            PlayerInventory inventory,
+            ItemStack held,
+            IntFunction<ItemStack> extractor) {
         ItemDef def = ItemRegistry.get(held);
         if (def == null || !def.isEdible()) {
             return;
         }
+        ItemStack extracted =
+                extractor != null ? extractor.apply(1) : inventory.extractFromHeld(1);
+        if (extracted == null || extracted.isEmpty()) {
+            return;
+        }
         HungerRestore.apply(player, def.eatHungerRestore());
-        inventory.removeFromHeld(1);
     }
 }

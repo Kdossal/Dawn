@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.dawn.assets.DawnAssets;
 import com.dawn.config.Constants;
 import com.dawn.render.GameSettings;
+import com.dawn.render.HudViewport;
 import com.dawn.render.RenderSettings;
 import com.dawn.render.ZoomController;
 import com.dawn.entity.EntityId;
@@ -26,9 +27,12 @@ import com.dawn.inventory.PlayerProfile;
 import com.dawn.ui.inventory.InventoryOverlay;
 import com.dawn.ui.DawnFonts;
 import com.dawn.ui.DebugOverlay;
+import com.dawn.ui.EquipmentSidebarHud;
 import com.dawn.ui.Hotbar;
 import com.dawn.ui.HudAssets;
 import com.dawn.ui.PauseOverlay;
+import com.dawn.ui.StatusHud;
+import com.dawn.ui.VitalsHud;
 import com.dawn.world.World;
 import com.dawn.world.render.WorldRenderer;
 
@@ -54,6 +58,9 @@ public final class GameContext implements Disposable {
     public final DropSystem dropSystem;
     public final DropRenderer dropRenderer;
     public final Hotbar hotbar;
+    public final VitalsHud vitalsHud;
+    public final StatusHud statusHud;
+    public final EquipmentSidebarHud equipmentSidebar;
     public final DebugOverlay debug;
     public final RenderSettings renderSettings;
     public final GameSettings gameSettings;
@@ -82,6 +89,9 @@ public final class GameContext implements Disposable {
             DropSystem dropSystem,
             DropRenderer dropRenderer,
             Hotbar hotbar,
+            VitalsHud vitalsHud,
+            StatusHud statusHud,
+            EquipmentSidebarHud equipmentSidebar,
             DebugOverlay debug,
             GameLoop gameLoop,
             HudAssets hud,
@@ -108,6 +118,9 @@ public final class GameContext implements Disposable {
         this.dropSystem = dropSystem;
         this.dropRenderer = dropRenderer;
         this.hotbar = hotbar;
+        this.vitalsHud = vitalsHud;
+        this.statusHud = statusHud;
+        this.equipmentSidebar = equipmentSidebar;
         this.debug = debug;
         this.gameLoop = gameLoop;
         this.hud = hud;
@@ -117,7 +130,7 @@ public final class GameContext implements Disposable {
         this.renderSettings = renderSettings;
     }
 
-    public static GameContext create() {
+    public static GameContext create(HudViewport hudViewport) {
         DawnAssets assets = new DawnAssets();
         SpriteBatch worldBatch = new SpriteBatch();
         ShapeRenderer worldOverlay = new ShapeRenderer();
@@ -145,6 +158,19 @@ public final class GameContext implements Disposable {
         RenderSettings renderSettings = new RenderSettings();
         gameSettings.applyDisplayGamma(renderSettings);
         Hotbar hotbar = new Hotbar(hud, assets, inventory, gameSettings);
+        VitalsHud vitalsHud = new VitalsHud(hud, assets, gameSettings);
+        StatusHud statusHud = new StatusHud(hud, assets);
+        EquipmentSidebarHud equipmentSidebar =
+                new EquipmentSidebarHud(
+                        fonts,
+                        assets,
+                        inventory,
+                        equipment,
+                        dropSystem,
+                        entities.getPlayer(),
+                        gameSettings,
+                        hotbar,
+                        hudViewport);
         DebugOverlay debug = new DebugOverlay(hud);
         ZoomController zoomController = new ZoomController(gameSettings);
         InventoryOverlay inventoryOverlay =
@@ -177,6 +203,9 @@ public final class GameContext implements Disposable {
                 dropSystem,
                 dropRenderer,
                 hotbar,
+                vitalsHud,
+                statusHud,
+                equipmentSidebar,
                 debug,
                 gameLoop,
                 hud,
@@ -195,6 +224,7 @@ public final class GameContext implements Disposable {
         hud.dispose();
         fonts.dispose();
         inventoryOverlay.dispose();
+        equipmentSidebar.dispose();
         pauseOverlay.dispose();
     }
 }

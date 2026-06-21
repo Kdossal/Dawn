@@ -9,8 +9,6 @@ public final class RenderColors {
     public static final Color PLACEMENT_INVALID = new Color(0.95f, 0.25f, 0.25f, 0.45f);
     public static final Color REACH_RING = new Color(1f, 1f, 1f, 0.15f);
     public static final Color DROP_LABEL_BG = new Color(0f, 0f, 0f, 0.6f);
-    public static final Color HOTBAR_BAR_BG = new Color(0.42f, 0.44f, 0.48f, 0.92f);
-    public static final Color HOTBAR_KEY_LABEL = new Color(0.65f, 0.67f, 0.72f, 1f);
 
     /** Block sprite alpha when the player is behind a fading occluder. */
     public static final float OCCLUSION_FADE_ALPHA = 0.45f;

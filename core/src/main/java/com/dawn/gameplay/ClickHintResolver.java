@@ -16,7 +16,12 @@ public final class ClickHintResolver {
     private ClickHintResolver() {}
 
     public static ClickHints resolve(World world, Entity entity, ItemStack held, TargetCell hover) {
-        ClickVerb left = resolveLeft(world, entity, held, hover);
+        return resolve(world, entity, held, hover, false);
+    }
+
+    public static ClickHints resolve(
+            World world, Entity entity, ItemStack held, TargetCell hover, boolean suppressLeftHints) {
+        ClickVerb left = suppressLeftHints ? null : resolveLeft(world, entity, held, hover);
         ClickVerb right = resolveRight(entity, held);
         return new ClickHints(left, right);
     }

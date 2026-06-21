@@ -6,6 +6,7 @@ import com.dawn.inventory.PlayerInventory;
 import com.dawn.item.ItemStack;
 import com.dawn.entity.Entity;
 import com.dawn.world.World;
+import java.util.function.IntFunction;
 
 /** Hold right-click to place dirt/sand at the cursor target (repeat interval). */
 public final class PlacementSystem {
@@ -30,7 +31,8 @@ public final class PlacementSystem {
             TargetCell target,
             ItemStack held,
             boolean placeHeld,
-            float delta) {
+            float delta,
+            IntFunction<ItemStack> extractor) {
         if (!placeHeld) {
             cooldown = 0f;
             return;
@@ -52,10 +54,22 @@ public final class PlacementSystem {
                 entity.getY(),
                 target.x(),
                 target.y(),
-                held)) {
+                held,
+                extractor)) {
             cooldown = GameConfig.get().placeRepeatIntervalSec;
             interactPulseRemaining = GameConfig.get().placeInteractPulseSec;
         }
+    }
+
+    public void update(
+            World world,
+            Entity entity,
+            PlayerInventory inventory,
+            TargetCell target,
+            ItemStack held,
+            boolean placeHeld,
+            float delta) {
+        update(world, entity, inventory, target, held, placeHeld, delta, null);
     }
 
     /** Brief interact pose after a successful place (visible even on quick taps). */

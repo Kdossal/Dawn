@@ -13,9 +13,10 @@ import com.dawn.ui.DawnTypography.TextContext;
 import com.dawn.ui.DawnTypography.TextTier;
 import com.dawn.ui.inventory.InventoryUiStyle;
 
-/** Bottom-right HUD rows: [RMB Place] [LMB Mine] (LMB outermost). */
+/** HUD hints: click actions bottom-right, key actions bottom-left. */
 public final class ClickHintRenderer {
     private static final float MARGIN_RIGHT = 12f;
+    private static final float MARGIN_LEFT = 12f;
     private static final float MARGIN_BOTTOM = 22f;
     private static final float ICON_TEXT_GAP = 4f;
     private static final float BETWEEN_HINTS_GAP = 12f;
@@ -25,30 +26,47 @@ public final class ClickHintRenderer {
 
     private ClickHintRenderer() {}
 
-    public static void render(HudAssets hud, DawnAssets assets, ClickHints hints) {
+    public static void render(
+            HudAssets hud,
+            DawnAssets assets,
+            ClickHints hints,
+            boolean showDropHint,
+            boolean showInventoryHint) {
+        SpriteBatch batch = hud.batch;
+        batch.begin();
+        renderClickHints(batch, hud, assets, hints);
+        renderKeyHints(batch, hud, assets, showDropHint, showInventoryHint);
+        batch.setColor(Color.WHITE);
+        batch.end();
+    }
+
+    private static void renderClickHints(
+            SpriteBatch batch, HudAssets hud, DawnAssets assets, ClickHints hints) {
         if (hints == null) {
             return;
         }
-
         TextureRegion lmbIcon = assets.uiCommon.leftClick;
         TextureRegion rmbIcon = assets.uiCommon.rightClick;
-        float iconH = lmbIcon.getRegionHeight();
-        float iconW = lmbIcon.getRegionWidth();
+        ClickVerb left = hints.left();
+        ClickVerb right = hints.rightOrNull();
+        if (left == null && right == null) {
+            return;
+        }
 
-        float lmbClusterW = clusterWidth(hud, hints.left().label(), iconW);
-        float rowW = lmbClusterW;
-        float rowH = Math.max(iconH, lineHeight(hud));
-
-        if (hints.rightOrNull() != null) {
-            float rmbClusterW = clusterWidth(hud, hints.rightOrNull().label(), rmbIcon.getRegionWidth());
-            rowW += BETWEEN_HINTS_GAP + rmbClusterW;
+        float rowH = Math.max(Math.max(lmbIcon.getRegionHeight(), rmbIcon.getRegionHeight()), lineHeight(hud));
+        float rowW = 0f;
+        if (left != null) {
+            rowW += clusterWidth(hud, left.label(), lmbIcon.getRegionWidth());
+        }
+        if (right != null) {
+            if (rowW > 0f) {
+                rowW += BETWEEN_HINTS_GAP;
+            }
+            rowW += clusterWidth(hud, right.label(), rmbIcon.getRegionWidth());
         }
 
         float rowX = Constants.HUD_WIDTH_PX - MARGIN_RIGHT - rowW;
         float rowY = MARGIN_BOTTOM;
-
-        SpriteBatch batch = hud.batch;
-        batch.begin();
         BatchDraw.tintedRect(
                 batch,
                 assets.whitePixel,
@@ -58,17 +76,107 @@ public final class ClickHintRenderer {
                 rowH + ROW_PAD * 2f,
                 RenderColors.DROP_LABEL_BG);
 
-        float x = rowX + rowW - lmbClusterW;
-        drawCluster(batch, hud, lmbIcon, iconW, iconH, hints.left().label(), x, rowY, rowH);
+        float x = rowX;
+        if (right != null) {
+            float w = clusterWidth(hud, right.label(), rmbIcon.getRegionWidth());
+            drawCluster(
+                    batch,
+                    hud,
+                    rmbIcon,
+                    rmbIcon.getRegionWidth(),
+                    rmbIcon.getRegionHeight(),
+                    right.label(),
+                    x,
+                    rowY,
+                    rowH);
+            x += w;
+            if (left != null) {
+                x += BETWEEN_HINTS_GAP;
+            }
+        }
+        if (left != null) {
+            drawCluster(
+                    batch,
+                    hud,
+                    lmbIcon,
+                    lmbIcon.getRegionWidth(),
+                    lmbIcon.getRegionHeight(),
+                    left.label(),
+                    x,
+                    rowY,
+                    rowH);
+        }
+    }
 
-        if (hints.rightOrNull() != null) {
-            float rmbClusterW = clusterWidth(hud, hints.rightOrNull().label(), rmbIcon.getRegionWidth());
-            x = rowX + rowW - lmbClusterW - BETWEEN_HINTS_GAP - rmbClusterW;
-            drawCluster(batch, hud, rmbIcon, rmbIcon.getRegionWidth(), rmbIcon.getRegionHeight(), hints.rightOrNull().label(), x, rowY, rowH);
+    private static void renderKeyHints(
+            SpriteBatch batch,
+            HudAssets hud,
+            DawnAssets assets,
+            boolean showDropHint,
+            boolean showInventoryHint) {
+        TextureRegion qKey = assets.uiCommon.qKey;
+        TextureRegion eKey = assets.uiCommon.eKey;
+        boolean canShowQ = showDropHint && qKey != null;
+        boolean canShowE = showInventoryHint && eKey != null;
+        if (!canShowQ && !canShowE) {
+            return;
         }
 
-        batch.setColor(Color.WHITE);
-        batch.end();
+        float qH = canShowQ ? qKey.getRegionHeight() : 0f;
+        float eH = canShowE ? eKey.getRegionHeight() : 0f;
+        float rowH = Math.max(Math.max(qH, eH), lineHeight(hud));
+        float rowW = 0f;
+        if (canShowQ) {
+            rowW += clusterWidth(hud, "Drop", qKey.getRegionWidth());
+        }
+        if (canShowE) {
+            if (rowW > 0f) {
+                rowW += BETWEEN_HINTS_GAP;
+            }
+            rowW += clusterWidth(hud, "Inventory", eKey.getRegionWidth());
+        }
+
+        float rowX = MARGIN_LEFT;
+        float rowY = MARGIN_BOTTOM;
+        BatchDraw.tintedRect(
+                batch,
+                assets.whitePixel,
+                rowX - ROW_PAD,
+                rowY - ROW_PAD,
+                rowW + ROW_PAD * 2f,
+                rowH + ROW_PAD * 2f,
+                RenderColors.DROP_LABEL_BG);
+
+        float x = rowX;
+        if (canShowQ) {
+            float w = clusterWidth(hud, "Drop", qKey.getRegionWidth());
+            drawCluster(
+                    batch,
+                    hud,
+                    qKey,
+                    qKey.getRegionWidth(),
+                    qKey.getRegionHeight(),
+                    "Drop",
+                    x,
+                    rowY,
+                    rowH);
+            x += w;
+            if (canShowE) {
+                x += BETWEEN_HINTS_GAP;
+            }
+        }
+        if (canShowE) {
+            drawCluster(
+                    batch,
+                    hud,
+                    eKey,
+                    eKey.getRegionWidth(),
+                    eKey.getRegionHeight(),
+                    "Inventory",
+                    x,
+                    rowY,
+                    rowH);
+        }
     }
 
     private static void drawCluster(

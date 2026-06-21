@@ -46,18 +46,26 @@ public final class InventoryCursorController {
         return !cursor.isEmpty();
     }
 
+    public InventorySlotRef cursorOrigin() {
+        return cursorOrigin;
+    }
+
     public void registerSlot(ItemSlotWidget widget) {
-        widget.addListener(
+        registerDragTarget(widget, widget.slotRef());
+    }
+
+    public void registerDragTarget(Actor actor, InventorySlotRef ref) {
+        actor.addListener(
                 new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                         if (button == Input.Buttons.LEFT) {
-                            onSlotClick(widget.slotRef(), true);
+                            onSlotClick(ref, true);
                             event.stop();
                             return true;
                         }
                         if (button == Input.Buttons.RIGHT) {
-                            onSlotClick(widget.slotRef(), false);
+                            onSlotClick(ref, false);
                             event.stop();
                             return true;
                         }
@@ -88,6 +96,20 @@ public final class InventoryCursorController {
         dropSystem.spawnPlayerDrop(cursor.copy(), entity.getX(), entity.getY());
         clearCursor();
         notifyChanged();
+    }
+
+    public ItemStack extractFromCursor(int amount) {
+        if (cursor.isEmpty() || amount <= 0) {
+            return ItemStack.empty();
+        }
+        int extracted = Math.min(amount, cursor.count);
+        ItemStack out = ItemStack.of(cursor.itemId, extracted);
+        reduceCursor(extracted);
+        if (cursor.isEmpty()) {
+            clearCursorOrigin();
+        }
+        notifyChanged();
+        return out;
     }
 
     /** Returns held stack to origin, empty grid, merge slot, or world. */
@@ -246,6 +268,7 @@ public final class InventoryCursorController {
         cursor = previous;
         eq[eIdx] = ItemStack.empty();
         cursorOrigin = InventorySlotRef.grid(gridIndex);
+        syncHotbarSelection(cursorOrigin);
         return true;
     }
 
@@ -257,6 +280,7 @@ public final class InventoryCursorController {
         if (cursor.isEmpty()) {
             cursor = taken;
             cursorOrigin = ref;
+            syncHotbarSelection(ref);
         } else if (cursor.itemId == taken.itemId) {
             cursor = cursor.withCount(cursor.count + taken.count);
         } else {
@@ -335,6 +359,7 @@ public final class InventoryCursorController {
                 clearCursorOrigin();
             } else {
                 cursorOrigin = ref;
+                syncHotbarSelection(ref);
             }
             return true;
         }
@@ -346,8 +371,15 @@ public final class InventoryCursorController {
             clearCursorOrigin();
         } else {
             cursorOrigin = ref;
+            syncHotbarSelection(ref);
         }
         return true;
+    }
+
+    private void syncHotbarSelection(InventorySlotRef ref) {
+        if (ref != null && ref.kind == InventorySlotRef.Kind.GRID) {
+            inventory.setSelectedIndex(ref.gridIndex);
+        }
     }
 
     private ItemStack extractFromSlot(InventorySlotRef ref, int amount) {

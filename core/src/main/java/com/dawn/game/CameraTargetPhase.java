@@ -42,6 +42,11 @@ final class CameraTargetPhase {
         frame.mouseWorld.set(Gdx.input.getX(), Gdx.input.getY(), 0f);
         gameViewport.unproject(frame.mouseWorld);
         Entity player = ctx.entities.getPlayer();
-        frame.target = ctx.input.updateTarget(ctx.world, player, frame.mouseWorld, ctx.hotbar.getHeld());
+        frame.target =
+                ctx.input.updateTarget(
+                        ctx.world,
+                        player,
+                        frame.mouseWorld,
+                        ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld()));
     }
 }

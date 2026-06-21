@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.dawn.entity.Entity;
 import com.dawn.entity.EntityId;
+import com.dawn.inventory.PlayerInventory;
 import com.dawn.item.ItemId;
 import com.dawn.item.ItemStack;
 import com.dawn.test.GameConfigTestSupport;
@@ -21,7 +22,7 @@ class EatSystemTest {
             player.setHunger(80f);
             var inventory = TestInventories.empty();
             inventory.setSlot(2, 0, ItemStack.of(ItemId.CANNED_FOOD, 2));
-            inventory.setSelectedCol(0);
+            inventory.setSelectedIndex(PlayerInventory.toIndex(2, 0));
             EatSystem eat = new EatSystem();
             ItemStack held = inventory.getHeld();
 

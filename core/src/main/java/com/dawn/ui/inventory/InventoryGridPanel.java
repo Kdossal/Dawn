@@ -10,7 +10,6 @@ import com.dawn.inventory.PlayerInventory;
 /** Grid panel background {@link InventoryDesign#CONTENT_W}×{@link InventoryDesign#GRID_PANEL_H}; slots unchanged. */
 public final class InventoryGridPanel extends Group {
     private final ItemSlotWidget[][] slots = new ItemSlotWidget[InventoryConstants.ROWS][InventoryConstants.COLS];
-    private final Image[] rowHighlights = new Image[InventoryConstants.ROWS];
     private final float cellStep = InventoryDesign.SLOT_PX + InventoryDesign.GAP_PX;
 
     public InventoryGridPanel(DawnAssets assets, DawnFonts fonts, PlayerInventory inventory) {
@@ -20,16 +19,6 @@ public final class InventoryGridPanel extends Group {
         gridBg.setSize(InventoryDesign.CONTENT_W, InventoryDesign.GRID_PANEL_H);
         gridBg.setPosition(0f, 0f);
         addActor(gridBg);
-
-        for (int row = 0; row < InventoryConstants.ROWS; row++) {
-            Image rowBg = new Image(InventoryUiStyle.fixedDrawable(assets.uiInventory.hotbarRow));
-            rowBg.setSize(InventoryDesign.CONTENT_W, InventoryDesign.HOTBAR_ROW_H);
-            float rowInset = (InventoryDesign.HOTBAR_ROW_H - InventoryDesign.SLOT_PX) / 2f;
-            rowBg.setPosition(0f, rowY(row) - rowInset);
-            rowBg.setVisible(false);
-            rowHighlights[row] = rowBg;
-            addActor(rowBg);
-        }
 
         for (int row = 0; row < InventoryConstants.ROWS; row++) {
             for (int col = 0; col < InventoryConstants.COLS; col++) {
@@ -71,9 +60,7 @@ public final class InventoryGridPanel extends Group {
     }
 
     public void refresh(PlayerInventory inventory, DawnAssets assets) {
-        int activeRow = inventory.getActiveRow();
         for (int row = 0; row < InventoryConstants.ROWS; row++) {
-            rowHighlights[row].setVisible(row == activeRow);
             for (int col = 0; col < InventoryConstants.COLS; col++) {
                 slots[row][col].refresh(inventory.getSlot(row, col), assets);
             }

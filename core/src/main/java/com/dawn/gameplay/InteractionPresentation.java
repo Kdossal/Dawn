@@ -32,7 +32,8 @@ public final class InteractionPresentation {
             Entity player,
             ItemStack held,
             TargetCell target,
-            boolean showPlacementGhost) {
+            boolean showPlacementGhost,
+            boolean suppressBreakHighlights) {
         showPlacementGhosts = showPlacementGhost;
         if (target != null) {
             placementPreviews = PlacementPreviewResolver.resolve(
@@ -41,10 +42,19 @@ public final class InteractionPresentation {
             placementPreviews = List.of();
         }
         breakHighlights =
-                target == null
+                target == null || suppressBreakHighlights
                         ? List.of()
                         : InteractionHighlight.resolve(
                                 world, player, player.getX(), player.getY(), held, target);
+    }
+
+    public void update(
+            World world,
+            Entity player,
+            ItemStack held,
+            TargetCell target,
+            boolean showPlacementGhost) {
+        update(world, player, held, target, showPlacementGhost, false);
     }
 
     public void clear() {

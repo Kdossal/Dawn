@@ -204,15 +204,61 @@ public final class DawnAssets implements Disposable {
         public final TextureRegion slot;
         public final TextureRegion slotSelected;
         public final TextureRegion slotEquip;
+        public final TextureRegion accessoryIcon;
+        public final TextureRegion bodyIcon;
+        public final TextureRegion headIcon;
+        public final TextureRegion feetIcon;
+        public final TextureRegion legIcon;
+        public final TextureRegion handIcon;
         public final TextureRegion leftClick;
         public final TextureRegion rightClick;
+        public final TextureRegion qKey;
+        public final TextureRegion eKey;
+        public final TextureRegion statusPoison;
+        public final TextureRegion statusHungry;
+        public final TextureRegion statusStarving;
+        public final TextureRegion statusBurdened;
+        public final TextureRegion statusImmobile;
+        public final TextureRegion emptyBar;
+        public final TextureRegion hpFill;
+        public final TextureRegion epFill;
+        public final TextureRegion hpIcon;
+        public final TextureRegion epIcon;
+        public final TextureRegion smallEmptyBar;
+        public final TextureRegion hungerFill;
+        public final TextureRegion thirstFill;
+        public final TextureRegion hungerIcon;
+        public final TextureRegion thirstIcon;
 
         UiCommon(DawnAssets assets) {
             slot = assets.loadUi("common/slot");
             slotSelected = assets.loadUi("common/slot_selected");
             slotEquip = assets.loadUi("common/slot_equip");
+            accessoryIcon = assets.loadUi("common/accessory_icon");
+            bodyIcon = assets.loadUi("common/body_icon");
+            headIcon = assets.loadUi("common/head_icon");
+            feetIcon = assets.loadUi("common/feet_icon");
+            legIcon = assets.loadUi("common/leg_icon");
+            handIcon = assets.loadUi("common/hand_icon");
             leftClick = assets.loadUi("common/left_click");
             rightClick = assets.loadUi("common/right_click");
+            qKey = assets.loadUi("common/q_key");
+            eKey = assets.loadUi("common/e_key");
+            statusPoison = assets.loadUi("statuses/poison");
+            statusHungry = assets.loadUi("statuses/hunger");
+            statusStarving = assets.loadUi("statuses/starving");
+            statusBurdened = assets.loadUi("statuses/burdened");
+            statusImmobile = assets.loadUi("statuses/immobile");
+            emptyBar = assets.loadUi("common/empty_bar");
+            hpFill = assets.loadUi("common/hp");
+            epFill = assets.loadUi("common/ep");
+            hpIcon = assets.loadUi("common/hp_icon");
+            epIcon = assets.loadUi("common/ep_icon");
+            smallEmptyBar = assets.loadUi("common/small_empty_bar");
+            hungerFill = assets.loadUi("common/hunger");
+            thirstFill = assets.loadUi("common/thirst");
+            hungerIcon = assets.loadUi("common/hunger_icon");
+            thirstIcon = assets.loadUi("common/thirst_icon");
         }
     }
 
@@ -225,7 +271,8 @@ public final class DawnAssets implements Disposable {
         public final TextureRegion tabEquipmentActive;
         public final TextureRegion tabCrafting;
         public final TextureRegion tabCraftingActive;
-        public final TextureRegion hotbarRow;
+        public final TextureRegion eqpTab;
+        public final TextureRegion eqpBackground;
 
         UiInventory(DawnAssets assets) {
             chromeBg = assets.loadUi("inventory/chrome_bg");
@@ -235,7 +282,8 @@ public final class DawnAssets implements Disposable {
             tabEquipmentActive = assets.loadUi("inventory/tab_equipment_active");
             tabCrafting = assets.loadUi("inventory/tab_crafting");
             tabCraftingActive = assets.loadUi("inventory/tab_crafting_active");
-            hotbarRow = assets.loadUi("inventory/hotbar_row");
+            eqpTab = assets.loadUi("inventory/eqp_tab");
+            eqpBackground = assets.loadUi("inventory/eqp_bckgrd");
         }
     }
 

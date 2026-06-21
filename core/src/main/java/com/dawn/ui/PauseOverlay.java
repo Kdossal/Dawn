@@ -34,7 +34,6 @@ public final class PauseOverlay implements Disposable {
     private Table mainMenu;
     private Table optionsPanel;
     private Label zoomValueLabel;
-    private TextButton uiSizeButton;
     private TextButton gammaButton;
     private final RenderSettings renderSettings;
     private boolean paused;
@@ -164,7 +163,6 @@ public final class PauseOverlay implements Disposable {
     private void showOptions() {
         showingOptions = true;
         refreshZoomUi();
-        refreshUiSizeUi();
         refreshGammaUi();
         if (mainMenu != null) {
             mainMenu.setVisible(false);
@@ -184,18 +182,6 @@ public final class PauseOverlay implements Disposable {
             return;
         }
         zoomValueLabel.setText(gameSettings.zoomLevel + " / " + GameSettings.MAX_ZOOM_LEVEL);
-    }
-
-    private void toggleUiSize() {
-        gameSettings.cycleUiSize();
-        refreshUiSizeUi();
-    }
-
-    private void refreshUiSizeUi() {
-        if (uiSizeButton == null) {
-            return;
-        }
-        uiSizeButton.setText(GameSettings.uiSizeLabel(gameSettings.uiSize));
     }
 
     private void cycleDisplayGamma() {
@@ -317,18 +303,6 @@ public final class PauseOverlay implements Disposable {
         });
         zoomRow.add(plus).size(44f, 44f);
         column.add(zoomRow).padBottom(36f).row();
-
-        Table uiSizeRow = new Table();
-        uiSizeRow.add(PauseUiStyle.sectionLabel("UI Size", fonts)).padRight(16f);
-        uiSizeButton = PauseUiStyle.smallButton(GameSettings.uiSizeLabel(gameSettings.uiSize), fonts, assets);
-        uiSizeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                toggleUiSize();
-            }
-        });
-        uiSizeRow.add(uiSizeButton).width(160f).height(44f);
-        column.add(uiSizeRow).padBottom(36f).row();
 
         Table gammaRow = new Table();
         gammaRow.add(PauseUiStyle.sectionLabel("Gamma", fonts)).padRight(16f);

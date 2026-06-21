@@ -16,8 +16,10 @@ import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
 import com.dawn.render.GameSettings;
 
+/** Always-visible HUD row for every inventory slot (flat index 0..{@link InventoryConstants#SIZE}-1). */
 public class Hotbar implements Disposable {
-    public static final int COLS = InventoryConstants.COLS;
+    private static final GameSettings.UiSize HOTBAR_UI_SIZE = GameSettings.UiSize.SMALL;
+    public static final int SLOT_COUNT = InventoryConstants.SIZE;
     /** Art-base (1×) sizes matching PNG dimensions; multiplied by {@link GameSettings#slotMultiplier}. */
     public static final float BASE_SLOT_PX = 20f;
     public static final float BASE_GAP_PX = 2f;
@@ -52,7 +54,7 @@ public class Hotbar implements Disposable {
     }
 
     private int slotMultiplier() {
-        return GameSettings.slotMultiplier(settings.uiSize);
+        return GameSettings.slotMultiplier(HOTBAR_UI_SIZE);
     }
 
     private float slotPx() {
@@ -63,33 +65,39 @@ public class Hotbar implements Disposable {
         return BASE_GAP_PX * slotMultiplier();
     }
 
-    public void update() {
+    public void update(boolean lockSelection) {
+        if (lockSelection) {
+            return;
+        }
         for (int i = 0; i < HOTKEYS.length; i++) {
-            if (Gdx.input.isKeyJustPressed(HOTKEYS[i])) {
-                inventory.setSelectedCol(i);
+            if (i < SLOT_COUNT && Gdx.input.isKeyJustPressed(HOTKEYS[i])) {
+                inventory.setSelectedIndex(i);
             }
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.PAGE_UP)) {
-            inventory.cycleRow(-1);
+            inventory.cycleSelectedIndex(-1);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.PAGE_DOWN)) {
-            inventory.cycleRow(1);
+            inventory.cycleSelectedIndex(1);
         }
     }
 
     /** Called from scroll wheel events only (see InputController.scrolled). */
-    public void applyScroll(float amountY) {
+    public void applyScroll(float amountY, boolean lockSelection) {
+        if (lockSelection) {
+            return;
+        }
         if (amountY > 0f) {
-            cycleCol(-1);
+            inventory.cycleSelectedIndex(-1);
         } else if (amountY < 0f) {
-            cycleCol(1);
+            inventory.cycleSelectedIndex(1);
         }
     }
 
     public boolean handleClick(float screenX, float screenY) {
-        Integer col = hitTest(screenX, screenY);
-        if (col != null) {
-            inventory.setSelectedCol(col);
+        Integer slotIndex = hitTest(screenX, screenY);
+        if (slotIndex != null) {
+            inventory.setSelectedIndex(slotIndex);
             return true;
         }
         return false;
@@ -102,42 +110,45 @@ public class Hotbar implements Disposable {
         }
         float relX = screenX - bounds.x;
         float step = slotPx() + gapPx();
-        int col = (int) (relX / step);
-        if (col < 0 || col >= COLS) {
+        int index = (int) (relX / step);
+        if (index < 0 || index >= SLOT_COUNT) {
             return null;
         }
-        float inSlot = relX - col * step;
+        float inSlot = relX - index * step;
         if (inSlot > slotPx()) {
             return null;
         }
-        return col;
+        return index;
+    }
+
+    /** HUD bounds for slot {@code index} (0 = leftmost). Call after layout is current. */
+    public void slotBounds(int index, Rectangle out) {
+        layoutBounds();
+        float slot = slotPx();
+        float step = slot + gapPx();
+        float x = bounds.x + index * step;
+        out.set(x, bounds.y, slot, slot);
+    }
+
+    public Rectangle barBounds() {
+        layoutBounds();
+        return bounds;
     }
 
     public ItemStack getHeld() {
         return inventory.getHeld();
     }
 
-    private void cycleCol(int delta) {
-        int col = inventory.getSelectedCol() + delta;
-        if (col < 0) {
-            col = COLS - 1;
-        } else if (col >= COLS) {
-            col = 0;
-        }
-        inventory.setSelectedCol(col);
-    }
-
     private void layoutBounds() {
         int mult = slotMultiplier();
         float slot = slotPx();
-        float totalW = COLS * slot + (COLS - 1) * gapPx();
+        float totalW = SLOT_COUNT * slot + (SLOT_COUNT - 1) * gapPx();
         float startX = (Constants.HUD_WIDTH_PX - totalW) / 2f;
         bounds.set(startX, BASE_BOTTOM_MARGIN * mult, totalW, slot);
     }
 
     public void render() {
-        ItemStack[] row = inventory.getActiveRowSlots();
-        int selectedCol = inventory.getSelectedCol();
+        int selectedIndex = inventory.getSelectedIndex();
         layoutBounds();
         int mult = slotMultiplier();
         float slot = slotPx();
@@ -149,13 +160,13 @@ public class Hotbar implements Disposable {
 
         hud.batch.begin();
         hud.batch.setColor(Color.WHITE);
-        for (int i = 0; i < COLS; i++) {
+        for (int i = 0; i < SLOT_COUNT; i++) {
             float x = startX + i * step;
-            boolean selected = i == selectedCol;
+            boolean selected = i == selectedIndex;
             TextureRegion bg = selected ? assets.uiCommon.slotSelected : assets.uiCommon.slot;
             hud.batch.draw(bg, x, y, slot, slot);
 
-            ItemStack stack = row[i];
+            ItemStack stack = inventory.getSlotAtIndex(i);
             if (!stack.isEmpty()) {
                 ItemDef def = ItemRegistry.get(stack);
                 if (def != null) {
@@ -169,14 +180,11 @@ public class Hotbar implements Disposable {
             }
         }
 
-        BitmapFont font = hud.fonts.forUiSize(settings.uiSize);
-        float fontScale = DawnFonts.drawScaleForUiSize(settings.uiSize);
-        for (int i = 0; i < COLS; i++) {
+        BitmapFont font = hud.fonts.forUiSize(HOTBAR_UI_SIZE);
+        float fontScale = DawnFonts.drawScaleForUiSize(HOTBAR_UI_SIZE);
+        for (int i = 0; i < SLOT_COUNT; i++) {
             float x = startX + i * step;
-            String keyLabel = i == 9 ? "0" : String.valueOf(i + 1);
-            drawLabel(font, fontScale, keyLabel, x + pad, y + slot - pad, Color.GRAY);
-
-            ItemStack stack = row[i];
+            ItemStack stack = inventory.getSlotAtIndex(i);
             if (!stack.isEmpty() && stack.count > 1) {
                 String countLabel = String.valueOf(stack.count);
                 font.getData().setScale(fontScale);

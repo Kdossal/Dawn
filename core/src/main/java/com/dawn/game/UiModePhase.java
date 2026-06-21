@@ -12,6 +12,7 @@ final class UiModePhase {
         frame.paused = ctx.pauseOverlay.isPaused();
         if (!wasPaused && frame.paused) {
             ctx.inventoryOverlay.close();
+            ctx.equipmentSidebar.close();
             ctx.mining.reset();
             ctx.interactionPresentation.clear();
             applyInputProcessor(ctx, hotbarInput);
@@ -23,21 +24,28 @@ final class UiModePhase {
             boolean wasOpen = ctx.inventoryOverlay.isOpen();
             ctx.inventoryOverlay.handleToggleKey();
             if (wasOpen != ctx.inventoryOverlay.isOpen()) {
+                ctx.equipmentSidebar.setInventoryOverlayOpen(ctx.inventoryOverlay.isOpen());
                 applyInputProcessor(ctx, hotbarInput);
             }
         }
+        ctx.equipmentSidebar.setInventoryOverlayOpen(ctx.inventoryOverlay.isOpen());
     }
 
     void processHotbarAndScroll(GameContext ctx) {
-        int prevActiveRow = ctx.inventory.getActiveRow();
-        ctx.hotbar.update();
-        if (ctx.inventoryOverlay.isOpen() && prevActiveRow != ctx.inventory.getActiveRow()) {
+        boolean lockSelection = ctx.equipmentSidebar.locksHotbarSelection();
+        if (lockSelection) {
+            ctx.inventory.setSelectedIndex(ctx.equipmentSidebar.lockedHotbarIndex());
+        }
+
+        int prevSelected = ctx.inventory.getSelectedIndex();
+        ctx.hotbar.update(lockSelection);
+        if (ctx.inventoryOverlay.isOpen() && prevSelected != ctx.inventory.getSelectedIndex()) {
             ctx.inventoryOverlay.refreshAll();
         }
 
         float scrollY = ctx.input.consumeScrollY();
         if (scrollY != 0f && !ctx.inventoryOverlay.isOpen()) {
-            ctx.hotbar.applyScroll(scrollY);
+            ctx.hotbar.applyScroll(scrollY, lockSelection);
         }
     }
 
@@ -47,7 +55,8 @@ final class UiModePhase {
         } else if (ctx.inventoryOverlay.isOpen()) {
             Gdx.input.setInputProcessor(new InputMultiplexer(ctx.inventoryOverlay.stage(), ctx.input));
         } else {
-            Gdx.input.setInputProcessor(new InputMultiplexer(hotbarInput, ctx.input));
+            Gdx.input.setInputProcessor(
+                    new InputMultiplexer(ctx.equipmentSidebar.stage(), hotbarInput, ctx.input));
         }
     }
 }

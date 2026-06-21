@@ -7,15 +7,15 @@ public final class TestInventories {
     private TestInventories() {}
 
     public static PlayerInventory empty() {
-        return emptyWithActiveRow(2);
+        return emptyWithSelectedIndex(0);
     }
 
-    public static PlayerInventory emptyWithActiveRow(int activeRow) {
+    public static PlayerInventory emptyWithSelectedIndex(int selectedIndex) {
         PlayerInventory inventory = new PlayerInventory();
         for (int i = 0; i < inventory.backingArray().length; i++) {
             inventory.setSlotAtIndex(i, ItemStack.empty());
         }
-        inventory.setActiveRow(activeRow);
+        inventory.setSelectedIndex(selectedIndex);
         return inventory;
     }
 }

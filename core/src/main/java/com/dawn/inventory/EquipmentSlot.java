@@ -8,10 +8,11 @@ public enum EquipmentSlot {
     ACCESSORY_1,
     ACCESSORY_2,
     ACCESSORY_3,
-    ACCESSORY_4;
+    ACCESSORY_4,
+    OFF_HAND;
 
     public boolean isAccessory() {
-        return ordinal() >= ACCESSORY_1.ordinal();
+        return ordinal() >= ACCESSORY_1.ordinal() && ordinal() <= ACCESSORY_4.ordinal();
     }
 
     public static EquipmentSlot[] wearOrder() {

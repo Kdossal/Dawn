@@ -88,7 +88,43 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   slot_equip.png
 
+  accessory_icon.png  (16x16 — empty accessory-slot guide icon)
+
+  body_icon.png  (16x16 — empty chest-slot guide icon)
+
+  head_icon.png  (16x16 — empty head-slot guide icon)
+
+  feet_icon.png  (16x16 — empty boots-slot guide icon)
+
+  leg_icon.png  (16x16 — empty pants-slot guide icon)
+
+  hand_icon.png  (16x16 — empty offhand-slot guide icon)
+
   cursor.png
+
+  q_key.png  (16x16 — keyboard hint icon for drop action)
+
+  e_key.png  (16x16 — keyboard hint icon for inventory action)
+
+  empty_bar.png  (102x8 — left 2px cap + 100px body)
+
+  hp.png  (100x4 — HP fill strip, clipped by current/max)
+
+  ep.png  (100x4 — energy fill strip, clipped by current/max)
+
+  hp_icon.png  (13x13 — overlaps rightmost 4px of empty bar)
+
+  ep_icon.png  (13x13 — overlaps rightmost 4px of empty bar)
+
+  small_empty_bar.png  (52x6 — left 2px cap + 50px body, 2px fill lane centered)
+
+  hunger.png  (50x2 — hunger fill strip for small bar)
+
+  thirst.png  (50x2 — thirst fill strip for small bar)
+
+  hunger_icon.png  (11x11 — overlaps rightmost 4px of small empty bar)
+
+  thirst_icon.png  (11x11 — overlaps rightmost 4px of small empty bar)
 
 
 
@@ -110,6 +146,10 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   hotbar_row.png
 
+  eqp_tab.png
+
+  eqp_bckgrd.png
+
 
 
 [ui/equipment/]
@@ -119,4 +159,18 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
   exp_bar_bg.png
 
   exp_bar_fill.png
+
+
+
+[ui/statuses/]
+
+  poison.png  (16x16 — active poisoned status icon)
+
+  hunger.png  (16x16 — active hungry status icon)
+
+  starving.png  (16x16 — active starving status icon)
+
+  burdened.png  (16x16 — active burdened status icon)
+
+  immobile.png  (16x16 — active immobile status icon)
 

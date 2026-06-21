@@ -8,62 +8,54 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PlayerInventory {
+    /** Default held slot: shovel in the right-hand tool group (grid row 2, col 2). */
+    private static final int DEFAULT_SELECTED_INDEX = toIndex(2, 2);
+
     private final ItemStack[] slots = new ItemStack[InventoryConstants.SIZE];
-    private int activeRow = InventoryConstants.HOTBAR_ROW;
-    private int selectedCol = 2;
+    private int selectedIndex = DEFAULT_SELECTED_INDEX;
 
     public PlayerInventory() {
         for (int i = 0; i < slots.length; i++) {
             slots[i] = ItemStack.empty();
         }
-        setSlot(InventoryConstants.HOTBAR_ROW, 0, ItemStack.of(ItemId.HAMMER));
-        setSlot(InventoryConstants.HOTBAR_ROW, 1, ItemStack.of(ItemId.SAW));
-        setSlot(InventoryConstants.HOTBAR_ROW, 2, ItemStack.of(ItemId.SHOVEL));
-        setSlot(InventoryConstants.HOTBAR_ROW, 3, ItemStack.of(ItemId.CRATE, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 4, ItemStack.of(ItemId.BED, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 5, ItemStack.of(ItemId.LANTERN, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 6, ItemStack.of(ItemId.SPRUCE_SAPLING, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 7, ItemStack.of(ItemId.STONE_GROUND, 4));
-        setSlot(InventoryConstants.HOTBAR_ROW, 8, ItemStack.of(ItemId.STONE_WALL, 8));
-        setSlot(InventoryConstants.HOTBAR_ROW, 9, ItemStack.of(ItemId.STONE_WALL, 8));
-        setSlot(0, 0, ItemStack.of(ItemId.LEATHER_HOOD));
-        setSlot(0, 1, ItemStack.of(ItemId.CANNED_FOOD, 4));
+        setSlotAtIndex(10, ItemStack.of(ItemId.HAMMER));
+        setSlotAtIndex(11, ItemStack.of(ItemId.SAW));
+        setSlotAtIndex(12, ItemStack.of(ItemId.SHOVEL));
+        setSlotAtIndex(13, ItemStack.of(ItemId.CRATE, 4));
+        setSlotAtIndex(14, ItemStack.of(ItemId.BED, 4));
+        setSlotAtIndex(5, ItemStack.of(ItemId.LANTERN, 4));
+        setSlotAtIndex(6, ItemStack.of(ItemId.SPRUCE_SAPLING, 4));
+        setSlotAtIndex(7, ItemStack.of(ItemId.STONE_GROUND, 4));
+        setSlotAtIndex(8, ItemStack.of(ItemId.STONE_WALL, 8));
+        setSlotAtIndex(9, ItemStack.of(ItemId.STONE_WALL, 8));
+        setSlotAtIndex(0, ItemStack.of(ItemId.LEATHER_HOOD));
+        setSlotAtIndex(1, ItemStack.of(ItemId.CANNED_FOOD, 4));
     }
 
     public ItemStack[] backingArray() {
         return slots;
     }
 
-    public int getActiveRow() {
-        return activeRow;
+    public int getSelectedIndex() {
+        return selectedIndex;
     }
 
-    public void setActiveRow(int row) {
-        if (row >= 0 && row < InventoryConstants.ROWS) {
-            activeRow = row;
+    public void setSelectedIndex(int index) {
+        if (index >= 0 && index < InventoryConstants.SIZE) {
+            selectedIndex = index;
         }
     }
 
-    public int getSelectedCol() {
-        return selectedCol;
-    }
-
-    public void setSelectedCol(int col) {
-        if (col >= 0 && col < InventoryConstants.COLS) {
-            selectedCol = col;
-        }
-    }
-
-    public void cycleRow(int delta) {
-        activeRow = Math.floorMod(activeRow + delta, InventoryConstants.ROWS);
+    public void cycleSelectedIndex(int delta) {
+        selectedIndex = Math.floorMod(selectedIndex + delta, InventoryConstants.SIZE);
     }
 
     public ItemStack getHeld() {
-        return getSlot(activeRow, selectedCol);
+        return getSlotAtIndex(selectedIndex);
     }
 
     public int getHeldIndex() {
-        return toIndex(activeRow, selectedCol);
+        return selectedIndex;
     }
 
     public ItemStack getSlot(int row, int col) {
@@ -88,14 +80,6 @@ public final class PlayerInventory {
 
     public boolean moveSlot(int fromIndex, int toIndex) {
         return InventoryOperations.moveStack(slots, fromIndex, toIndex);
-    }
-
-    public ItemStack[] getActiveRowSlots() {
-        ItemStack[] row = new ItemStack[InventoryConstants.COLS];
-        for (int c = 0; c < InventoryConstants.COLS; c++) {
-            row[c] = getSlot(activeRow, c);
-        }
-        return row;
     }
 
     public int tryAdd(ItemStack incoming) {
@@ -170,21 +154,18 @@ public final class PlayerInventory {
 
     private List<Integer> pickupSlotOrder() {
         List<Integer> order = new ArrayList<>(InventoryConstants.SIZE);
-        for (int c = 0; c < InventoryConstants.COLS; c++) {
-            order.add(toIndex(activeRow, c));
-        }
-        for (int r = 0; r < InventoryConstants.ROWS; r++) {
-            if (r == activeRow) {
-                continue;
-            }
-            for (int c = 0; c < InventoryConstants.COLS; c++) {
-                order.add(toIndex(r, c));
+        order.add(getHeldIndex());
+        for (int idx = 0; idx < InventoryConstants.SIZE; idx++) {
+            if (idx != getHeldIndex()) {
+                order.add(idx);
             }
         }
         return order;
     }
 
     public static int toIndex(int row, int col) {
+        row = Math.max(0, Math.min(row, InventoryConstants.ROWS - 1));
+        col = Math.max(0, Math.min(col, InventoryConstants.COLS - 1));
         return row * InventoryConstants.COLS + col;
     }
 

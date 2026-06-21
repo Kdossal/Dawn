@@ -62,9 +62,14 @@ class GameSettingsTest {
         settings.cycleUiSize();
         assertEquals(GameSettings.UiSize.MEDIUM, settings.uiSize);
         settings.cycleUiSize();
-        assertEquals(GameSettings.UiSize.LARGE, settings.uiSize);
-        settings.cycleUiSize();
         assertEquals(GameSettings.UiSize.SMALL, settings.uiSize);
+    }
+
+    @Test
+    void setUiSize_largeIsDisabledAndFallsBackToMedium() {
+        GameSettings settings = new GameSettings();
+        settings.setUiSize(GameSettings.UiSize.LARGE);
+        assertEquals(GameSettings.UiSize.MEDIUM, settings.uiSize);
     }
 
     @Test
