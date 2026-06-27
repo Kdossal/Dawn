@@ -3,19 +3,16 @@ package com.dawn.ui;
 import com.badlogic.gdx.math.Rectangle;
 import com.dawn.config.Constants;
 import com.dawn.inventory.EquipmentSlot;
-import com.dawn.render.GameSettings;
 
-/** Art-base layout for the HUD equipment sidebar (scaled by {@link GameSettings#slotMultiplier}). */
+/** Art-base layout for the HUD equipment sidebar (scaled by {@link Constants#HUD_ART_MULT}). */
 public final class EquipmentSidebarDesign {
     public static final float BASE_TAB_W = 10f;
     public static final float BASE_TAB_H = 16f;
     public static final float BASE_PANEL_W = 50f;
     public static final float BASE_PANEL_H = 116f;
-    public static final float BASE_SLOT_PX = 20f;
-    public static final float BASE_ICON_PX = 16f;
     public static final float BASE_INSET = 4f;
-    public static final float BASE_SLOT_GAP = 2f;
     public static final float BASE_OFFHAND_GAP = 2f;
+    public static final float BASE_TAB_ON_PANEL_INSET = 2f;
 
     public static final int SLOT_ROWS = 4;
     public static final int SLOT_COLS = 2;
@@ -38,16 +35,16 @@ public final class EquipmentSidebarDesign {
             float panelX,
             float panelY) {}
 
-    public static Layout layout(GameSettings.UiSize uiSize) {
-        int mult = GameSettings.slotMultiplier(uiSize);
+    public static Layout layout() {
+        int mult = Constants.HUD_ART_MULT;
         float tabW = BASE_TAB_W * mult;
         float tabH = BASE_TAB_H * mult;
         float panelW = BASE_PANEL_W * mult;
         float panelH = BASE_PANEL_H * mult;
-        float slotPx = BASE_SLOT_PX * mult;
-        float iconPx = BASE_ICON_PX * mult;
+        float slotPx = HudSlotDesign.slotPx();
+        float iconPx = SlotUi.iconPxForSlot(slotPx);
         float inset = BASE_INSET * mult;
-        float slotGap = BASE_SLOT_GAP * mult;
+        float slotGap = HudSlotDesign.gapPx();
         float offhandGap = BASE_OFFHAND_GAP * mult;
         float hudW = Constants.HUD_WIDTH_PX;
         float hudH = Constants.HUD_HEIGHT_PX;
@@ -72,12 +69,12 @@ public final class EquipmentSidebarDesign {
                 panelY);
     }
 
-    /** Tab anchor X while sliding: closed = screen edge; open = panel left edge (art extends left via flip). */
+    /** Tab anchor X while sliding: closed = screen edge; open = inset onto panel left edge. */
     public static float tabXAtSlide(float slideT, float panelX, Layout layout) {
         if (slideT <= 0.001f) {
             return layout.tabX();
         }
-        return panelX;
+        return panelX + BASE_TAB_ON_PANEL_INSET * layout.multiplier();
     }
 
     /** Panel X while sliding: {@code slideT}=0 off-screen right, {@code slideT}=1 flush with HUD right edge. */
@@ -108,11 +105,11 @@ public final class EquipmentSidebarDesign {
 
     /** Inner grid size at 1× art (42×86). */
     public static float innerGridWidth() {
-        return SLOT_COLS * BASE_SLOT_PX + (SLOT_COLS - 1) * BASE_SLOT_GAP;
+        return SLOT_COLS * HudSlotDesign.BASE_SLOT_PX + (SLOT_COLS - 1) * HudSlotDesign.BASE_GAP_PX;
     }
 
     public static float innerGridHeight() {
-        return SLOT_ROWS * BASE_SLOT_PX + (SLOT_ROWS - 1) * BASE_SLOT_GAP;
+        return SLOT_ROWS * HudSlotDesign.BASE_SLOT_PX + (SLOT_ROWS - 1) * HudSlotDesign.BASE_GAP_PX;
     }
 
     public static EquipmentSlot slotAt(int col, int row) {

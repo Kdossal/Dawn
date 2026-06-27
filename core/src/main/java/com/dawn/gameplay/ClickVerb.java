@@ -8,6 +8,7 @@ public enum ClickVerb {
     BREAK,
     CHOP,
     PLACE,
+    CRAFT,
     EAT;
 
     public String label() {
@@ -18,6 +19,7 @@ public enum ClickVerb {
             case BREAK -> "Break";
             case CHOP -> "Chop";
             case PLACE -> "Place";
+            case CRAFT -> "Craft";
             case EAT -> "Eat";
         };
     }

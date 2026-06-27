@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.badlogic.gdx.math.Rectangle;
 import com.dawn.config.Constants;
 import com.dawn.inventory.EquipmentSlot;
-import com.dawn.render.GameSettings;
 import org.junit.jupiter.api.Test;
 
 class EquipmentSidebarDesignTest {
@@ -17,9 +16,9 @@ class EquipmentSidebarDesignTest {
     }
 
     @Test
-    void slotPositionsAtMediumUiSize() {
-        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(GameSettings.UiSize.MEDIUM);
-        assertEquals(3, layout.multiplier());
+    void slotPositionsAtHudScale() {
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
+        assertEquals(Constants.HUD_ART_MULT, layout.multiplier());
 
         Rectangle slot = new Rectangle();
         EquipmentSidebarDesign.slotBounds(layout.panelX(), layout, 0, 0, slot);
@@ -44,40 +43,41 @@ class EquipmentSidebarDesignTest {
     }
 
     @Test
-    void slotsStayInsidePanelAtSmallAndMedium() {
-        for (GameSettings.UiSize uiSize : new GameSettings.UiSize[] {GameSettings.UiSize.SMALL, GameSettings.UiSize.MEDIUM}) {
-            EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(uiSize);
-            Rectangle slot = new Rectangle();
-            for (int row = 0; row < EquipmentSidebarDesign.SLOT_ROWS; row++) {
-                for (int col = 0; col < EquipmentSidebarDesign.SLOT_COLS; col++) {
-                    EquipmentSidebarDesign.slotBounds(layout.panelX(), layout, col, row, slot);
-                    assertTrue(slot.x >= layout.panelX());
-                    assertTrue(slot.y >= layout.panelY());
-                    assertTrue(slot.x + slot.width <= layout.panelX() + layout.panelW());
-                    assertTrue(slot.y + slot.height <= layout.panelY() + layout.panelH());
-                }
+    void slotsStayInsidePanel() {
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
+        Rectangle slot = new Rectangle();
+        for (int row = 0; row < EquipmentSidebarDesign.SLOT_ROWS; row++) {
+            for (int col = 0; col < EquipmentSidebarDesign.SLOT_COLS; col++) {
+                EquipmentSidebarDesign.slotBounds(layout.panelX(), layout, col, row, slot);
+                assertTrue(slot.x >= layout.panelX());
+                assertTrue(slot.y >= layout.panelY());
+                assertTrue(slot.x + slot.width <= layout.panelX() + layout.panelW());
+                assertTrue(slot.y + slot.height <= layout.panelY() + layout.panelH());
             }
         }
     }
 
     @Test
     void panelFlushWithRightEdge() {
-        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(GameSettings.UiSize.MEDIUM);
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
         assertEquals(Constants.HUD_WIDTH_PX - layout.panelW(), layout.panelX(), 0.001f);
         assertEquals(Constants.HUD_WIDTH_PX - layout.tabW(), layout.tabX(), 0.001f);
     }
 
     @Test
     void tabSlidesWithPanelWhenOpen() {
-        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(GameSettings.UiSize.MEDIUM);
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
         float panelX = layout.panelX();
         assertEquals(layout.tabX(), EquipmentSidebarDesign.tabXAtSlide(0f, Constants.HUD_WIDTH_PX, layout), 0.001f);
-        assertEquals(panelX, EquipmentSidebarDesign.tabXAtSlide(1f, panelX, layout), 0.001f);
+        assertEquals(
+                panelX + EquipmentSidebarDesign.BASE_TAB_ON_PANEL_INSET * layout.multiplier(),
+                EquipmentSidebarDesign.tabXAtSlide(1f, panelX, layout),
+                0.001f);
     }
 
     @Test
     void panelSlidesFromOffScreen() {
-        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(GameSettings.UiSize.MEDIUM);
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
         assertEquals(Constants.HUD_WIDTH_PX, EquipmentSidebarDesign.panelXAtSlide(0f, layout), 0.001f);
         assertEquals(layout.panelX(), EquipmentSidebarDesign.panelXAtSlide(1f, layout), 0.001f);
     }
@@ -92,7 +92,7 @@ class EquipmentSidebarDesignTest {
 
     @Test
     void offhandSlotCenteredBelowColumns() {
-        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(GameSettings.UiSize.SMALL);
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
         Rectangle offhand = new Rectangle();
         EquipmentSidebarDesign.offhandBounds(layout.panelX(), layout, offhand);
         float gridW = EquipmentSidebarDesign.SLOT_COLS * layout.slotPx() + (EquipmentSidebarDesign.SLOT_COLS - 1) * layout.slotGap();

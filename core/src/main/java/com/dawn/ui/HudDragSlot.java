@@ -1,42 +1,26 @@
 package com.dawn.ui;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Scaling;
 import com.dawn.assets.DawnAssets;
 import com.dawn.inventory.EquipmentInventory;
 import com.dawn.inventory.EquipmentSlot;
 import com.dawn.inventory.PlayerInventory;
-import com.dawn.item.ItemDef;
-import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
 import com.dawn.ui.inventory.InventorySlotRef;
+import com.dawn.world.storage.CrateStorage;
 
-/** HUD-sized slot hit target with optional visible chrome for drag-drop. */
+/** HUD-sized slot hit target wrapping {@link HudItemSlot}. */
 public final class HudDragSlot extends Group {
     private final InventorySlotRef slotRef;
-    private final Image bg;
-    private final Image icon;
+    private final HudItemSlot slot;
 
-    public HudDragSlot(DawnAssets assets, InventorySlotRef slotRef, boolean visible) {
+    public HudDragSlot(DawnAssets assets, DawnFonts fonts, InventorySlotRef slotRef, HudSlotChrome chrome) {
         this.slotRef = slotRef;
         setTouchable(Touchable.enabled);
-
-        if (visible) {
-            bg = new Image(new TextureRegionDrawable(assets.uiCommon.slotEquip));
-            icon = new Image();
-            icon.setScaling(Scaling.fit);
-            icon.setAlign(Align.center);
-            addActor(bg);
-            addActor(icon);
-        } else {
-            bg = null;
-            icon = null;
-        }
+        slot = new HudItemSlot(assets, fonts, chrome);
+        addActor(slot);
     }
 
     public InventorySlotRef slotRef() {
@@ -45,42 +29,33 @@ public final class HudDragSlot extends Group {
 
     public void setLayoutSize(float slotPx, float iconPx) {
         setSize(slotPx, slotPx);
-        if (bg != null) {
-            bg.setSize(slotPx, slotPx);
-            bg.setPosition(0f, 0f);
-        }
-        if (icon != null) {
-            float ix = (slotPx - iconPx) / 2f;
-            float iy = (slotPx - iconPx) / 2f;
-            icon.setSize(iconPx, iconPx);
-            icon.setPosition(ix, iy);
-        }
+        slot.setLayoutSize(slotPx, iconPx);
+    }
+
+    public void setSelected(boolean selected) {
+        slot.setSelected(selected);
     }
 
     public void refresh(PlayerInventory inventory, EquipmentInventory equipment, DawnAssets assets) {
-        if (icon == null) {
-            return;
-        }
-        ItemStack stack = stackAt(inventory, equipment);
-        if (stack.isEmpty()) {
-            TextureRegion guide = guideIcon(assets);
-            icon.setDrawable(guide == null ? null : new TextureRegionDrawable(guide));
-            icon.setVisible(guide != null);
-            return;
-        }
-        icon.setVisible(true);
-        ItemDef def = ItemRegistry.get(stack);
-        if (def != null && assets.item(def.iconId()) != null) {
-            icon.setDrawable(new TextureRegionDrawable(assets.item(def.iconId())));
-        } else {
-            icon.setDrawable(null);
-        }
+        refresh(inventory, equipment, null, assets);
     }
 
-    private ItemStack stackAt(PlayerInventory inventory, EquipmentInventory equipment) {
+    public void refresh(
+            PlayerInventory inventory,
+            EquipmentInventory equipment,
+            CrateStorage container,
+            DawnAssets assets) {
+        ItemStack stack = stackAt(inventory, equipment, container);
+        slot.refresh(stack, stack.isEmpty() ? guideIcon(assets) : null);
+    }
+
+    private ItemStack stackAt(
+            PlayerInventory inventory, EquipmentInventory equipment, CrateStorage container) {
         return switch (slotRef.kind) {
             case GRID -> inventory.getSlotAtIndex(slotRef.gridIndex);
             case EQUIPMENT -> equipment.get(slotRef.equipmentSlot);
+            case CONTAINER ->
+                    container == null ? ItemStack.empty() : container.getSlotAtIndex(slotRef.gridIndex);
         };
     }
 
@@ -88,8 +63,8 @@ public final class HudDragSlot extends Group {
         if (slotRef.kind != InventorySlotRef.Kind.EQUIPMENT) {
             return null;
         }
-        EquipmentSlot slot = slotRef.equipmentSlot;
-        return switch (slot) {
+        EquipmentSlot equipSlot = slotRef.equipmentSlot;
+        return switch (equipSlot) {
             case HEAD -> assets.uiCommon.headIcon;
             case CHEST -> assets.uiCommon.bodyIcon;
             case PANTS -> assets.uiCommon.legIcon;

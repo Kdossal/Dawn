@@ -7,6 +7,7 @@ import com.dawn.world.block.Layer;
 import com.dawn.world.block.SurfaceRules;
 import com.dawn.world.light.LightEngine;
 import com.dawn.world.light.LightMap;
+import com.dawn.world.storage.CrateStorageRegistry;
 import com.dawn.world.structure.StructureRegistry;
 
 public class World {
@@ -16,6 +17,7 @@ public class World {
     private final BlockId[][] floor;
     private final BlockId[][] objects;
     private final StructureRegistry structures = new StructureRegistry();
+    private final CrateStorageRegistry crateStorage = new CrateStorageRegistry();
     private final BlockDamageStore blockDamage = new BlockDamageStore();
     private final WorldClock clock = new WorldClock();
     private final LightMap lightMap;
@@ -45,6 +47,10 @@ public class World {
 
     public StructureRegistry getStructures() {
         return structures;
+    }
+
+    public CrateStorageRegistry getCrateStorage() {
+        return crateStorage;
     }
 
     public BlockDamageStore getBlockDamage() {

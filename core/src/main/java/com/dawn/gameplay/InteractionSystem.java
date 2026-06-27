@@ -13,6 +13,7 @@ import com.dawn.world.World;
 import com.dawn.world.block.BlockBreakEffects;
 import com.dawn.world.block.BlockId;
 import com.dawn.world.block.Layer;
+import com.dawn.world.storage.CrateStorage;
 import com.dawn.world.structure.StructureBreakResult;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,7 @@ public class InteractionSystem {
         return lastMessage;
     }
 
-    void setMessage(String message) {
+    public void setMessage(String message) {
         lastMessage = message == null ? "" : message;
     }
 
@@ -72,6 +73,10 @@ public class InteractionSystem {
         if (extracted.isEmpty()) {
             rollbackPlacement(world, result.placeable(), result.anchorX(), result.anchorY());
             return false;
+        }
+
+        if (result.placeable() instanceof Placeable.Block block && block.blockId() == BlockId.CRATE) {
+            world.getCrateStorage().createAt(result.anchorX(), result.anchorY());
         }
 
         lastMessage = "Placed " + def.displayName().toLowerCase();
@@ -120,6 +125,18 @@ public class InteractionSystem {
         Optional<String> message = BlockBreakEffects.breakObjectLayer(world, x, y, id);
         if (message.isPresent()) {
             lastMessage = message.get();
+            if (id == BlockId.CRATE) {
+                CrateStorage storage = world.getCrateStorage().removeAt(x, y);
+                if (storage != null) {
+                    List<ItemStack> contents = storage.drainNonEmptySlots();
+                    if (!contents.isEmpty()) {
+                        lastMessage = lastMessage + " (contents spilled)";
+                        for (ItemStack stack : contents) {
+                            dropSystem.spawnAtCell(world, stack, x, y);
+                        }
+                    }
+                }
+            }
             spawnLoot(world, x, y, Layer.OBJECT, id);
         }
     }

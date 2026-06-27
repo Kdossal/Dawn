@@ -2,30 +2,20 @@ package com.dawn.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Disposable;
 import com.dawn.assets.DawnAssets;
-import com.dawn.config.Constants;
+import com.dawn.inventory.EquipmentInventory;
 import com.dawn.inventory.InventoryConstants;
 import com.dawn.inventory.PlayerInventory;
-import com.dawn.item.ItemDef;
-import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
-import com.dawn.render.GameSettings;
+import com.dawn.ui.inventory.InventorySlotRef;
 
 /** Always-visible HUD row for every inventory slot (flat index 0..{@link InventoryConstants#SIZE}-1). */
 public class Hotbar implements Disposable {
-    private static final GameSettings.UiSize HOTBAR_UI_SIZE = GameSettings.UiSize.SMALL;
-    public static final int SLOT_COUNT = InventoryConstants.SIZE;
-    /** Art-base (1×) sizes matching PNG dimensions; multiplied by {@link GameSettings#slotMultiplier}. */
-    public static final float BASE_SLOT_PX = 20f;
-    public static final float BASE_GAP_PX = 2f;
-    public static final float BASE_ICON_PX = 16f;
-    public static final float BASE_EDGE_PAD = 2.5f;
-    public static final float BASE_BOTTOM_MARGIN = 4f;
+    private static final int SLOT_COUNT = HudSlotDesign.SLOT_COUNT;
 
     private static final int[] HOTKEYS = {
         Input.Keys.NUM_1,
@@ -40,29 +30,59 @@ public class Hotbar implements Disposable {
         Input.Keys.NUM_0
     };
 
-    private final HudAssets hud;
     private final DawnAssets assets;
     private final PlayerInventory inventory;
-    private final GameSettings settings;
+    private final Group root;
+    private final HudDragSlot[] slots = new HudDragSlot[SLOT_COUNT];
     private final Rectangle bounds = new Rectangle();
+    private Stage stage;
 
-    public Hotbar(HudAssets hud, DawnAssets assets, PlayerInventory inventory, GameSettings settings) {
-        this.hud = hud;
+    public Hotbar(DawnAssets assets, DawnFonts fonts, PlayerInventory inventory) {
         this.assets = assets;
         this.inventory = inventory;
-        this.settings = settings;
+        root = new Group();
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            HudDragSlot slot =
+                    new HudDragSlot(assets, fonts, InventorySlotRef.grid(i), HudSlotChrome.HOTBAR);
+            slots[i] = slot;
+            root.addActor(slot);
+        }
+        layout();
     }
 
-    private int slotMultiplier() {
-        return GameSettings.slotMultiplier(HOTBAR_UI_SIZE);
+    public void attachStage(Stage stage) {
+        if (this.stage == stage) {
+            return;
+        }
+        root.remove();
+        this.stage = stage;
+        stage.addActor(root);
+        root.toBack();
+        layout();
     }
 
-    private float slotPx() {
-        return BASE_SLOT_PX * slotMultiplier();
+    public HudDragSlot slotAt(int index) {
+        return slots[index];
     }
 
-    private float gapPx() {
-        return BASE_GAP_PX * slotMultiplier();
+    public void layout() {
+        float slotPx = HudSlotDesign.slotPx();
+        float iconPx = HudSlotDesign.iconPx();
+        HudSlotDesign.barBounds(bounds);
+        root.setPosition(bounds.x, bounds.y);
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            HudDragSlot slot = slots[i];
+            slot.setLayoutSize(slotPx, iconPx);
+            slot.setPosition(HudSlotDesign.slotX(i) - bounds.x, 0f);
+        }
+    }
+
+    public void refreshSlots(EquipmentInventory equipment) {
+        int selected = inventory.getSelectedIndex();
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            slots[i].setSelected(i == selected);
+            slots[i].refresh(inventory, equipment, assets);
+        }
     }
 
     public void update(boolean lockSelection) {
@@ -82,7 +102,6 @@ public class Hotbar implements Disposable {
         }
     }
 
-    /** Called from scroll wheel events only (see InputController.scrolled). */
     public void applyScroll(float amountY, boolean lockSelection) {
         if (lockSelection) {
             return;
@@ -104,108 +123,29 @@ public class Hotbar implements Disposable {
     }
 
     public Integer hitTest(float screenX, float screenY) {
-        layoutBounds();
+        layout();
         if (!bounds.contains(screenX, screenY)) {
             return null;
         }
         float relX = screenX - bounds.x;
-        float step = slotPx() + gapPx();
+        float step = HudSlotDesign.slotPx() + HudSlotDesign.gapPx();
         int index = (int) (relX / step);
         if (index < 0 || index >= SLOT_COUNT) {
             return null;
         }
         float inSlot = relX - index * step;
-        if (inSlot > slotPx()) {
+        if (inSlot > HudSlotDesign.slotPx()) {
             return null;
         }
         return index;
-    }
-
-    /** HUD bounds for slot {@code index} (0 = leftmost). Call after layout is current. */
-    public void slotBounds(int index, Rectangle out) {
-        layoutBounds();
-        float slot = slotPx();
-        float step = slot + gapPx();
-        float x = bounds.x + index * step;
-        out.set(x, bounds.y, slot, slot);
-    }
-
-    public Rectangle barBounds() {
-        layoutBounds();
-        return bounds;
     }
 
     public ItemStack getHeld() {
         return inventory.getHeld();
     }
 
-    private void layoutBounds() {
-        int mult = slotMultiplier();
-        float slot = slotPx();
-        float totalW = SLOT_COUNT * slot + (SLOT_COUNT - 1) * gapPx();
-        float startX = (Constants.HUD_WIDTH_PX - totalW) / 2f;
-        bounds.set(startX, BASE_BOTTOM_MARGIN * mult, totalW, slot);
-    }
-
-    public void render() {
-        int selectedIndex = inventory.getSelectedIndex();
-        layoutBounds();
-        int mult = slotMultiplier();
-        float slot = slotPx();
-        float step = slot + gapPx();
-        float icon = BASE_ICON_PX * mult;
-        float pad = BASE_EDGE_PAD * mult;
-        float startX = bounds.x;
-        float y = bounds.y;
-
-        hud.batch.begin();
-        hud.batch.setColor(Color.WHITE);
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            float x = startX + i * step;
-            boolean selected = i == selectedIndex;
-            TextureRegion bg = selected ? assets.uiCommon.slotSelected : assets.uiCommon.slot;
-            hud.batch.draw(bg, x, y, slot, slot);
-
-            ItemStack stack = inventory.getSlotAtIndex(i);
-            if (!stack.isEmpty()) {
-                ItemDef def = ItemRegistry.get(stack);
-                if (def != null) {
-                    TextureRegion iconRegion = assets.item(def.iconId());
-                    if (iconRegion != null) {
-                        float ix = x + (slot - icon) / 2f;
-                        float iy = y + (slot - icon) / 2f;
-                        hud.batch.draw(iconRegion, ix, iy, icon, icon);
-                    }
-                }
-            }
-        }
-
-        BitmapFont font = hud.fonts.forUiSize(HOTBAR_UI_SIZE);
-        float fontScale = DawnFonts.drawScaleForUiSize(HOTBAR_UI_SIZE);
-        for (int i = 0; i < SLOT_COUNT; i++) {
-            float x = startX + i * step;
-            ItemStack stack = inventory.getSlotAtIndex(i);
-            if (!stack.isEmpty() && stack.count > 1) {
-                String countLabel = String.valueOf(stack.count);
-                font.getData().setScale(fontScale);
-                font.setColor(Color.WHITE);
-                hud.layout.setText(font, countLabel);
-                float cx = x + slot - pad - hud.layout.width;
-                float cy = y + pad + hud.layout.height;
-                drawLabel(font, fontScale, countLabel, cx, cy, Color.WHITE);
-            }
-        }
-        font.getData().setScale(1f);
-        hud.batch.end();
-    }
-
-    private void drawLabel(BitmapFont font, float fontScale, String text, float x, float y, Color color) {
-        font.getData().setScale(fontScale);
-        font.setColor(color);
-        hud.layout.setText(font, text);
-        font.draw(hud.batch, hud.layout, x, y);
-    }
-
     @Override
-    public void dispose() {}
+    public void dispose() {
+        root.remove();
+    }
 }

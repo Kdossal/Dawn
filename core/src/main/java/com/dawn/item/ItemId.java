@@ -8,16 +8,17 @@ public enum ItemId {
     LOG,
     DIRT,
     SAND,
-    STONE_GROUND,
-    STONE_WALL,
     LUMBER,
     HARDWARE,
     CLOTH,
     LEATHER_HOOD,
-    CRATE,
-    BED,
     OAK_SAPLING,
     SPRUCE_SAPLING,
     CANNED_FOOD,
-    LANTERN
+    LANTERN,
+    CAMPFIRE,
+    BANDAGE,
+    STONE_GROUND,
+    DIRT_GROUND,
+    SAND_GROUND
 }

@@ -4,7 +4,6 @@ import com.dawn.config.GameConfig;
 import com.dawn.inventory.EquipmentSlot;
 import com.dawn.world.block.BlockId;
 import com.dawn.world.block.InteractionTag;
-import com.dawn.world.structure.StructureKind;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -23,21 +22,7 @@ public final class ItemRegistry {
         register(tiered(ItemId.HARDWARE, "Hardware", "hardware", ItemWeightTier.SMALL));
         register(tiered(ItemId.CLOTH, "Cloth", "cloth", ItemWeightTier.SMALL));
         register(placeable(
-                ItemId.STONE_GROUND,
-                "Stone Ground",
-                "stone_ground",
-                new Placeable.Ground(BlockId.STONE_GROUND),
-                ItemWeightTier.NORMAL));
-        register(placeable(
-                ItemId.STONE_WALL,
-                "Stone Wall",
-                "stone_wall",
-                new Placeable.Block(BlockId.STONE_WALL),
-                ItemWeightTier.NORMAL));
-        register(placeable(ItemId.CRATE, "Crate", "crate", new Placeable.Block(BlockId.CRATE), ItemWeightTier.LARGE));
-        register(placeable(
                 ItemId.LANTERN, "Lantern", "lantern", new Placeable.Block(BlockId.LANTERN), ItemWeightTier.SMALL));
-        register(placeable(ItemId.BED, "Bed", "bed", new Placeable.Structure(StructureKind.BED), ItemWeightTier.LARGE));
         register(placeable(
                 ItemId.OAK_SAPLING,
                 "Oak Sapling",
@@ -51,6 +36,27 @@ public final class ItemRegistry {
                 new Placeable.Block(BlockId.SPRUCE_TREE),
                 ItemWeightTier.SMALL));
         register(edible(ItemId.CANNED_FOOD, "Canned Food", "canned_food", ItemWeightTier.SMALL, 50f));
+        register(placeable(
+                ItemId.CAMPFIRE, "Campfire", "campfire", new Placeable.Block(BlockId.CAMPFIRE), ItemWeightTier.SMALL));
+        register(tiered(ItemId.BANDAGE, "Bandage", "bandage", ItemWeightTier.SMALL));
+        register(placeable(
+                ItemId.DIRT_GROUND,
+                "Dirt Ground",
+                "dirt_ground",
+                new Placeable.Ground(BlockId.DIRT_GROUND),
+                ItemWeightTier.NORMAL));
+        register(placeable(
+                ItemId.SAND_GROUND,
+                "Sand Ground",
+                "sand_ground",
+                new Placeable.Ground(BlockId.SAND_GROUND),
+                ItemWeightTier.NORMAL));
+        register(placeable(
+                ItemId.STONE_GROUND,
+                "Stone Ground",
+                "stone_ground",
+                new Placeable.Ground(BlockId.STONE_GROUND),
+                ItemWeightTier.NORMAL));
         register(new ItemDef(
                 ItemId.LEATHER_HOOD,
                 "Leather Hood",

@@ -1,14 +1,11 @@
 package com.dawn.ui;
 
-/** Shared item icon sizing inside slot chrome (hotbar is the reference). */
+/** Shared item icon sizing inside slot chrome (HUD hotbar is the reference). */
 public final class SlotUi {
-    public static final float SLOT_PX = 48f;
-    public static final float ICON_PX = 36f;
-
     private SlotUi() {}
 
-    /** Icon draw size for a slot of {@code slotPx}, same fill ratio as the hotbar. */
+    /** Icon draw size for a slot of {@code slotPx}, same fill ratio as {@link HudSlotDesign}. */
     public static float iconPxForSlot(float slotPx) {
-        return slotPx * ICON_PX / SLOT_PX;
+        return slotPx * HudSlotDesign.BASE_ICON_PX / HudSlotDesign.BASE_SLOT_PX;
     }
 }

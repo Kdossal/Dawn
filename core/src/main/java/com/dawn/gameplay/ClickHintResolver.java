@@ -16,17 +16,32 @@ public final class ClickHintResolver {
     private ClickHintResolver() {}
 
     public static ClickHints resolve(World world, Entity entity, ItemStack held, TargetCell hover) {
-        return resolve(world, entity, held, hover, false);
+        return resolve(world, entity, held, hover, false, false, false);
     }
 
     public static ClickHints resolve(
             World world, Entity entity, ItemStack held, TargetCell hover, boolean suppressLeftHints) {
+        return resolve(world, entity, held, hover, suppressLeftHints, false, false);
+    }
+
+    public static ClickHints resolve(
+            World world,
+            Entity entity,
+            ItemStack held,
+            TargetCell hover,
+            boolean suppressLeftHints,
+            boolean craftPlacementMode,
+            boolean showCraftHint) {
         ClickVerb left = suppressLeftHints ? null : resolveLeft(world, entity, held, hover);
-        ClickVerb right = resolveRight(entity, held);
+        ClickVerb right = resolveRight(entity, held, craftPlacementMode, showCraftHint);
         return new ClickHints(left, right);
     }
 
-    private static ClickVerb resolveRight(Entity entity, ItemStack held) {
+    private static ClickVerb resolveRight(
+            Entity entity, ItemStack held, boolean craftPlacementMode, boolean showCraftHint) {
+        if (craftPlacementMode) {
+            return showCraftHint ? ClickVerb.CRAFT : null;
+        }
         if (EatSystem.canEat(entity, held)) {
             return ClickVerb.EAT;
         }

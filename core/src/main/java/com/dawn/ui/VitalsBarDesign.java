@@ -1,7 +1,6 @@
 package com.dawn.ui;
 
 import com.dawn.config.Constants;
-import com.dawn.render.GameSettings;
 
 /** Art-base layout and value mapping for top-right HP/EP HUD bars. */
 public final class VitalsBarDesign {
@@ -78,8 +77,8 @@ public final class VitalsBarDesign {
 
     public record RowLayout(int iconX, int iconY, int barX, int barY) {}
 
-    public static Layout layout(GameSettings.UiSize uiSize) {
-        int m = GameSettings.slotMultiplier(uiSize);
+    public static Layout layout() {
+        int m = Constants.VITALS_ART_MULT;
         return new Layout(
                 m,
                 BASE_MARGIN_TOP * m,

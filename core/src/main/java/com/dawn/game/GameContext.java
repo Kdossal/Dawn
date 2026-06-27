@@ -12,6 +12,7 @@ import com.dawn.render.ZoomController;
 import com.dawn.entity.EntityId;
 import com.dawn.entity.EntityManager;
 import com.dawn.gameplay.EatSystem;
+import com.dawn.gameplay.crafting.CraftingSystem;
 import com.dawn.gameplay.InteractionPresentation;
 import com.dawn.gameplay.InteractionSystem;
 import com.dawn.gameplay.MiningSystem;
@@ -27,6 +28,8 @@ import com.dawn.inventory.PlayerProfile;
 import com.dawn.ui.inventory.InventoryOverlay;
 import com.dawn.ui.DawnFonts;
 import com.dawn.ui.DebugOverlay;
+import com.dawn.ui.CraftingOverlay;
+import com.dawn.ui.CrateStorageOverlay;
 import com.dawn.ui.EquipmentSidebarHud;
 import com.dawn.ui.Hotbar;
 import com.dawn.ui.HudAssets;
@@ -61,6 +64,9 @@ public final class GameContext implements Disposable {
     public final VitalsHud vitalsHud;
     public final StatusHud statusHud;
     public final EquipmentSidebarHud equipmentSidebar;
+    public final CrateStorageOverlay crateStorageOverlay;
+    public final CraftingOverlay craftingOverlay;
+    public final CraftingSystem craftingSystem;
     public final DebugOverlay debug;
     public final RenderSettings renderSettings;
     public final GameSettings gameSettings;
@@ -92,6 +98,9 @@ public final class GameContext implements Disposable {
             VitalsHud vitalsHud,
             StatusHud statusHud,
             EquipmentSidebarHud equipmentSidebar,
+            CrateStorageOverlay crateStorageOverlay,
+            CraftingOverlay craftingOverlay,
+            CraftingSystem craftingSystem,
             DebugOverlay debug,
             GameLoop gameLoop,
             HudAssets hud,
@@ -121,6 +130,9 @@ public final class GameContext implements Disposable {
         this.vitalsHud = vitalsHud;
         this.statusHud = statusHud;
         this.equipmentSidebar = equipmentSidebar;
+        this.crateStorageOverlay = crateStorageOverlay;
+        this.craftingOverlay = craftingOverlay;
+        this.craftingSystem = craftingSystem;
         this.debug = debug;
         this.gameLoop = gameLoop;
         this.hud = hud;
@@ -157,8 +169,8 @@ public final class GameContext implements Disposable {
         GameSettings gameSettings = new GameSettings();
         RenderSettings renderSettings = new RenderSettings();
         gameSettings.applyDisplayGamma(renderSettings);
-        Hotbar hotbar = new Hotbar(hud, assets, inventory, gameSettings);
-        VitalsHud vitalsHud = new VitalsHud(hud, assets, gameSettings);
+        Hotbar hotbar = new Hotbar(assets, fonts, inventory);
+        VitalsHud vitalsHud = new VitalsHud(hud, assets);
         StatusHud statusHud = new StatusHud(hud, assets);
         EquipmentSidebarHud equipmentSidebar =
                 new EquipmentSidebarHud(
@@ -168,9 +180,20 @@ public final class GameContext implements Disposable {
                         equipment,
                         dropSystem,
                         entities.getPlayer(),
-                        gameSettings,
                         hotbar,
                         hudViewport);
+        CrateStorageOverlay crateStorageOverlay =
+                new CrateStorageOverlay(
+                        fonts,
+                        assets,
+                        inventory,
+                        equipment,
+                        world,
+                        equipmentSidebar.stage(),
+                        equipmentSidebar.dragSession());
+        equipmentSidebar
+                .dragSession()
+                .setExtraOnChanged(crateStorageOverlay::refreshAll);
         DebugOverlay debug = new DebugOverlay(hud);
         ZoomController zoomController = new ZoomController(gameSettings);
         InventoryOverlay inventoryOverlay =
@@ -182,6 +205,28 @@ public final class GameContext implements Disposable {
                         profile,
                         dropSystem,
                         entities.getPlayer());
+        final CraftingOverlay[] craftingOverlayHolder = new CraftingOverlay[1];
+        CraftingSystem craftingSystem =
+                new CraftingSystem(
+                        inventory,
+                        equipmentSidebar.dragSession().cursorController(),
+                        () -> {
+                            hotbar.refreshSlots(equipment);
+                            CraftingOverlay overlay = craftingOverlayHolder[0];
+                            if (overlay != null && overlay.isOpen()) {
+                                overlay.refresh(hotbar.getHeld());
+                            }
+                        });
+        CraftingOverlay craftingOverlay =
+                new CraftingOverlay(
+                        assets,
+                        profile,
+                        inventory,
+                        craftingSystem,
+                        equipmentSidebar.stage(),
+                        equipmentSidebar.dragSession(),
+                        inventoryOverlay);
+        craftingOverlayHolder[0] = craftingOverlay;
         PauseOverlay pauseOverlay = new PauseOverlay(assets, fonts, gameSettings, renderSettings);
         return new GameContext(
                 assets,
@@ -206,6 +251,9 @@ public final class GameContext implements Disposable {
                 vitalsHud,
                 statusHud,
                 equipmentSidebar,
+                crateStorageOverlay,
+                craftingOverlay,
+                craftingSystem,
                 debug,
                 gameLoop,
                 hud,

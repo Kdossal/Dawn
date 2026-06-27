@@ -128,4 +128,12 @@ public class InputController extends InputAdapter {
         return dropPressed() && (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
                 || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT));
     }
+
+    public boolean interactPressed() {
+        return Gdx.input.isKeyJustPressed(Input.Keys.E);
+    }
+
+    public boolean craftPressed() {
+        return Gdx.input.isKeyJustPressed(Input.Keys.C);
+    }
 }

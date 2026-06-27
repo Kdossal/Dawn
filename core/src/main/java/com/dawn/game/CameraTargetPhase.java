@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.dawn.config.Constants;
 import com.dawn.entity.Entity;
+import com.dawn.gameplay.InteractResolver;
 import com.dawn.render.GameViewport;
 
 /** Handles camera synchronization and mouse/target updates. */
@@ -48,5 +49,6 @@ final class CameraTargetPhase {
                         player,
                         frame.mouseWorld,
                         ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld()));
+        frame.interactTarget = InteractResolver.nearestCrateInReach(ctx.world, player);
     }
 }

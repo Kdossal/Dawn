@@ -13,6 +13,8 @@ final class UiModePhase {
         if (!wasPaused && frame.paused) {
             ctx.inventoryOverlay.close();
             ctx.equipmentSidebar.close();
+            ctx.crateStorageOverlay.close();
+            ctx.craftingOverlay.close();
             ctx.mining.reset();
             ctx.interactionPresentation.clear();
             applyInputProcessor(ctx, hotbarInput);
@@ -25,6 +27,9 @@ final class UiModePhase {
             ctx.inventoryOverlay.handleToggleKey();
             if (wasOpen != ctx.inventoryOverlay.isOpen()) {
                 ctx.equipmentSidebar.setInventoryOverlayOpen(ctx.inventoryOverlay.isOpen());
+                if (ctx.inventoryOverlay.isOpen()) {
+                    ctx.crateStorageOverlay.close();
+                }
                 applyInputProcessor(ctx, hotbarInput);
             }
         }

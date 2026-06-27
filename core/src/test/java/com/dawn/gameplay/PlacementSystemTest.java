@@ -7,6 +7,7 @@ import com.dawn.gameplay.drops.DropSystem;
 import com.dawn.gameplay.drops.LootTable;
 import com.dawn.gameplay.TargetResolver.TargetCell;
 import com.dawn.inventory.PlayerInventory;
+import com.dawn.item.ItemId;
 import com.dawn.item.ItemStack;
 import com.dawn.test.TestWorlds;
 import com.dawn.entity.Entity;
@@ -41,17 +42,17 @@ class PlacementSystemTest {
 
     @Test
     void successfulPlace_startsInteractPulse() {
-        world.setGround(5, 4, BlockId.PIT);
+        TestWorlds.setSolidDirt(world, 5, 4);
         TargetCell target = new TargetCell(5, 4, false);
-        placement.update(world, player, inventory, target, ItemStack.of(com.dawn.item.ItemId.STONE_GROUND), true, 0f);
+        placement.update(world, player, inventory, target, ItemStack.of(ItemId.LANTERN), true, 0f);
         assertTrue(placement.isInteracting());
     }
 
     @Test
     void interactPulse_decaysOverTime() {
-        world.setGround(5, 4, BlockId.PIT);
+        TestWorlds.setSolidDirt(world, 5, 4);
         TargetCell target = new TargetCell(5, 4, false);
-        placement.update(world, player, inventory, target, ItemStack.of(com.dawn.item.ItemId.STONE_GROUND), true, 0f);
+        placement.update(world, player, inventory, target, ItemStack.of(ItemId.LANTERN), true, 0f);
         placement.tick(0.13f);
         assertFalse(placement.isInteracting());
     }

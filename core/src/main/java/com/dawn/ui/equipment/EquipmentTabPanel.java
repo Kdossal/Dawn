@@ -42,7 +42,7 @@ public final class EquipmentTabPanel extends Group {
                             fonts,
                             InventorySlotRef.equipment(wear[i]),
                             "",
-                            assets.uiCommon.slotEquip);
+                            assets.uiCommon.slotDull);
             wearSlots[i].setPosition(InventoryDesign.ARMOR_X, InventoryDesign.wearSlotY(i));
             addActor(wearSlots[i]);
         }
@@ -111,7 +111,7 @@ public final class EquipmentTabPanel extends Group {
                             fonts,
                             InventorySlotRef.equipment(accessories[i]),
                             "",
-                            assets.uiCommon.slotEquip);
+                            assets.uiCommon.slotDull);
             accessorySlots[i].setPosition(
                     InventoryDesign.ACCESS_X, InventoryDesign.accessorySlotY(i));
             addActor(accessorySlots[i]);

@@ -14,6 +14,7 @@ import com.dawn.ui.DawnTypography.TextTier;
 
 /** Pause menu typography and button chrome. */
 public final class PauseUiStyle {
+    /** Layout at authored HUD px; typography tiers handle readable text at 3× window. */
     public static final float BUTTON_WIDTH = 320f;
     public static final float BUTTON_HEIGHT = 52f;
     public static final float BUTTON_GAP = 14f;
@@ -40,10 +41,6 @@ public final class PauseUiStyle {
         TextButton button = button(text, fonts, assets);
         DawnTypography.apply(button.getLabel(), TextTier.MD, TextContext.HUD);
         return button;
-    }
-
-    public static Drawable tintedDrawable(TextureRegion region, Color tint) {
-        return tintedDrawableInternal(region, tint);
     }
 
     public static TextButton button(String text, DawnFonts fonts, DawnAssets assets) {

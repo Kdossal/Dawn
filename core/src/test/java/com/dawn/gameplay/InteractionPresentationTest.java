@@ -27,11 +27,11 @@ class InteractionPresentationTest {
 
     @Test
     void placementPreviews_resolveEvenWhenGhostsHidden() {
-        world.setGround(5, 4, BlockId.PIT);
+        TestWorlds.setSolidDirt(world, 5, 4);
         presentation.update(
                 world,
                 player,
-                ItemStack.of(com.dawn.item.ItemId.STONE_GROUND),
+                ItemStack.of(com.dawn.item.ItemId.LANTERN),
                 new TargetCell(5, 4, false),
                 false);
         assertFalse(presentation.showPlacementGhosts());

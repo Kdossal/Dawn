@@ -3,7 +3,6 @@ package com.dawn.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.dawn.config.Constants;
-import com.dawn.render.GameSettings;
 import org.junit.jupiter.api.Test;
 
 class VitalsBarDesignTest {
@@ -19,23 +18,21 @@ class VitalsBarDesignTest {
     }
 
     @Test
-    void scaledDimensionsUseUiMultiplier() {
-        VitalsBarDesign.Layout small = VitalsBarDesign.layout(GameSettings.UiSize.SMALL);
-        VitalsBarDesign.Layout medium = VitalsBarDesign.layout(GameSettings.UiSize.MEDIUM);
+    void scaledDimensionsUseVitalsArtMult() {
+        VitalsBarDesign.Layout layout = VitalsBarDesign.layout();
 
-        assertEquals(2, small.multiplier());
-        assertEquals(3, medium.multiplier());
-        assertEquals(VitalsBarDesign.BASE_EMPTY_H * 2, small.emptyH());
-        assertEquals(VitalsBarDesign.BASE_FILL_H * 3, medium.fillH());
-        assertEquals(39, medium.hpIconW());
-        assertEquals(39, medium.epIconW());
-        assertEquals(33, medium.smallIconW());
-        assertEquals(VitalsBarDesign.BASE_SMALL_FILL_H * 3, medium.smallFillH());
+        assertEquals(Constants.VITALS_ART_MULT, layout.multiplier());
+        assertEquals(VitalsBarDesign.BASE_EMPTY_H * Constants.VITALS_ART_MULT, layout.emptyH());
+        assertEquals(VitalsBarDesign.BASE_FILL_H * Constants.VITALS_ART_MULT, layout.fillH());
+        assertEquals(52, layout.hpIconW());
+        assertEquals(52, layout.epIconW());
+        assertEquals(44, layout.smallIconW());
+        assertEquals(VitalsBarDesign.BASE_SMALL_FILL_H * Constants.VITALS_ART_MULT, layout.smallFillH());
     }
 
     @Test
     void topRightAnchoringAndOverlapMatchSpec() {
-        VitalsBarDesign.Layout layout = VitalsBarDesign.layout(GameSettings.UiSize.MEDIUM);
+        VitalsBarDesign.Layout layout = VitalsBarDesign.layout();
         int body = VitalsBarDesign.bodyPxAtOneX(25f);
         VitalsBarDesign.RowLayout hp = VitalsBarDesign.rowLayout(layout, VitalsBarDesign.Row.HP, 0, body);
 
@@ -49,7 +46,7 @@ class VitalsBarDesignTest {
 
     @Test
     void secondRowStacksBelowFirstByBarHeightAndGap() {
-        VitalsBarDesign.Layout layout = VitalsBarDesign.layout(GameSettings.UiSize.MEDIUM);
+        VitalsBarDesign.Layout layout = VitalsBarDesign.layout();
         int body = VitalsBarDesign.bodyPxAtOneX(25f);
         VitalsBarDesign.RowLayout hp = VitalsBarDesign.rowLayout(layout, VitalsBarDesign.Row.HP, 0, body);
         VitalsBarDesign.RowLayout ep = VitalsBarDesign.rowLayout(layout, VitalsBarDesign.Row.EP, 1, body);
@@ -76,7 +73,7 @@ class VitalsBarDesignTest {
 
     @Test
     void smallRowsRightAlignAndStackBelowEnergy() {
-        VitalsBarDesign.Layout layout = VitalsBarDesign.layout(GameSettings.UiSize.MEDIUM);
+        VitalsBarDesign.Layout layout = VitalsBarDesign.layout();
         VitalsBarDesign.RowLayout hunger = VitalsBarDesign.smallRowLayout(layout, 2);
         VitalsBarDesign.RowLayout thirst = VitalsBarDesign.smallRowLayout(layout, 3);
         assertEquals(Constants.HUD_WIDTH_PX - layout.marginRight(), hunger.iconX() + layout.smallIconW());

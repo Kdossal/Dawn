@@ -49,6 +49,15 @@ class EntityAnimResolverTest {
     }
 
     @Test
+    void selectClip_interactWithoutTarget_keepsCurrentFacing() {
+        var ctx = new PlayerAnimContext(true, true, 4f, 4f, 0f, 1f, null);
+        EntityAnimResolver.Selection selection = EntityAnimResolver.selectClip(ctx, Facing4.LEFT);
+        assertEquals("interact_right", selection.clipId());
+        assertEquals(Facing4.LEFT, selection.facing());
+        assertTrue(selection.facing().flipX());
+    }
+
+    @Test
     void facingToward_targetCellDominantAxis() {
         Facing4 facing = EntityAnimResolver.facingToward(4f, 4f, new TargetCell(6, 4, false));
         assertEquals(Facing4.RIGHT, facing);

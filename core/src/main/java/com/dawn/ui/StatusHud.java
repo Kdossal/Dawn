@@ -9,10 +9,10 @@ import com.dawn.entity.status.StatusSet;
 
 /** Top-left status icon strip rendered left-to-right in HUD space. */
 public final class StatusHud {
-    private static final float MARGIN_LEFT = 12f;
-    private static final float MARGIN_TOP = 12f;
-    private static final float ICON_SIZE = 32f;
-    private static final float ICON_GAP = 8f;
+    private static final float MARGIN_LEFT = 12f * Constants.HUD_ART_MULT / 2f;
+    private static final float MARGIN_TOP = 12f * Constants.HUD_ART_MULT / 2f;
+    private static final float ICON_SIZE = 16f * Constants.HUD_ART_MULT;
+    private static final float ICON_GAP = 8f * Constants.HUD_ART_MULT / 2f;
 
     private static final StatusId[] ORDER = {
         StatusId.POISONED,

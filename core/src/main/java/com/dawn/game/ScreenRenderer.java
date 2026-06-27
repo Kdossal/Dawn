@@ -36,7 +36,8 @@ public final class ScreenRenderer {
             float moveY,
             float delta,
             String interactionMessage,
-            long simTick) {
+            long simTick,
+            boolean showInteractHint) {
         int[] bounds = WorldRenderer.visibleCellBounds(
                 worldCamera.position.x,
                 worldCamera.position.y,
@@ -50,7 +51,7 @@ public final class ScreenRenderer {
         if (paused) {
             renderPause(ctx, hudViewport, hudCamera);
         } else {
-            renderHud(ctx, hudViewport, hudCamera, target, player);
+            renderHud(ctx, hudViewport, hudCamera, target, player, showInteractHint);
             renderDebug(
                     ctx,
                     hudViewport,
@@ -151,22 +152,37 @@ public final class ScreenRenderer {
             HudViewport hudViewport,
             OrthographicCamera hudCamera,
             TargetCell target,
-            Entity player) {
+            Entity player,
+            boolean showInteractHint) {
         hudViewport.apply(hudCamera);
         hudCamera.update();
         ctx.hud.setProjection(hudCamera.combined);
         if (!ctx.inventoryOverlay.isOpen()) {
             ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
             boolean cursorGrabbed = ctx.equipmentSidebar.hasHeldCursor();
-            ctx.hotbar.render();
+            boolean craftPlacement = ctx.craftingSystem.isPlacementMode();
+            ItemStack hintHeld = craftPlacement ? ctx.craftingSystem.phantomHeld() : held;
+            boolean craftHoverValid =
+                    craftPlacement
+                            && ctx.craftingSystem.hasValidPlacementPreview(ctx.world, player, target);
+            boolean suppressLeftHints = cursorGrabbed || ctx.craftingSystem.isPlaceChanneling();
             ctx.vitalsHud.render(player);
             ctx.statusHud.render(player);
             ClickHintRenderer.render(
                     ctx.hud,
                     ctx.assets,
-                    ClickHintResolver.resolve(ctx.world, player, held, target, cursorGrabbed),
+                    ClickHintResolver.resolve(
+                            ctx.world,
+                            player,
+                            hintHeld,
+                            target,
+                            suppressLeftHints,
+                            craftPlacement,
+                            craftHoverValid),
                     !cursorGrabbed && !ctx.hotbar.getHeld().isEmpty(),
-                    true);
+                    true,
+                    !showInteractHint,
+                    showInteractHint);
             ctx.equipmentSidebar.draw();
         }
         ctx.inventoryOverlay.draw();

@@ -138,7 +138,7 @@ public final class InventoryOverlay implements Disposable {
     }
 
     public void handleToggleKey() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             toggle();
         }
     }

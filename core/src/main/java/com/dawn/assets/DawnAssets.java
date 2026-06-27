@@ -203,7 +203,7 @@ public final class DawnAssets implements Disposable {
     public static final class UiCommon {
         public final TextureRegion slot;
         public final TextureRegion slotSelected;
-        public final TextureRegion slotEquip;
+        public final TextureRegion slotDull;
         public final TextureRegion accessoryIcon;
         public final TextureRegion bodyIcon;
         public final TextureRegion headIcon;
@@ -214,6 +214,7 @@ public final class DawnAssets implements Disposable {
         public final TextureRegion rightClick;
         public final TextureRegion qKey;
         public final TextureRegion eKey;
+        public final TextureRegion iKey;
         public final TextureRegion statusPoison;
         public final TextureRegion statusHungry;
         public final TextureRegion statusStarving;
@@ -229,11 +230,13 @@ public final class DawnAssets implements Disposable {
         public final TextureRegion thirstFill;
         public final TextureRegion hungerIcon;
         public final TextureRegion thirstIcon;
+        public final TextureRegion cKey;
+        public final TextureRegion craftingSlot;
 
         UiCommon(DawnAssets assets) {
             slot = assets.loadUi("common/slot");
             slotSelected = assets.loadUi("common/slot_selected");
-            slotEquip = assets.loadUi("common/slot_equip");
+            slotDull = assets.loadUi("common/slot_dull");
             accessoryIcon = assets.loadUi("common/accessory_icon");
             bodyIcon = assets.loadUi("common/body_icon");
             headIcon = assets.loadUi("common/head_icon");
@@ -244,6 +247,7 @@ public final class DawnAssets implements Disposable {
             rightClick = assets.loadUi("common/right_click");
             qKey = assets.loadUi("common/q_key");
             eKey = assets.loadUi("common/e_key");
+            iKey = assets.loadUi("common/i_key");
             statusPoison = assets.loadUi("statuses/poison");
             statusHungry = assets.loadUi("statuses/hunger");
             statusStarving = assets.loadUi("statuses/starving");
@@ -259,6 +263,8 @@ public final class DawnAssets implements Disposable {
             thirstFill = assets.loadUi("common/thirst");
             hungerIcon = assets.loadUi("common/hunger_icon");
             thirstIcon = assets.loadUi("common/thirst_icon");
+            cKey = assets.loadUi("common/c_key");
+            craftingSlot = assets.loadUi("common/crafting_slot");
         }
     }
 
@@ -273,6 +279,7 @@ public final class DawnAssets implements Disposable {
         public final TextureRegion tabCraftingActive;
         public final TextureRegion eqpTab;
         public final TextureRegion eqpBackground;
+        public final TextureRegion panel;
 
         UiInventory(DawnAssets assets) {
             chromeBg = assets.loadUi("inventory/chrome_bg");
@@ -284,6 +291,7 @@ public final class DawnAssets implements Disposable {
             tabCraftingActive = assets.loadUi("inventory/tab_crafting_active");
             eqpTab = assets.loadUi("inventory/eqp_tab");
             eqpBackground = assets.loadUi("inventory/eqp_bckgrd");
+            panel = assets.loadUi("inventory/panel");
         }
     }
 

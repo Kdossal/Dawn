@@ -8,17 +8,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.dawn.ui.DawnFonts.FontWeight;
 import com.dawn.ui.inventory.InventoryDesign;
 
-/**
- * Screen-pixel typography tiers for crisp m5x7 rendering.
- *
- * <p>Middle hotbar text uses {@link DawnFonts#medium()} via {@link com.dawn.render.GameSettings.UiSize},
- * not a fractional tier here.
- */
+/** Screen-pixel typography tiers for crisp m5x7 rendering. */
 public final class DawnTypography {
     /** Matches {@link DawnFonts#NATIVE_POINT_SIZE} atlas line height after load. */
     public static final int BASE_LINE_PX = 16;
 
-    /** Stack count on inventory slots and hotbar (32px screen). */
+    /** Stack count on inventory slots and hotbar (32px screen at 2× reference). */
     public static final TextTier SLOT_COUNT = TextTier.SM;
 
     public enum TextTier {
@@ -57,7 +52,8 @@ public final class DawnTypography {
         if (context == TextContext.INVENTORY_DESIGN) {
             base *= InventoryDesign.UI_SCALE;
         }
-        return tier.screenPx / base;
+        float scale = tier.screenPx / base;
+        return scale;
     }
 
     public static void apply(Label label, TextTier tier, TextContext context) {

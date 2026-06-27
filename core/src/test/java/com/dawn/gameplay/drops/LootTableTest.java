@@ -33,8 +33,10 @@ class LootTableTest {
     }
 
     @Test
-    void stoneGroundDropsRockItem() {
-        assertEquals(ItemId.ROCK, loot.roll(BlockId.STONE_GROUND, Layer.GROUND).get(0).itemId);
+    void stoneGroundDropsTwoRocks() {
+        ItemStack drop = loot.roll(BlockId.STONE_GROUND, Layer.GROUND).get(0);
+        assertEquals(ItemId.ROCK, drop.itemId);
+        assertEquals(2, drop.count);
     }
 
     @Test
@@ -45,6 +47,11 @@ class LootTableTest {
     @Test
     void bushDropsNothing() {
         assertTrue(loot.roll(BlockId.BUSH, Layer.OBJECT).isEmpty());
+    }
+
+    @Test
+    void campfireDropsNothing() {
+        assertTrue(loot.roll(BlockId.CAMPFIRE, Layer.OBJECT).isEmpty());
     }
 
     @Test

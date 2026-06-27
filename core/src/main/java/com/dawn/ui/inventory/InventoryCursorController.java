@@ -13,6 +13,7 @@ import com.dawn.inventory.PlayerInventory;
 import com.dawn.item.ItemDef;
 import com.dawn.item.ItemRegistry;
 import com.dawn.item.ItemStack;
+import com.dawn.world.storage.CrateStorage;
 
 /** Click-to-grab inventory cursor (LMB full stack, RMB half / place one). */
 public final class InventoryCursorController {
@@ -24,6 +25,8 @@ public final class InventoryCursorController {
 
     private ItemStack cursor = ItemStack.empty();
     private InventorySlotRef cursorOrigin;
+    private boolean cursorFromCraft;
+    private CrateStorage container;
 
     public InventoryCursorController(
             PlayerInventory inventory,
@@ -46,8 +49,46 @@ public final class InventoryCursorController {
         return !cursor.isEmpty();
     }
 
+    public boolean hasCraftCursor() {
+        return cursorFromCraft && hasCursor();
+    }
+
+    /** Craft output: no slot origin; merges with an existing craft cursor stack of the same item. */
+    public void receiveCraftedStack(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return;
+        }
+        if (cursorFromCraft && !cursor.isEmpty() && cursor.itemId == stack.itemId) {
+            cursor = cursor.withCount(cursor.count + stack.count);
+        } else {
+            cursor = stack.copy();
+            cursorOrigin = null;
+            cursorFromCraft = true;
+        }
+        notifyChanged();
+    }
+
+    public void dropCraftCursorToWorld() {
+        if (!hasCraftCursor()) {
+            return;
+        }
+        dropCursorToWorld();
+    }
+
     public InventorySlotRef cursorOrigin() {
         return cursorOrigin;
+    }
+
+    public boolean isCursorFromContainer() {
+        return cursorOrigin != null && cursorOrigin.kind == InventorySlotRef.Kind.CONTAINER;
+    }
+
+    public void setContainer(CrateStorage container) {
+        this.container = container;
+    }
+
+    public CrateStorage container() {
+        return container;
     }
 
     public void registerSlot(ItemSlotWidget widget) {
@@ -178,15 +219,14 @@ public final class InventoryCursorController {
         if (ref.kind == InventorySlotRef.Kind.EQUIPMENT) {
             return interactCursorWithEquipment(ref.equipmentSlot, placeAmount, fullStack);
         }
-        return interactCursorWithGrid(ref.gridIndex, placeAmount, fullStack);
+        return interactCursorWithStorageSlot(ref, placeAmount, fullStack);
     }
 
-    private boolean interactCursorWithGrid(int gridIndex, int placeAmount, boolean fullStack) {
-        InventorySlotRef ref = InventorySlotRef.grid(gridIndex);
-        ItemStack slotStack = inventory.getSlotAtIndex(gridIndex);
+    private boolean interactCursorWithStorageSlot(InventorySlotRef ref, int placeAmount, boolean fullStack) {
+        ItemStack slotStack = stackAt(ref);
 
         if (cursorOrigin != null && cursorOrigin.kind == InventorySlotRef.Kind.EQUIPMENT) {
-            return placeEquipCursorOnGrid(gridIndex, fullStack);
+            return placeEquipCursorOnSlot(ref, fullStack);
         }
 
         if (slotStack.isEmpty()) {
@@ -204,6 +244,10 @@ public final class InventoryCursorController {
             return true;
         }
         return swapWithSlot(ref);
+    }
+
+    private boolean interactCursorWithGrid(int gridIndex, int placeAmount, boolean fullStack) {
+        return interactCursorWithStorageSlot(InventorySlotRef.grid(gridIndex), placeAmount, fullStack);
     }
 
     private boolean interactCursorWithEquipment(EquipmentSlot slot, int placeAmount, boolean fullStack) {
@@ -238,17 +282,17 @@ public final class InventoryCursorController {
         return swapWithSlot(ref);
     }
 
-    private boolean placeEquipCursorOnGrid(int gridIndex, boolean fullStack) {
+    private boolean placeEquipCursorOnSlot(InventorySlotRef ref, boolean fullStack) {
         if (equipment == null || cursorOrigin == null) {
             return false;
         }
         EquipmentSlot equipSlot = cursorOrigin.equipmentSlot;
-        ItemStack slotStack = inventory.getSlotAtIndex(gridIndex);
+        ItemStack slotStack = stackAt(ref);
 
         if (slotStack.isEmpty()) {
             int place = fullStack ? cursor.count : 1;
             place = Math.min(place, cursor.count);
-            inventory.setSlotAtIndex(gridIndex, cursor.withCount(place));
+            writeStack(ref, cursor.withCount(place));
             reduceCursor(place);
             if (cursor.isEmpty()) {
                 equipment.set(equipSlot, ItemStack.empty());
@@ -260,16 +304,18 @@ public final class InventoryCursorController {
             return false;
         }
 
-        ItemStack[] grid = inventory.backingArray();
-        ItemStack[] eq = equipment.backingArray();
-        int eIdx = equipment.indexOf(equipSlot);
-        ItemStack previous = grid[gridIndex].copy();
-        grid[gridIndex] = cursor.copy();
+        ItemStack previous = slotStack.copy();
+        writeStack(ref, cursor.copy());
         cursor = previous;
-        eq[eIdx] = ItemStack.empty();
-        cursorOrigin = InventorySlotRef.grid(gridIndex);
-        syncHotbarSelection(cursorOrigin);
+        equipment.set(equipSlot, ItemStack.empty());
+        cursorOrigin = ref;
+        cursorFromCraft = false;
+        syncHotbarSelection(ref);
         return true;
+    }
+
+    private boolean placeEquipCursorOnGrid(int gridIndex, boolean fullStack) {
+        return placeEquipCursorOnSlot(InventorySlotRef.grid(gridIndex), fullStack);
     }
 
     private void pickUp(InventorySlotRef ref, int amount) {
@@ -280,6 +326,7 @@ public final class InventoryCursorController {
         if (cursor.isEmpty()) {
             cursor = taken;
             cursorOrigin = ref;
+            cursorFromCraft = false;
             syncHotbarSelection(ref);
         } else if (cursor.itemId == taken.itemId) {
             cursor = cursor.withCount(cursor.count + taken.count);
@@ -320,7 +367,7 @@ public final class InventoryCursorController {
         if (cursor.isEmpty() || amount <= 0) {
             return false;
         }
-        if (ref.kind != InventorySlotRef.Kind.GRID) {
+        if (ref.kind != InventorySlotRef.Kind.GRID && ref.kind != InventorySlotRef.Kind.CONTAINER) {
             return false;
         }
         ItemStack slotStack = stackAt(ref);
@@ -359,18 +406,20 @@ public final class InventoryCursorController {
                 clearCursorOrigin();
             } else {
                 cursorOrigin = ref;
+                cursorFromCraft = false;
                 syncHotbarSelection(ref);
             }
             return true;
         }
 
         ItemStack onCursor = cursor.copy();
-        inventory.setSlotAtIndex(ref.gridIndex, onCursor);
+        writeStack(ref, onCursor);
         cursor = slotStack.isEmpty() ? ItemStack.empty() : slotStack.copy();
         if (cursor.isEmpty()) {
             clearCursorOrigin();
         } else {
             cursorOrigin = ref;
+            cursorFromCraft = false;
             syncHotbarSelection(ref);
         }
         return true;
@@ -397,7 +446,9 @@ public final class InventoryCursorController {
     private void writeStack(InventorySlotRef ref, ItemStack stack) {
         if (ref.kind == InventorySlotRef.Kind.GRID) {
             inventory.setSlotAtIndex(ref.gridIndex, stack);
-        } else if (equipment != null) {
+        } else if (ref.kind == InventorySlotRef.Kind.CONTAINER && container != null) {
+            container.setSlotAtIndex(ref.gridIndex, stack);
+        } else if (equipment != null && ref.kind == InventorySlotRef.Kind.EQUIPMENT) {
             equipment.set(ref.equipmentSlot, stack);
         }
     }
@@ -413,6 +464,7 @@ public final class InventoryCursorController {
     private void clearCursor() {
         cursor = ItemStack.empty();
         clearCursorOrigin();
+        cursorFromCraft = false;
     }
 
     private void clearCursorOrigin() {
@@ -434,14 +486,21 @@ public final class InventoryCursorController {
         if (a.kind != b.kind) {
             return false;
         }
-        return a.kind == InventorySlotRef.Kind.GRID
-                ? a.gridIndex == b.gridIndex
-                : a.equipmentSlot == b.equipmentSlot;
+        return switch (a.kind) {
+            case GRID, CONTAINER -> a.gridIndex == b.gridIndex;
+            case EQUIPMENT -> a.equipmentSlot == b.equipmentSlot;
+        };
     }
 
     private ItemStack stackAt(InventorySlotRef ref) {
         if (ref.kind == InventorySlotRef.Kind.GRID) {
             return inventory.getSlotAtIndex(ref.gridIndex);
+        }
+        if (ref.kind == InventorySlotRef.Kind.CONTAINER) {
+            if (container == null) {
+                return ItemStack.empty();
+            }
+            return container.getSlotAtIndex(ref.gridIndex);
         }
         if (equipment == null) {
             return ItemStack.empty();

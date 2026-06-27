@@ -20,6 +20,6 @@ class PixelAlignTest {
     @Test
     void gridOffset_zeroWhenAlreadyAligned() {
         assertEquals(0f, PixelAlign.gridOffset(16f), 0.0001f);
-        assertEquals(0f, PixelAlign.gridOffset(16.5f), 0.0001f);
+        assertEquals(0f, PixelAlign.gridOffset(50f / 3f), 0.0001f);
     }
 }

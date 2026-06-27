@@ -35,9 +35,9 @@ class InventoryWeightTest {
     }
 
     @Test
-    void largeItems_stackOfFour_equalsOneUnit() {
+    void cloth_fullStack_weighsOneUnit() {
         PlayerInventory inventory = TestInventories.empty();
-        inventory.setSlotAtIndex(0, ItemStack.of(ItemId.CRATE, 4));
+        inventory.setSlotAtIndex(0, ItemStack.of(ItemId.CLOTH, 16));
 
         assertEquals(1f, InventoryWeight.totalWeight(inventory, null), 0.001f);
     }
@@ -46,6 +46,6 @@ class InventoryWeightTest {
     void startingInventory_isBelowBurdenThreshold() {
         PlayerInventory inventory = new PlayerInventory();
 
-        assertEquals(12.25f, InventoryWeight.totalWeight(inventory, new EquipmentInventory()), 0.01f);
+        assertEquals(9.25f, InventoryWeight.totalWeight(inventory, new EquipmentInventory()), 0.01f);
     }
 }

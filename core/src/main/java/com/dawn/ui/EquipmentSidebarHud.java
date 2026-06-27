@@ -17,22 +17,20 @@ import com.dawn.entity.Entity;
 import com.dawn.gameplay.drops.DropSystem;
 import com.dawn.inventory.EquipmentInventory;
 import com.dawn.inventory.PlayerInventory;
-import com.dawn.render.GameSettings;
 import com.dawn.render.HudViewport;
 import com.dawn.ui.inventory.InventorySlotRef;
 
 /** Right-middle HUD equipment sidebar with tab toggle and drag-drop. */
 public final class EquipmentSidebarHud implements Disposable {
     private static final float SLIDE_SPEED = 8f;
-    private static final GameSettings.UiSize SIDEBAR_UI_SIZE = GameSettings.UiSize.SMALL;
     private static final int GRID_SLOT_COUNT =
             EquipmentSidebarDesign.SLOT_ROWS * EquipmentSidebarDesign.SLOT_COLS;
 
     private final DawnAssets assets;
     private final PlayerInventory inventory;
     private final EquipmentInventory equipment;
-    private final GameSettings settings;
     private final HudItemDragSession dragSession;
+    private final Hotbar hotbar;
 
     private final Stage stage;
     private final Group tabButton;
@@ -54,13 +52,12 @@ public final class EquipmentSidebarHud implements Disposable {
             EquipmentInventory equipment,
             DropSystem dropSystem,
             Entity entity,
-            GameSettings settings,
             Hotbar hotbar,
             HudViewport hudViewport) {
         this.assets = assets;
         this.inventory = inventory;
         this.equipment = equipment;
-        this.settings = settings;
+        this.hotbar = hotbar;
 
         dragSession =
                 new HudItemDragSession(
@@ -71,9 +68,10 @@ public final class EquipmentSidebarHud implements Disposable {
                         assets,
                         fonts,
                         this::refreshAll);
-        dragSession.bindHotbar(hotbar);
 
         stage = new Stage(hudViewport.viewport());
+        hotbar.attachStage(stage);
+        dragSession.bindHotbar(hotbar);
 
         tabButton = new Group();
         tabButton.setTouchable(Touchable.enabled);
@@ -99,14 +97,14 @@ public final class EquipmentSidebarHud implements Disposable {
             for (int col = 0; col < EquipmentSidebarDesign.SLOT_COLS; col++) {
                 InventorySlotRef ref =
                         InventorySlotRef.equipment(EquipmentSidebarDesign.slotAt(col, row));
-                HudDragSlot slot = new HudDragSlot(assets, ref, true);
+                HudDragSlot slot = new HudDragSlot(assets, fonts, ref, HudSlotChrome.DULL);
                 dragSession.registerEquipSlot(slot);
                 equipSlots[idx++] = slot;
                 slot.setVisible(false);
                 stage.addActor(slot);
             }
         }
-        offhandSlot = new HudDragSlot(assets, InventorySlotRef.equipment(com.dawn.inventory.EquipmentSlot.OFF_HAND), true);
+        offhandSlot = new HudDragSlot(assets, fonts, InventorySlotRef.equipment(com.dawn.inventory.EquipmentSlot.OFF_HAND), HudSlotChrome.DULL);
         dragSession.registerEquipSlot(offhandSlot);
         offhandSlot.setVisible(false);
         stage.addActor(offhandSlot);
@@ -123,6 +121,10 @@ public final class EquipmentSidebarHud implements Disposable {
 
     public Stage stage() {
         return stage;
+    }
+
+    public HudItemDragSession dragSession() {
+        return dragSession;
     }
 
     /** User intent: sidebar open or opening. */
@@ -168,6 +170,13 @@ public final class EquipmentSidebarHud implements Disposable {
         stage.screenToStageCoordinates(pointerHud);
         Actor hit = stage.hit(pointerHud.x, pointerHud.y, true);
         return hit != null;
+    }
+
+    /** Hotbar hit test in stage/HUD space (use instead of raw screen coords). */
+    public boolean isPointerOverHotbar() {
+        pointerHud.set(Gdx.input.getX(), Gdx.input.getY());
+        stage.screenToStageCoordinates(pointerHud);
+        return hotbar.hitTest(pointerHud.x, pointerHud.y) != null;
     }
 
     public void dropHeldToWorld() {
@@ -266,35 +275,30 @@ public final class EquipmentSidebarHud implements Disposable {
             return;
         }
         syncViewport();
+        hotbar.refreshSlots(equipment);
         stage.draw();
     }
 
     public void onResize(int screenWidth, int screenHeight) {
         stage.getViewport().update(screenWidth, screenHeight, true);
+        hotbar.layout();
         layout();
     }
 
     private void updateDragLayer() {
         boolean shouldDrag = !inventoryOverlayOpen;
         if (shouldDrag && !dragLayerActive) {
-            dragSession.setActive(true, stage, EquipmentSidebarDesign.layout(SIDEBAR_UI_SIZE));
+            dragSession.setActive(true, stage);
             dragLayerActive = true;
-            layoutHotbarProxies();
         } else if (!shouldDrag && dragLayerActive) {
             dragSession.close();
             dragLayerActive = false;
         }
     }
 
-    private void layoutHotbarProxies() {
-        if (dragLayerActive) {
-            dragSession.layoutHotbarProxies(EquipmentSidebarDesign.layout(SIDEBAR_UI_SIZE));
-        }
-    }
-
     private void layout() {
-        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout(SIDEBAR_UI_SIZE);
-        dragSession.cursorActor().layoutForUiSize(SIDEBAR_UI_SIZE);
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
+        dragSession.cursorActor().layout();
 
         float panelX = EquipmentSidebarDesign.panelXAtSlide(slideT, layout);
         float tabX = EquipmentSidebarDesign.tabXAtSlide(slideT, panelX, layout);
@@ -332,7 +336,6 @@ public final class EquipmentSidebarHud implements Disposable {
         offhandSlot.setPosition(slotBounds.x, slotBounds.y);
 
         tabButton.toFront();
-        layoutHotbarProxies();
     }
 
     @Override

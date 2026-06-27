@@ -68,7 +68,7 @@ public final class LootTable {
         // Ground digs: convert terrain into base resources.
         rule(Layer.GROUND, BlockId.DIRT_GROUND, drop(ItemId.DIRT, 1));
         rule(Layer.GROUND, BlockId.SAND_GROUND, drop(ItemId.SAND, 1));
-        rule(Layer.GROUND, BlockId.STONE_GROUND, drop(ItemId.ROCK, 1));
+        rule(Layer.GROUND, BlockId.STONE_GROUND, drop(ItemId.ROCK, 2));
 
         // Object breaks/chops/grabs.
         rule(Layer.OBJECT, BlockId.ROCK, drop(ItemId.ROCK, 1));
@@ -81,6 +81,7 @@ public final class LootTable {
         rule(Layer.OBJECT, BlockId.BED_HEAD);
         rule(Layer.OBJECT, BlockId.STONE_WALL, drop(ItemId.ROCK, 2));
         rule(Layer.OBJECT, BlockId.LANTERN, drop(ItemId.LANTERN, 1));
+        rule(Layer.OBJECT, BlockId.CAMPFIRE);
         rule(Layer.OBJECT, BlockId.BUSH);
     }
 

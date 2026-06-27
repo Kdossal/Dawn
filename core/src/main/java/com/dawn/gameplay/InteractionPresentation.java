@@ -1,10 +1,12 @@
 package com.dawn.gameplay;
 
 import com.dawn.entity.Entity;
+import com.dawn.gameplay.ReachResolver;
 import com.dawn.gameplay.TargetResolver.TargetCell;
 import com.dawn.gameplay.placement.PlacementPreview;
 import com.dawn.gameplay.placement.PlacementPreviewResolver;
 import com.dawn.item.ItemStack;
+import com.dawn.item.Placeable;
 import com.dawn.world.World;
 import java.util.Collections;
 import java.util.List;
@@ -34,10 +36,33 @@ public final class InteractionPresentation {
             TargetCell target,
             boolean showPlacementGhost,
             boolean suppressBreakHighlights) {
+        update(world, player, held, target, showPlacementGhost, suppressBreakHighlights, null);
+    }
+
+    public void update(
+            World world,
+            Entity player,
+            ItemStack held,
+            TargetCell target,
+            boolean showPlacementGhost,
+            boolean suppressBreakHighlights,
+            Placeable placementOverride) {
         showPlacementGhosts = showPlacementGhost;
         if (target != null) {
-            placementPreviews = PlacementPreviewResolver.resolve(
-                    world, player, player.getX(), player.getY(), held, target);
+            if (placementOverride != null) {
+                placementPreviews =
+                        PlacementPreviewResolver.resolve(
+                                world,
+                                player,
+                                player.getX(),
+                                player.getY(),
+                                placementOverride,
+                                ReachResolver.radiusCellsFloatForHeld(held),
+                                target);
+            } else {
+                placementPreviews = PlacementPreviewResolver.resolve(
+                        world, player, player.getX(), player.getY(), held, target);
+            }
         } else {
             placementPreviews = List.of();
         }

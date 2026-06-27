@@ -11,6 +11,7 @@ import com.dawn.config.DayNightConfig;
 import com.dawn.config.GameConfig;
 import com.dawn.config.Constants;
 import com.dawn.input.GameCursor;
+import com.dawn.item.ItemStack;
 import com.dawn.render.GameViewport;
 import com.dawn.render.HudViewport;
 import com.dawn.ui.DebugOverlay;
@@ -42,7 +43,9 @@ public class GameScreen extends ScreenAdapter {
                     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
                         if (ctx.equipmentSidebar.isDragActive()
                                 || ctx.equipmentSidebar.isOpen()
-                                || ctx.equipmentSidebar.isAnimating()) {
+                                || ctx.equipmentSidebar.isAnimating()
+                                || ctx.crateStorageOverlay.isOpen()
+                                || ctx.craftingOverlay.isOpen()) {
                             return false;
                         }
                         hudViewport.unproject(screenX, screenY, hudPointer);
@@ -115,7 +118,8 @@ public class GameScreen extends ScreenAdapter {
                 frame.lastMoveY,
                 delta,
                 ctx.interaction.getLastMessage(),
-                ctx.gameLoop.getSimulation().getCurrentTick());
+                ctx.gameLoop.getSimulation().getCurrentTick(),
+                frame.interactTarget != null && !ctx.crateStorageOverlay.isOpen());
     }
 
     private void resumeFromPause() {
@@ -132,6 +136,11 @@ public class GameScreen extends ScreenAdapter {
         playerAndInteractionPhase.tickPlayer(ctx, frame, delta);
         cameraTargetPhase.tick(ctx, gameViewport, worldCamera, frame);
         playerAndInteractionPhase.tickInteraction(ctx, frame, delta);
+        if (!frame.inventoryOpen) {
+            ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
+            ctx.crateStorageOverlay.update(ctx.entities.getPlayer(), worldCamera);
+            ctx.craftingOverlay.update(ctx.entities.getPlayer(), worldCamera, held);
+        }
         simulationLightingPhase.tick(ctx, worldCamera, delta);
     }
 

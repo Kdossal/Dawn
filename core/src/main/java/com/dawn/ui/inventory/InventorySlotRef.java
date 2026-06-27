@@ -6,7 +6,8 @@ import com.dawn.inventory.EquipmentSlot;
 public final class InventorySlotRef {
     public enum Kind {
         GRID,
-        EQUIPMENT
+        EQUIPMENT,
+        CONTAINER
     }
 
     public final Kind kind;
@@ -25,5 +26,9 @@ public final class InventorySlotRef {
 
     public static InventorySlotRef equipment(EquipmentSlot slot) {
         return new InventorySlotRef(Kind.EQUIPMENT, -1, slot);
+    }
+
+    public static InventorySlotRef container(int index) {
+        return new InventorySlotRef(Kind.CONTAINER, index, null);
     }
 }

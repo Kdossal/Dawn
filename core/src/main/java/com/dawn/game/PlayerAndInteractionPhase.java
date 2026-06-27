@@ -6,6 +6,7 @@ import com.dawn.entity.sprite.PlayerAnimContext;
 import com.dawn.entity.status.StatusId;
 import com.dawn.entity.status.StatusSystem;
 import com.dawn.gameplay.EatSystem;
+import com.dawn.gameplay.TargetResolver.TargetCell;
 import com.dawn.item.ItemStack;
 import java.util.function.IntFunction;
 
@@ -18,7 +19,7 @@ final class PlayerAndInteractionPhase {
         frame.lastMoveX = ctx.input.getMoveX();
         frame.lastMoveY = ctx.input.getMoveY();
         boolean running = ctx.input.isRunningWithEnergy(player.getCurrentEnergy());
-        boolean immobile = player.getStatuses().has(StatusId.IMMOBILE);
+        boolean immobile = player.getStatuses().has(StatusId.IMMOBILE) || ctx.craftingSystem.isGrabChanneling();
         if (immobile) {
             ctx.input.cancelRun();
         }
@@ -58,19 +59,35 @@ final class PlayerAndInteractionPhase {
             frame.overHotbar = isOverHotbar(ctx);
             frame.interacting = false;
             frame.moving = isMoving(frame.lastMoveX, frame.lastMoveY);
-            player.updateAnimation(delta, buildAnimContext(frame, player));
+            player.updateAnimation(delta, buildAnimContext(ctx, frame, player));
             return;
         }
 
         frame.overHotbar = isOverHotbar(ctx);
+        if (!frame.inventoryOpen && ctx.input.craftPressed()) {
+            ctx.craftingOverlay.toggle();
+            if (ctx.craftingOverlay.isOpen()) {
+                ctx.crateStorageOverlay.close();
+            }
+        }
+        if (!frame.overHotbar && ctx.input.interactPressed() && frame.interactTarget != null) {
+            ctx.craftingOverlay.close();
+            ctx.crateStorageOverlay.toggle(frame.interactTarget);
+        }
+        boolean overInteractiveHud = ctx.equipmentSidebar.isPointerOverInteractiveHud();
         boolean cursorGrabbed = ctx.equipmentSidebar.hasHeldCursor();
+        boolean craftPlacement = ctx.craftingSystem.isPlacementMode();
+        boolean craftChanneling = ctx.craftingSystem.isChanneling();
         ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
+        if (craftPlacement) {
+            held = ctx.craftingSystem.phantomHeld();
+        }
         IntFunction<ItemStack> extractor =
                 cursorGrabbed
                         ? amount -> ctx.equipmentSidebar.cursorController().extractFromCursor(amount)
                         : amount -> ctx.inventory.extractFromHeld(amount);
-        if (!frame.overHotbar) {
-            if (!cursorGrabbed) {
+        if (!frame.overHotbar && !overInteractiveHud) {
+            if (!cursorGrabbed && !craftChanneling) {
                 ctx.mining.update(
                         ctx.world,
                         player,
@@ -82,21 +99,28 @@ final class PlayerAndInteractionPhase {
                 ctx.mining.reset();
             }
 
-            if (EatSystem.canEat(player, held)) {
-                ctx.eat.update(player, ctx.inventory, held, ctx.input.placeHeld(), delta, extractor);
-            } else {
-                ctx.placement.update(
-                        ctx.world,
-                        player,
-                        ctx.inventory,
-                        frame.target,
-                        held,
-                        ctx.input.placeHeld(),
-                        delta,
-                        extractor);
+            if (!craftChanneling && !craftPlacement) {
+                if (EatSystem.canEat(player, held)) {
+                    ctx.eat.update(player, ctx.inventory, held, ctx.input.placeHeld(), delta, extractor);
+                } else {
+                    ctx.placement.update(
+                            ctx.world,
+                            player,
+                            ctx.inventory,
+                            frame.target,
+                            held,
+                            ctx.input.placeHeld(),
+                            delta,
+                            extractor);
+                }
             }
         } else {
             ctx.mining.reset();
+        }
+
+        if (ctx.craftingOverlay.isOpen()) {
+            ctx.craftingSystem.update(
+                    ctx.world, player, frame.target, ctx.input.placeHeld(), delta, ctx.interaction);
         }
 
         if (!cursorGrabbed && ctx.input.dropFullStackPressed()) {
@@ -113,12 +137,13 @@ final class PlayerAndInteractionPhase {
                 player,
                 held,
                 frame.target,
-                !ctx.input.placeHeld(),
-                cursorGrabbed);
+                craftPlacement || !ctx.input.placeHeld(),
+                cursorGrabbed || craftChanneling,
+                craftPlacement ? ctx.craftingSystem.activePlaceable() : null);
 
         frame.interacting = isInteracting(ctx, frame.overHotbar);
         frame.moving = isMoving(frame.lastMoveX, frame.lastMoveY);
-        player.updateAnimation(delta, buildAnimContext(frame, player));
+        player.updateAnimation(delta, buildAnimContext(ctx, frame, player));
     }
 
     private static void normalizeMove(FrameState frame) {
@@ -128,7 +153,7 @@ final class PlayerAndInteractionPhase {
     }
 
     private static boolean isOverHotbar(GameContext ctx) {
-        return ctx.hotbar.hitTest(com.badlogic.gdx.Gdx.input.getX(), com.badlogic.gdx.Gdx.input.getY()) != null;
+        return ctx.equipmentSidebar.isPointerOverHotbar();
     }
 
     private static boolean isInteracting(GameContext ctx, boolean overHotbar) {
@@ -136,6 +161,7 @@ final class PlayerAndInteractionPhase {
                 && (ctx.mining.isActive()
                         || ctx.eat.isInteracting()
                         || ctx.placement.isInteracting()
+                        || ctx.craftingSystem.isInteracting()
                         || (ctx.input.placeHeld()
                                 && ctx.interactionPresentation.hasValidPlacementPreview()));
     }
@@ -144,7 +170,8 @@ final class PlayerAndInteractionPhase {
         return moveX != 0f || moveY != 0f;
     }
 
-    private static PlayerAnimContext buildAnimContext(FrameState frame, Entity player) {
+    private static PlayerAnimContext buildAnimContext(GameContext ctx, FrameState frame, Entity player) {
+        TargetCell animTarget = ctx.craftingSystem.isGrabChanneling() ? null : frame.target;
         return new PlayerAnimContext(
                 frame.moving,
                 frame.interacting,
@@ -152,6 +179,6 @@ final class PlayerAndInteractionPhase {
                 player.getY(),
                 frame.lastMoveX,
                 frame.lastMoveY,
-                frame.target);
+                animTarget);
     }
 }

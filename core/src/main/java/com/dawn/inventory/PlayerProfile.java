@@ -2,6 +2,7 @@ package com.dawn.inventory;
 
 import com.dawn.entity.Entity;
 import com.dawn.entity.AttributeId;
+import com.dawn.gameplay.crafting.KnownRecipes;
 
 /** Player progression and UI sheet data for the equipment tab. */
 public final class PlayerProfile {
@@ -11,9 +12,14 @@ public final class PlayerProfile {
     public int expToNext = 100;
 
     private Entity entity;
+    private final KnownRecipes knownRecipes = new KnownRecipes();
 
     public void bindEntity(Entity entity) {
         this.entity = entity;
+    }
+
+    public KnownRecipes knownRecipes() {
+        return knownRecipes;
     }
 
     public float expRatio() {

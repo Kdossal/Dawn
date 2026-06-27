@@ -28,6 +28,9 @@ public final class EntityAnimResolver {
         if (ctx.interacting() && ctx.target() != null) {
             return facingToward(ctx.feetX(), ctx.feetY(), ctx.target());
         }
+        if (ctx.interacting()) {
+            return currentFacing == null ? Facing4.DOWN : currentFacing;
+        }
         if (ctx.moving()) {
             return facingFromVector(ctx.moveX(), ctx.moveY());
         }

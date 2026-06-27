@@ -10,46 +10,12 @@ public final class GameSettings {
     /** Max zoom in: 40% closer than max zoom out (visible area × 0.6). */
     public static final float MAX_ZOOM_IN_FACTOR = 1f / 0.6f;
 
-    public enum UiSize {
-        SMALL,
-        MEDIUM,
-        LARGE
-    }
-
-    public static final UiSize DEFAULT_UI_SIZE = UiSize.MEDIUM;
-
     public int zoomLevel = DEFAULT_ZOOM_LEVEL;
-    public UiSize uiSize = DEFAULT_UI_SIZE;
 
     /** -1 = off; 0..2 index into {@link #DISPLAY_GAMMA_VALUES}. */
     public int displayGammaPreset = -1;
 
     public static final float[] DISPLAY_GAMMA_VALUES = {0.92f, 0.85f, 0.75f};
-
-    public void setUiSize(UiSize size) {
-        if (size == null) {
-            return;
-        }
-        // Large UI is intentionally disabled for now.
-        uiSize = size == UiSize.LARGE ? UiSize.MEDIUM : size;
-    }
-
-    /** SMALL ↔ MEDIUM (LARGE disabled). */
-    public void cycleUiSize() {
-        uiSize =
-                switch (uiSize) {
-                    case SMALL -> UiSize.MEDIUM;
-                    case MEDIUM, LARGE -> UiSize.SMALL;
-                };
-    }
-
-    public static String uiSizeLabel(UiSize size) {
-        return switch (size) {
-            case SMALL -> "Small";
-            case MEDIUM -> "Medium";
-            case LARGE -> "Large";
-        };
-    }
 
     /** Off → Low → Normal → High → Off. */
     public void cycleDisplayGammaPreset() {
@@ -76,14 +42,6 @@ public final class GameSettings {
         }
         renderSettings.displayGammaEnabled = true;
         renderSettings.displayGamma = DISPLAY_GAMMA_VALUES[displayGammaPreset];
-    }
-
-    public static int slotMultiplier(UiSize size) {
-        return switch (size) {
-            case SMALL -> 2;
-            case MEDIUM -> 3;
-            case LARGE -> 4;
-        };
     }
 
     public void setZoomLevel(int level) {

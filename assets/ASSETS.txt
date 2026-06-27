@@ -40,6 +40,8 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   bed_head.png
 
+  campfire.png  (16x16 — world prop; lit like lantern)
+
 
 
 [items/]
@@ -72,6 +74,16 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   canned_food.png
 
+  campfire.png  (recipe icon only — not an inventory placeable)
+
+  bandage.png
+
+  stone_ground.png  (craft-only — places stone ground tile)
+
+  dirt_ground.png  (craft-only — places dirt ground tile)
+
+  sand_ground.png  (craft-only — places sand ground tile)
+
 
 
 [entities/]
@@ -87,6 +99,8 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
   slot_selected.png
 
   slot_equip.png
+
+  slot_dull.png
 
   accessory_icon.png  (16x16 — empty accessory-slot guide icon)
 
@@ -104,7 +118,13 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   q_key.png  (16x16 — keyboard hint icon for drop action)
 
-  e_key.png  (16x16 — keyboard hint icon for inventory action)
+  e_key.png  (16x16 — keyboard hint icon for interact action)
+
+  i_key.png  (16x16 — keyboard hint icon for inventory action)
+
+  c_key.png  (16x16 — keyboard hint icon for crafting action)
+
+  crafting_slot.png  (80x20 — 20x20 slot + unavailable + selected + craft-time wipe)
 
   empty_bar.png  (102x8 — left 2px cap + 100px body)
 
@@ -133,6 +153,8 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
   chrome_bg.png
 
   grid_panel.png
+
+  panel.png  (50x50 — 9-slice frame, 3px corners; used for in-world storage UI)
 
   tab_page.png
 

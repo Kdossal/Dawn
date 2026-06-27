@@ -18,5 +18,6 @@ public enum BlockId {
     BED_FOOT,
     BED_HEAD,
     LANTERN,
-    STONE_WALL
+    STONE_WALL,
+    CAMPFIRE
 }

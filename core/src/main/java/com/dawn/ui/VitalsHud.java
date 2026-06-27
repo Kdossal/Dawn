@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.Gdx;
 import com.dawn.assets.DawnAssets;
 import com.dawn.entity.Entity;
-import com.dawn.render.GameSettings;
 
 /** Top-right HP/EP bars rendered in HUD batch space (no stretching). */
 public final class VitalsHud {
@@ -15,7 +14,6 @@ public final class VitalsHud {
 
     private final HudAssets hud;
     private final DawnAssets assets;
-    private final GameSettings settings;
 
     private final TextureRegion emptyClip = new TextureRegion();
     private final TextureRegion fillClip = new TextureRegion();
@@ -27,10 +25,9 @@ public final class VitalsHud {
     private float hungerFullForSec;
     private float thirstFullForSec;
 
-    public VitalsHud(HudAssets hud, DawnAssets assets, GameSettings settings) {
+    public VitalsHud(HudAssets hud, DawnAssets assets) {
         this.hud = hud;
         this.assets = assets;
-        this.settings = settings;
     }
 
     public void render(Entity player) {
@@ -38,7 +35,7 @@ public final class VitalsHud {
             return;
         }
 
-        VitalsBarDesign.Layout layout = VitalsBarDesign.layout(GameSettings.UiSize.MEDIUM);
+        VitalsBarDesign.Layout layout = VitalsBarDesign.layout();
         float hpCurrent = player.getCurrentHp();
         float hpMax = player.getMaxHp();
         float epCurrent = player.getCurrentEnergy();

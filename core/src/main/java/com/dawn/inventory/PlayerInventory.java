@@ -21,13 +21,10 @@ public final class PlayerInventory {
         setSlotAtIndex(10, ItemStack.of(ItemId.HAMMER));
         setSlotAtIndex(11, ItemStack.of(ItemId.SAW));
         setSlotAtIndex(12, ItemStack.of(ItemId.SHOVEL));
-        setSlotAtIndex(13, ItemStack.of(ItemId.CRATE, 4));
-        setSlotAtIndex(14, ItemStack.of(ItemId.BED, 4));
         setSlotAtIndex(5, ItemStack.of(ItemId.LANTERN, 4));
         setSlotAtIndex(6, ItemStack.of(ItemId.SPRUCE_SAPLING, 4));
-        setSlotAtIndex(7, ItemStack.of(ItemId.STONE_GROUND, 4));
-        setSlotAtIndex(8, ItemStack.of(ItemId.STONE_WALL, 8));
-        setSlotAtIndex(9, ItemStack.of(ItemId.STONE_WALL, 8));
+        setSlotAtIndex(7, ItemStack.of(ItemId.LOG, 8));
+        setSlotAtIndex(8, ItemStack.of(ItemId.CLOTH, 8));
         setSlotAtIndex(0, ItemStack.of(ItemId.LEATHER_HOOD));
         setSlotAtIndex(1, ItemStack.of(ItemId.CANNED_FOOD, 4));
     }

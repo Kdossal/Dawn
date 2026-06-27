@@ -1,28 +1,23 @@
 package com.dawn.ui;
 
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.dawn.assets.DawnAssets;
 import com.dawn.entity.Entity;
 import com.dawn.gameplay.drops.DropSystem;
 import com.dawn.inventory.EquipmentInventory;
-import com.dawn.inventory.InventoryConstants;
 import com.dawn.inventory.PlayerInventory;
 import com.dawn.ui.inventory.InventoryCursorController;
 import com.dawn.ui.inventory.InventorySlotRef;
+import com.dawn.world.storage.CrateStorage;
 
 /** Drag-drop between HUD item bar and equipment sidebar slots. */
 public final class HudItemDragSession {
-    private final PlayerInventory inventory;
-    private final EquipmentInventory equipment;
-    private final DawnAssets assets;
     private final InventoryCursorController cursorController;
     private final HudDragCursorActor cursorActor;
-    private final HudDragSlot[] hotbarProxies = new HudDragSlot[InventoryConstants.SIZE];
     private final Runnable onChanged;
 
-    private Hotbar hotbar;
     private boolean active;
+    private Runnable extraOnChanged;
 
     public HudItemDragSession(
             PlayerInventory inventory,
@@ -32,23 +27,17 @@ public final class HudItemDragSession {
             DawnAssets assets,
             DawnFonts fonts,
             Runnable onChanged) {
-        this.inventory = inventory;
-        this.equipment = equipment;
-        this.assets = assets;
         this.onChanged = onChanged;
         cursorController =
                 new InventoryCursorController(inventory, equipment, dropSystem, entity, this::notifyChanged);
         cursorActor = new HudDragCursorActor(assets, fonts);
-
-        for (int i = 0; i < hotbarProxies.length; i++) {
-            HudDragSlot proxy = new HudDragSlot(assets, InventorySlotRef.grid(i), false);
-            hotbarProxies[i] = proxy;
-            cursorController.registerDragTarget(proxy, proxy.slotRef());
-        }
     }
 
     public void bindHotbar(Hotbar hotbar) {
-        this.hotbar = hotbar;
+        for (int i = 0; i < HudSlotDesign.SLOT_COUNT; i++) {
+            HudDragSlot slot = hotbar.slotAt(i);
+            cursorController.registerDragTarget(slot, slot.slotRef());
+        }
     }
 
     public HudDragCursorActor cursorActor() {
@@ -63,35 +52,33 @@ public final class HudItemDragSession {
         cursorController.registerDragTarget(slot, slot.slotRef());
     }
 
-    public void setActive(boolean active, Stage stage, EquipmentSidebarDesign.Layout layout) {
+    public void registerContainerSlot(HudDragSlot slot) {
+        cursorController.registerDragTarget(slot, slot.slotRef());
+    }
+
+    public void setContainer(CrateStorage container) {
+        cursorController.setContainer(container);
+    }
+
+    public void clearContainer() {
+        cursorController.setContainer(null);
+    }
+
+    public CrateStorage container() {
+        return cursorController.container();
+    }
+
+    public void setExtraOnChanged(Runnable extraOnChanged) {
+        this.extraOnChanged = extraOnChanged;
+    }
+
+    public void setActive(boolean active, Stage stage) {
         this.active = active;
         if (!active) {
             cursorController.returnCursorToInventory();
             cursorActor.setVisible(false);
-            for (HudDragSlot proxy : hotbarProxies) {
-                proxy.remove();
-            }
-            return;
-        }
-        layoutHotbarProxies(layout);
-        for (HudDragSlot proxy : hotbarProxies) {
-            if (proxy.getStage() != stage) {
-                stage.addActor(proxy);
-            }
-        }
-        refreshCursor();
-    }
-
-    public void layoutHotbarProxies(EquipmentSidebarDesign.Layout layout) {
-        if (hotbar == null) {
-            return;
-        }
-        Rectangle slot = new Rectangle();
-        for (int i = 0; i < hotbarProxies.length; i++) {
-            hotbar.slotBounds(i, slot);
-            HudDragSlot proxy = hotbarProxies[i];
-            proxy.setLayoutSize(slot.width, layout.iconPx());
-            proxy.setPosition(slot.x, slot.y);
+        } else {
+            refreshCursor();
         }
     }
 
@@ -104,11 +91,14 @@ public final class HudItemDragSession {
     }
 
     public void refreshCursor() {
-        cursorActor.refresh(cursorController.cursorStack(), assets);
+        cursorActor.refresh(cursorController.cursorStack());
     }
 
     public void notifyChanged() {
         onChanged.run();
+        if (extraOnChanged != null) {
+            extraOnChanged.run();
+        }
     }
 
     public void close() {
@@ -117,9 +107,6 @@ public final class HudItemDragSession {
         }
         active = false;
         cursorActor.setVisible(false);
-        for (HudDragSlot proxy : hotbarProxies) {
-            proxy.remove();
-        }
     }
 
     public boolean isActive() {

@@ -14,6 +14,8 @@ import com.dawn.gameplay.BreakTarget;
 import com.dawn.config.DayNightConfig;
 import com.dawn.config.GameConfig;
 import com.dawn.render.AmbientLighting;
+import com.dawn.ui.DawnTypography.TextContext;
+import com.dawn.ui.DawnTypography.TextTier;
 import com.dawn.world.World;
 import com.dawn.world.WorldClock;
 import com.dawn.world.block.Layer;
@@ -21,6 +23,18 @@ import com.dawn.world.light.LightMap;
 
 public class DebugOverlay implements Disposable {
     public static final int TOGGLE_KEY = Input.Keys.F3;
+
+    /** F3 layout authored at 800px HUD height; scale spacing for 1200px (DISPLAY_SCALE 3). */
+    private static final float HUD_LAYOUT_SCALE = Constants.HUD_HEIGHT_PX / 800f;
+
+    private static final float TEXT_TIER_LINE = TextTier.SM.screenPx() + 4f;
+    private static final float LINE_HEIGHT = TEXT_TIER_LINE * HUD_LAYOUT_SCALE;
+    private static final float MARGIN_X = 8f * HUD_LAYOUT_SCALE;
+    private static final float TEXT_TOP_INSET = 52f * HUD_LAYOUT_SCALE;
+    private static final float KEY_BOX = 22f * HUD_LAYOUT_SCALE;
+    private static final float KEY_GAP = 6f * HUD_LAYOUT_SCALE;
+    private static final float KEY_MARGIN_X = 12f * HUD_LAYOUT_SCALE;
+    private static final float KEY_MARGIN_TOP = 28f * HUD_LAYOUT_SCALE;
 
     private final HudAssets hud;
     private DebugMode mode = DebugMode.OFF;
@@ -61,13 +75,12 @@ public class DebugOverlay implements Disposable {
             return;
         }
 
-        drawKeyIndicators(input, 12f, Constants.HUD_HEIGHT_PX - 28f);
+        drawKeyIndicators(input, KEY_MARGIN_X, Constants.HUD_HEIGHT_PX - KEY_MARGIN_TOP);
 
         hud.batch.begin();
-        float y = Constants.HUD_HEIGHT_PX - 52f;
-        float line = 20f;
+        float y = Constants.HUD_HEIGHT_PX - TEXT_TOP_INSET;
 
-        y = line("F3: debug | [ ] scrub time | hold LMB mine / RMB place | 1-0 hotbar", 8f, y, line);
+        y = line("F3: debug | [ ] scrub time | hold LMB mine / RMB place | 1-0 hotbar", MARGIN_X, y);
 
         CharacterSheet sheet = CharacterSheet.from(entity, inventory, equipment);
         WorldClock clock = world.clock();
@@ -83,20 +96,18 @@ public class DebugOverlay implements Disposable {
                         + simTick
                         + "  "
                         + (interactionMessage == null ? "" : interactionMessage),
-                8f,
-                y,
-                line);
-        y = line(formatAttributes(sheet), 8f, y, line);
-        y = line(formatVitals(sheet), 8f, y, line);
-        y = line(formatSecondary(sheet), 8f, y, line);
-        y = line(formatHiddenRates(sheet), 8f, y, line);
-        y = line("Statuses: " + entity.getStatuses().formatDisplayNames(), 8f, y, line);
+                MARGIN_X,
+                y);
+        y = line(formatAttributes(sheet), MARGIN_X, y);
+        y = line(formatVitals(sheet), MARGIN_X, y);
+        y = line(formatSecondary(sheet), MARGIN_X, y);
+        y = line(formatHiddenRates(sheet), MARGIN_X, y);
+        y = line("Statuses: " + entity.getStatuses().formatDisplayNames(), MARGIN_X, y);
         if (profile != null) {
             y = line(
                     profile.name + "  Lv " + profile.level + "  XP " + profile.exp + "/" + profile.expToNext,
-                    8f,
-                    y,
-                    line);
+                    MARGIN_X,
+                    y);
         }
         y = line(
                 "Move: "
@@ -106,17 +117,15 @@ public class DebugOverlay implements Disposable {
                         + (input.isRunningWithEnergy(entity.getCurrentEnergy()) ? " RUN" : "")
                         + "  delta: "
                         + fmt(delta),
-                8f,
-                y,
-                line);
-        y = line("Pos: " + fmt(entity.getX()) + ", " + fmt(entity.getY()), 8f, y, line);
-        y = line("Mouse: " + screenX + ", " + screenY, 8f, y, line);
-        y = line(formatHoverBlock(world, hoverBreak, hoverSimActive), 8f, y, line);
+                MARGIN_X,
+                y);
+        y = line("Pos: " + fmt(entity.getX()) + ", " + fmt(entity.getY()), MARGIN_X, y);
+        y = line("Mouse: " + screenX + ", " + screenY, MARGIN_X, y);
+        y = line(formatHoverBlock(world, hoverBreak, hoverSimActive), MARGIN_X, y);
         y = line(
                 formatLightStats(world, entity, hoverBreak, clock, dayNight),
-                8f,
-                y,
-                line);
+                MARGIN_X,
+                y);
 
         hud.batch.end();
     }
@@ -198,12 +207,10 @@ public class DebugOverlay implements Disposable {
     }
 
     private void drawKeyIndicators(InputController input, float x, float y) {
-        float size = 22f;
-        float gap = 6f;
-        drawKeyBox(x + size + gap, y + size + gap, size, input, Input.Keys.W);
-        drawKeyBox(x, y, size, input, Input.Keys.A);
-        drawKeyBox(x + size + gap, y, size, input, Input.Keys.S);
-        drawKeyBox(x + (size + gap) * 2, y, size, input, Input.Keys.D);
+        drawKeyBox(x + KEY_BOX + KEY_GAP, y + KEY_BOX + KEY_GAP, KEY_BOX, input, Input.Keys.W);
+        drawKeyBox(x, y, KEY_BOX, input, Input.Keys.A);
+        drawKeyBox(x + KEY_BOX + KEY_GAP, y, KEY_BOX, input, Input.Keys.S);
+        drawKeyBox(x + (KEY_BOX + KEY_GAP) * 2, y, KEY_BOX, input, Input.Keys.D);
     }
 
     private void drawKeyBox(float x, float y, float size, InputController input, int key) {
@@ -214,18 +221,18 @@ public class DebugOverlay implements Disposable {
         hud.shapes.end();
     }
 
-    private float line(String text, float x, float y, float lineHeight) {
+    private float line(String text, float x, float y) {
         DawnTypography.draw(
                 hud.batch,
                 hud.font,
                 hud.layout,
                 text,
-                DawnTypography.TextTier.XS,
-                DawnTypography.TextContext.HUD,
+                TextTier.SM,
+                TextContext.HUD,
                 x,
                 y,
                 com.badlogic.gdx.graphics.Color.WHITE);
-        return y - lineHeight;
+        return y - LINE_HEIGHT;
     }
 
     private static String fmt(float v) {

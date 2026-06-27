@@ -7,6 +7,7 @@ import com.dawn.gameplay.InteractionHighlight;
 import com.dawn.render.RenderColors;
 import com.dawn.world.World;
 import com.dawn.world.block.Layer;
+import com.dawn.world.block.autotile.AutotileDraw;
 import com.dawn.world.block.autotile.AutotileRegistry;
 import com.dawn.world.block.visual.BlockSpriteDraw;
 import com.dawn.world.block.visual.BlockVisualDef;
@@ -34,7 +35,7 @@ public final class InteractionHighlightRenderer {
                 structureMasks.render(
                         batch, assets, world, mask.anchorX(), mask.anchorY(), mask.kind(), tint, alignOffsetX, alignOffsetY);
             } else if (highlight instanceof InteractionHighlight.Highlight.BlockSprite sprite) {
-                renderBlockSprite(batch, assets, sprite, tint, alignOffsetX, alignOffsetY);
+                renderBlockSprite(batch, assets, world, sprite, tint, alignOffsetX, alignOffsetY);
             }
         }
     }
@@ -42,11 +43,12 @@ public final class InteractionHighlightRenderer {
     private static void renderBlockSprite(
             SpriteBatch batch,
             DawnAssets assets,
+            World world,
             InteractionHighlight.Highlight.BlockSprite sprite,
             Color tint,
             float alignOffsetX,
             float alignOffsetY) {
-        if (sprite.layer() == Layer.FLOOR || AutotileRegistry.familyFor(sprite.blockId()) != null) {
+        if (sprite.layer() == Layer.FLOOR) {
             BlockSpriteDraw.drawTintedCell(
                     batch, assets, sprite.cellX(), sprite.cellY(), tint, alignOffsetX, alignOffsetY);
             return;
@@ -55,7 +57,22 @@ public final class InteractionHighlightRenderer {
         if (visual == null) {
             return;
         }
-        BlockSpriteDraw.drawTintedBlock(
-                batch, assets, visual, sprite.cellX(), sprite.cellY(), tint, alignOffsetX, alignOffsetY);
+        var family = AutotileRegistry.familyFor(sprite.blockId());
+        if (family != null) {
+            AutotileDraw.drawTinted(
+                    batch,
+                    assets,
+                    world,
+                    family,
+                    sprite.cellX(),
+                    sprite.cellY(),
+                    visual,
+                    tint,
+                    alignOffsetX,
+                    alignOffsetY);
+        } else {
+            BlockSpriteDraw.drawTintedBlock(
+                    batch, assets, visual, sprite.cellX(), sprite.cellY(), tint, alignOffsetX, alignOffsetY);
+        }
     }
 }

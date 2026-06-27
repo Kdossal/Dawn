@@ -23,8 +23,14 @@ public final class Constants {
     /** Logical pixels per world cell (1:1 with 16×16 source art). */
     public static final int CELL_SIZE_PX = 16;
 
-    /** Integer scale from logical view to window (640×400 → 1280×800). */
-    public static final int DISPLAY_SCALE = 2;
+    /** Integer scale from logical view to window (640×400 → 1920×1200). */
+    public static final int DISPLAY_SCALE = 3;
+
+    /** HUD widget art multiplier (1× PNG bases → screen pixels). */
+    public static final int HUD_ART_MULT = DISPLAY_SCALE;
+
+    /** Vitals bars/icons — slightly larger than slot HUD art for readability at 3× window. */
+    public static final int VITALS_ART_MULT = 4;
 
     public static final int VIEW_WIDTH_PX = VIEW_WIDTH_CELLS * CELL_SIZE_PX;
     public static final int VIEW_HEIGHT_PX = VIEW_HEIGHT_CELLS * CELL_SIZE_PX;
@@ -32,7 +38,7 @@ public final class Constants {
     public static final int WINDOW_WIDTH = VIEW_WIDTH_PX * DISPLAY_SCALE;
     public static final int WINDOW_HEIGHT = VIEW_HEIGHT_PX * DISPLAY_SCALE;
 
-    /** HUD / inventory coordinate space (1:1 with window; pre-Part-A layout). */
+    /** HUD / inventory coordinate space (1:1 with window). */
     public static final int HUD_WIDTH_PX = WINDOW_WIDTH;
     public static final int HUD_HEIGHT_PX = WINDOW_HEIGHT;
 

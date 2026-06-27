@@ -1,6 +1,7 @@
 package com.dawn.world;
 
 import com.dawn.world.block.BlockId;
+import com.dawn.world.block.SurfaceRules;
 
 /** Test/playground map layouts. */
 public final class WorldMaps {
@@ -100,6 +101,28 @@ public final class WorldMaps {
             if (world.inBounds(spot[0], spot[1])) {
                 world.setObject(spot[0], spot[1], BlockId.SPRUCE_TREE);
             }
+        }
+
+        placeStarterCrates(world, width / 2, height / 2);
+    }
+
+    /** Crates near map center for E-interact testing (must be grass floor, not stone/water patches). */
+    private static void placeStarterCrates(World world, int centerX, int centerY) {
+        int[][] offsets = {{0, 3}, {-3, 0}, {3, 1}, {-2, -2}};
+        for (int[] offset : offsets) {
+            int x = centerX + offset[0];
+            int y = centerY + offset[1];
+            if (!world.inBounds(x, y)) {
+                continue;
+            }
+            if (world.getFloor(x, y) != BlockId.GRASS || world.getObject(x, y) != BlockId.AIR) {
+                continue;
+            }
+            if (!SurfaceRules.canWalk(world, x, y)) {
+                continue;
+            }
+            world.setObject(x, y, BlockId.CRATE);
+            world.getCrateStorage().createAt(x, y);
         }
     }
 }

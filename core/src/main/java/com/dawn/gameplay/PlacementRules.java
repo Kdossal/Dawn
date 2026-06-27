@@ -21,8 +21,22 @@ public final class PlacementRules {
         if (def == null || def.placeable() == null) {
             return null;
         }
-        Placeable placeable = def.placeable();
-        float reach = ReachResolver.radiusCellsFloatForHeld(held);
+        return evaluate(
+                world, entity, playerX, playerY, def.placeable(), ReachResolver.radiusCellsFloatForHeld(held), cellX, cellY);
+    }
+
+    public static Result evaluate(
+            World world,
+            Entity entity,
+            float playerX,
+            float playerY,
+            Placeable placeable,
+            float reach,
+            int cellX,
+            int cellY) {
+        if (placeable == null) {
+            return null;
+        }
         if (!InteractionRules.canTargetCell(world, entity, playerX, playerY, cellX, cellY, reach)) {
             return new Result(false, placeable, cellX, cellY, null);
         }

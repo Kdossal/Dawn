@@ -109,6 +109,23 @@ public final class BlockDefinitions {
                 0.72f,
                 0.50f);
         def(
+                BlockId.CAMPFIRE,
+                Layer.OBJECT,
+                GroundKind.NONE,
+                false,
+                true,
+                true,
+                Set.of(InteractionTag.NONE),
+                1f,
+                false,
+                false,
+                1.0f,
+                1f,
+                28,
+                1.0f,
+                0.85f,
+                0.35f);
+        def(
                 BlockId.STONE_WALL,
                 Layer.OBJECT,
                 GroundKind.NONE,

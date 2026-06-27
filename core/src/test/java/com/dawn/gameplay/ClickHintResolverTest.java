@@ -165,10 +165,55 @@ class ClickHintResolverTest {
     }
 
     @Test
+    void craftPlacementMode_validHover_showsCraftOnRight() {
+        world.setFloor(5, 4, BlockId.GRASS);
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world,
+                        player,
+                        ItemStack.of(ItemId.CAMPFIRE),
+                        new TargetCell(5, 4, false),
+                        false,
+                        true,
+                        true);
+        assertEquals(ClickVerb.ATTACK, hints.left());
+        assertEquals(ClickVerb.CRAFT, hints.rightOrNull());
+    }
+
+    @Test
+    void craftPlacementMode_invalidHover_noRightHint() {
+        world.setObject(5, 4, BlockId.ROCK);
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world,
+                        player,
+                        ItemStack.of(ItemId.CAMPFIRE),
+                        new TargetCell(5, 4, false),
+                        false,
+                        true,
+                        false);
+        assertNull(hints.rightOrNull());
+    }
+
+    @Test
+    void craftPlacementMode_suppressesPlaceHint() {
+        ClickHints hints =
+                ClickHintResolver.resolve(
+                        world,
+                        player,
+                        ItemStack.of(ItemId.CAMPFIRE),
+                        new TargetCell(5, 4, false),
+                        false,
+                        true,
+                        false);
+        assertNull(hints.rightOrNull());
+    }
+
+    @Test
     void placeable_showsPlaceOnRight() {
         ClickHints hints =
                 ClickHintResolver.resolve(
-                        world, player, ItemStack.of(ItemId.STONE_GROUND), new TargetCell(5, 4, false));
+                        world, player, ItemStack.of(ItemId.LANTERN), new TargetCell(5, 4, false));
         assertEquals(ClickVerb.ATTACK, hints.left());
         assertEquals(ClickVerb.PLACE, hints.rightOrNull());
     }

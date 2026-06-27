@@ -15,12 +15,13 @@ import com.dawn.ui.inventory.InventoryUiStyle;
 
 /** HUD hints: click actions bottom-right, key actions bottom-left. */
 public final class ClickHintRenderer {
-    private static final float MARGIN_RIGHT = 12f;
-    private static final float MARGIN_LEFT = 12f;
-    private static final float MARGIN_BOTTOM = 22f;
-    private static final float ICON_TEXT_GAP = 4f;
-    private static final float BETWEEN_HINTS_GAP = 12f;
-    private static final float ROW_PAD = 4f;
+    private static final float HINT_SCALE = Constants.DISPLAY_SCALE / 2f;
+    private static final float MARGIN_RIGHT = 12f * HINT_SCALE;
+    private static final float MARGIN_LEFT = 12f * HINT_SCALE;
+    private static final float MARGIN_BOTTOM = (22f - 2f) * HINT_SCALE;
+    private static final float ICON_TEXT_GAP = 4f * HINT_SCALE;
+    private static final float BETWEEN_HINTS_GAP = 12f * HINT_SCALE;
+    private static final float ROW_PAD = 4f * HINT_SCALE;
     private static final TextTier TEXT_TIER = TextTier.SM;
     private static final Color TEXT_COLOR = InventoryUiStyle.LABEL_COLOR;
 
@@ -31,13 +32,28 @@ public final class ClickHintRenderer {
             DawnAssets assets,
             ClickHints hints,
             boolean showDropHint,
-            boolean showInventoryHint) {
+            boolean showCraftHint,
+            boolean showInventoryHint,
+            boolean showInteractHint) {
         SpriteBatch batch = hud.batch;
         batch.begin();
         renderClickHints(batch, hud, assets, hints);
-        renderKeyHints(batch, hud, assets, showDropHint, showInventoryHint);
+        renderKeyHints(batch, hud, assets, showDropHint, showCraftHint, showInventoryHint, showInteractHint);
         batch.setColor(Color.WHITE);
         batch.end();
+    }
+
+    /** Whether the inventory (I) hint should appear given E/C priority. */
+    static boolean showInventoryKeyHint(boolean showInventoryHint, boolean showInteractHint) {
+        return showInventoryHint && !showInteractHint;
+    }
+
+    private static float scaledIconW(float nativeW) {
+        return nativeW * HINT_SCALE;
+    }
+
+    private static float scaledIconH(float nativeH) {
+        return nativeH * HINT_SCALE;
     }
 
     private static void renderClickHints(
@@ -53,16 +69,20 @@ public final class ClickHintRenderer {
             return;
         }
 
-        float rowH = Math.max(Math.max(lmbIcon.getRegionHeight(), rmbIcon.getRegionHeight()), lineHeight(hud));
+        float lmbW = scaledIconW(lmbIcon.getRegionWidth());
+        float lmbH = scaledIconH(lmbIcon.getRegionHeight());
+        float rmbW = scaledIconW(rmbIcon.getRegionWidth());
+        float rmbH = scaledIconH(rmbIcon.getRegionHeight());
+        float rowH = Math.max(Math.max(lmbH, rmbH), lineHeight(hud));
         float rowW = 0f;
         if (left != null) {
-            rowW += clusterWidth(hud, left.label(), lmbIcon.getRegionWidth());
+            rowW += clusterWidth(hud, left.label(), lmbW);
         }
         if (right != null) {
             if (rowW > 0f) {
                 rowW += BETWEEN_HINTS_GAP;
             }
-            rowW += clusterWidth(hud, right.label(), rmbIcon.getRegionWidth());
+            rowW += clusterWidth(hud, right.label(), rmbW);
         }
 
         float rowX = Constants.HUD_WIDTH_PX - MARGIN_RIGHT - rowW;
@@ -78,33 +98,15 @@ public final class ClickHintRenderer {
 
         float x = rowX;
         if (right != null) {
-            float w = clusterWidth(hud, right.label(), rmbIcon.getRegionWidth());
-            drawCluster(
-                    batch,
-                    hud,
-                    rmbIcon,
-                    rmbIcon.getRegionWidth(),
-                    rmbIcon.getRegionHeight(),
-                    right.label(),
-                    x,
-                    rowY,
-                    rowH);
+            float w = clusterWidth(hud, right.label(), rmbW);
+            drawCluster(batch, hud, rmbIcon, rmbW, rmbH, right.label(), x, rowY, rowH);
             x += w;
             if (left != null) {
                 x += BETWEEN_HINTS_GAP;
             }
         }
         if (left != null) {
-            drawCluster(
-                    batch,
-                    hud,
-                    lmbIcon,
-                    lmbIcon.getRegionWidth(),
-                    lmbIcon.getRegionHeight(),
-                    left.label(),
-                    x,
-                    rowY,
-                    rowH);
+            drawCluster(batch, hud, lmbIcon, lmbW, lmbH, left.label(), x, rowY, rowH);
         }
     }
 
@@ -113,27 +115,51 @@ public final class ClickHintRenderer {
             HudAssets hud,
             DawnAssets assets,
             boolean showDropHint,
-            boolean showInventoryHint) {
+            boolean showCraftHint,
+            boolean showInventoryHint,
+            boolean showInteractHint) {
         TextureRegion qKey = assets.uiCommon.qKey;
         TextureRegion eKey = assets.uiCommon.eKey;
+        TextureRegion cKey = assets.uiCommon.cKey;
+        TextureRegion iKey = assets.uiCommon.iKey;
         boolean canShowQ = showDropHint && qKey != null;
-        boolean canShowE = showInventoryHint && eKey != null;
-        if (!canShowQ && !canShowE) {
+        boolean canShowE = showInteractHint && eKey != null;
+        boolean canShowC = showCraftHint && cKey != null;
+        boolean canShowI = showInventoryKeyHint(showInventoryHint, showInteractHint) && iKey != null;
+        if (!canShowQ && !canShowE && !canShowC && !canShowI) {
             return;
         }
 
-        float qH = canShowQ ? qKey.getRegionHeight() : 0f;
-        float eH = canShowE ? eKey.getRegionHeight() : 0f;
-        float rowH = Math.max(Math.max(qH, eH), lineHeight(hud));
+        float qW = canShowQ ? scaledIconW(qKey.getRegionWidth()) : 0f;
+        float qH = canShowQ ? scaledIconH(qKey.getRegionHeight()) : 0f;
+        float eW = canShowE ? scaledIconW(eKey.getRegionWidth()) : 0f;
+        float eH = canShowE ? scaledIconH(eKey.getRegionHeight()) : 0f;
+        float cW = canShowC ? scaledIconW(cKey.getRegionWidth()) : 0f;
+        float cH = canShowC ? scaledIconH(cKey.getRegionHeight()) : 0f;
+        float iW = canShowI ? scaledIconW(iKey.getRegionWidth()) : 0f;
+        float iH = canShowI ? scaledIconH(iKey.getRegionHeight()) : 0f;
+        float rowH = Math.max(Math.max(qH, Math.max(eH, Math.max(cH, iH))), lineHeight(hud));
         float rowW = 0f;
         if (canShowQ) {
-            rowW += clusterWidth(hud, "Drop", qKey.getRegionWidth());
+            rowW += clusterWidth(hud, "Drop", qW);
         }
         if (canShowE) {
             if (rowW > 0f) {
                 rowW += BETWEEN_HINTS_GAP;
             }
-            rowW += clusterWidth(hud, "Inventory", eKey.getRegionWidth());
+            rowW += clusterWidth(hud, "Interact", eW);
+        }
+        if (canShowC) {
+            if (rowW > 0f) {
+                rowW += BETWEEN_HINTS_GAP;
+            }
+            rowW += clusterWidth(hud, "Craft", cW);
+        }
+        if (canShowI) {
+            if (rowW > 0f) {
+                rowW += BETWEEN_HINTS_GAP;
+            }
+            rowW += clusterWidth(hud, "Inventory", iW);
         }
 
         float rowX = MARGIN_LEFT;
@@ -149,33 +175,31 @@ public final class ClickHintRenderer {
 
         float x = rowX;
         if (canShowQ) {
-            float w = clusterWidth(hud, "Drop", qKey.getRegionWidth());
-            drawCluster(
-                    batch,
-                    hud,
-                    qKey,
-                    qKey.getRegionWidth(),
-                    qKey.getRegionHeight(),
-                    "Drop",
-                    x,
-                    rowY,
-                    rowH);
+            float w = clusterWidth(hud, "Drop", qW);
+            drawCluster(batch, hud, qKey, qW, qH, "Drop", x, rowY, rowH);
             x += w;
-            if (canShowE) {
+            if (canShowE || canShowC || canShowI) {
                 x += BETWEEN_HINTS_GAP;
             }
         }
         if (canShowE) {
-            drawCluster(
-                    batch,
-                    hud,
-                    eKey,
-                    eKey.getRegionWidth(),
-                    eKey.getRegionHeight(),
-                    "Inventory",
-                    x,
-                    rowY,
-                    rowH);
+            float w = clusterWidth(hud, "Interact", eW);
+            drawCluster(batch, hud, eKey, eW, eH, "Interact", x, rowY, rowH);
+            x += w;
+            if (canShowC || canShowI) {
+                x += BETWEEN_HINTS_GAP;
+            }
+        }
+        if (canShowC) {
+            float w = clusterWidth(hud, "Craft", cW);
+            drawCluster(batch, hud, cKey, cW, cH, "Craft", x, rowY, rowH);
+            x += w;
+            if (canShowI) {
+                x += BETWEEN_HINTS_GAP;
+            }
+        }
+        if (canShowI) {
+            drawCluster(batch, hud, iKey, iW, iH, "Inventory", x, rowY, rowH);
         }
     }
 
@@ -199,7 +223,7 @@ public final class ClickHintRenderer {
                 TEXT_TIER,
                 TextContext.HUD,
                 x + iconW + ICON_TEXT_GAP,
-                rowY + (rowH + lineHeight(hud)) / 2f - 2f,
+                rowY + (rowH + lineHeight(hud)) / 2f - 2f * HINT_SCALE,
                 TEXT_COLOR);
     }
 

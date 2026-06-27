@@ -16,6 +16,7 @@
     { "blockId": "BED_FOOT", "textureId": "BED_FOOT", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "BED_HEAD", "textureId": "BED_HEAD", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
     { "blockId": "LANTERN", "textureId": "LANTERN", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" },
-    { "blockId": "STONE_WALL", "textureId": "STONE_WALL", "width": 16, "height": 32, "anchor": "CELL_BOTTOM_LEFT" }
+    { "blockId": "STONE_WALL", "textureId": "STONE_WALL", "width": 16, "height": 32, "anchor": "CELL_BOTTOM_LEFT" },
+    { "blockId": "CAMPFIRE", "textureId": "CAMPFIRE", "width": 16, "height": 16, "anchor": "CELL_BOTTOM_LEFT" }
   ]
 }
