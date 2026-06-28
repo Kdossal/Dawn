@@ -42,18 +42,18 @@ UI font: [`assets/fonts/m5x7.ttf`](../assets/fonts/m5x7.ttf) is loaded at runtim
 |--------|----------|
 | `assets/tiles/` | One PNG per block texture |
 | `assets/items/` | One PNG per item `iconId` from `ItemRegistry` |
-| `assets/entities/` | `player.png` |
+| `assets/entities/` | `base.png` |
 | `assets/ui/common/` | Shared 16×16 slots (`slot`, `slot_selected`, `slot_equip`) |
 | `assets/ui/inventory/` | Inventory chrome, grid, tabs, hotbar row highlight |
 | `assets/ui/equipment/` | Equipment tab stat cells and XP bar |
 
 ### Inventory UI art (1× design pixels)
 
-Rendered at **5×** on screen (~1000×740). Replace PNGs at these **exact** sizes:
+Rendered at **`HUD_ART_MULT`** (3×) on screen. Replace PNGs at these **exact** 1× sizes:
 
 | Path | Size (W×H) |
 |------|------------|
-| `inventory/chrome_bg` | 200×148 |
+| `inventory/chrome_bg` | 250×150 |
 | `inventory/tab_page` | 193×74 |
 | `inventory/grid_panel` | 193×60 |
 | `inventory/tab_equipment` / `tab_equipment_active` | 12×8 each |

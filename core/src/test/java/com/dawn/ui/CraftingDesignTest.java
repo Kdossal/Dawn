@@ -29,7 +29,7 @@ class CraftingDesignTest {
         int mult = Constants.HUD_ART_MULT;
         CraftingDesign.Layout two = CraftingDesign.layout(2);
         float cell = CraftingSlotDesign.BASE_CELL_PX * mult;
-        float inset = CraftingSlotDesign.BASE_GAP_PX * mult;
+        float inset = CraftingDesign.BASE_INSET * mult;
         float gap = CraftingSlotDesign.BASE_GAP_PX * mult;
         float expectedW = inset * 2f + 3f * cell + 2f * gap;
         float expectedH = inset * 2f + cell;
@@ -39,12 +39,12 @@ class CraftingDesignTest {
     }
 
     @Test
-    void artBaseMinRowIsSeventySixPxWide() {
-        float inset = CraftingSlotDesign.BASE_GAP_PX;
+    void artBaseMinRowIsNinetyPxWide() {
+        float inset = CraftingDesign.BASE_INSET;
         float cell = CraftingSlotDesign.BASE_CELL_PX;
         float gap = CraftingSlotDesign.BASE_GAP_PX;
         float w = inset * 2f + 3f * cell + 2f * gap;
-        assertEquals(76f, w, 0.001f);
+        assertEquals(90f, w, 0.001f);
     }
 
     @Test

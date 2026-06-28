@@ -48,7 +48,7 @@ public final class PauseUiStyle {
         style.up = tintedDrawableInternal(assets.whitePixel, BUTTON_UP);
         style.down = tintedDrawableInternal(assets.whitePixel, BUTTON_DOWN);
         style.disabled = tintedDrawableInternal(assets.whitePixel, BUTTON_DISABLED);
-        style.font = fonts.regular();
+        style.font = fonts.forTier(TextTier.MD);
         style.fontColor = BUTTON_FONT;
         style.downFontColor = BUTTON_FONT;
         style.disabledFontColor = BUTTON_FONT_DISABLED;

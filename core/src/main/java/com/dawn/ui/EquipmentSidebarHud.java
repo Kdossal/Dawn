@@ -286,19 +286,20 @@ public final class EquipmentSidebarHud implements Disposable {
     }
 
     private void updateDragLayer() {
-        boolean shouldDrag = !inventoryOverlayOpen;
-        if (shouldDrag && !dragLayerActive) {
-            dragSession.setActive(true, stage);
-            dragLayerActive = true;
-        } else if (!shouldDrag && dragLayerActive) {
-            dragSession.close();
+        if (inventoryOverlayOpen) {
             dragLayerActive = false;
+            return;
         }
+        if (!dragSession.isActive()) {
+            dragSession.setInventoryCursorLayout(false);
+            dragSession.attachCursorTo(stage);
+            dragSession.setActive(true, stage);
+        }
+        dragLayerActive = true;
     }
 
     private void layout() {
         EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
-        dragSession.cursorActor().layout();
 
         float panelX = EquipmentSidebarDesign.panelXAtSlide(slideT, layout);
         float tabX = EquipmentSidebarDesign.tabXAtSlide(slideT, panelX, layout);

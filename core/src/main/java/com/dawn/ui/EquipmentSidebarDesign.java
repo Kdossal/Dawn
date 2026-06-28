@@ -8,9 +8,12 @@ import com.dawn.inventory.EquipmentSlot;
 public final class EquipmentSidebarDesign {
     public static final float BASE_TAB_W = 10f;
     public static final float BASE_TAB_H = 16f;
-    public static final float BASE_PANEL_W = 50f;
-    public static final float BASE_PANEL_H = 116f;
-    public static final float BASE_INSET = 4f;
+    public static final float BASE_PANEL_W = 55f;
+    public static final float BASE_PANEL_H = 130f;
+    public static final float BASE_INSET_LEFT = 1f;
+    public static final float BASE_INSET_RIGHT = 1f;
+    /** Was 4px uniform; +3px for thicker panel bottom frame. */
+    public static final float BASE_INSET_BOTTOM = 7f;
     public static final float BASE_OFFHAND_GAP = 2f;
     public static final float BASE_TAB_ON_PANEL_INSET = 2f;
 
@@ -27,7 +30,10 @@ public final class EquipmentSidebarDesign {
             float panelH,
             float slotPx,
             float iconPx,
-            float inset,
+            float insetTop,
+            float insetBottom,
+            float insetLeft,
+            float insetRight,
             float slotGap,
             float offhandGap,
             float tabX,
@@ -43,7 +49,16 @@ public final class EquipmentSidebarDesign {
         float panelH = BASE_PANEL_H * mult;
         float slotPx = HudSlotDesign.slotPx();
         float iconPx = SlotUi.iconPxForSlot(slotPx);
-        float inset = BASE_INSET * mult;
+        float insetLeft = BASE_INSET_LEFT * mult;
+        float insetRight = BASE_INSET_RIGHT * mult;
+        float insetBottom = BASE_INSET_BOTTOM * mult;
+        float insetTop =
+                (BASE_PANEL_H
+                                - BASE_INSET_BOTTOM
+                                - innerGridHeight()
+                                - BASE_OFFHAND_GAP
+                                - HudSlotDesign.BASE_SLOT_PX)
+                        * mult;
         float slotGap = HudSlotDesign.gapPx();
         float offhandGap = BASE_OFFHAND_GAP * mult;
         float hudW = Constants.HUD_WIDTH_PX;
@@ -60,7 +75,10 @@ public final class EquipmentSidebarDesign {
                 panelH,
                 slotPx,
                 iconPx,
-                inset,
+                insetTop,
+                insetBottom,
+                insetLeft,
+                insetRight,
                 slotGap,
                 offhandGap,
                 tabX,
@@ -85,21 +103,33 @@ public final class EquipmentSidebarDesign {
 
     /** Slot position for a panel at {@code panelX} (top row = armor head / accessory 1). */
     public static void slotBounds(float panelX, Layout layout, int col, int row, Rectangle out) {
-        float x = panelX + layout.inset() + col * (layout.slotPx() + layout.slotGap());
+        float gridOffsetX = gridOffsetX(layout);
+        float x =
+                panelX
+                        + layout.insetLeft()
+                        + gridOffsetX
+                        + col * (layout.slotPx() + layout.slotGap());
         float y =
                 layout.panelY()
                         + layout.panelH()
-                        - layout.inset()
+                        - layout.insetTop()
                         - layout.slotPx()
                         - row * (layout.slotPx() + layout.slotGap());
         out.set(x, y, layout.slotPx(), layout.slotPx());
     }
 
+    /** Horizontal centering offset for the 2×4 grid within left/right inset. */
+    public static float gridOffsetX(Layout layout) {
+        float contentW = layout.panelW() - layout.insetLeft() - layout.insetRight();
+        float gridW = SLOT_COLS * layout.slotPx() + (SLOT_COLS - 1) * layout.slotGap();
+        return (contentW - gridW) * 0.5f;
+    }
+
     /** Centered offhand slot below armor/accessory columns. */
     public static void offhandBounds(float panelX, Layout layout, Rectangle out) {
-        float gridW = SLOT_COLS * layout.slotPx() + (SLOT_COLS - 1) * layout.slotGap();
-        float x = panelX + layout.inset() + (gridW - layout.slotPx()) * 0.5f;
-        float y = layout.panelY() + layout.inset();
+        float contentW = layout.panelW() - layout.insetLeft() - layout.insetRight();
+        float x = panelX + layout.insetLeft() + (contentW - layout.slotPx()) * 0.5f;
+        float y = layout.panelY() + layout.insetBottom();
         out.set(x, y, layout.slotPx(), layout.slotPx());
     }
 

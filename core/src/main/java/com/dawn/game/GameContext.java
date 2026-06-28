@@ -191,20 +191,21 @@ public final class GameContext implements Disposable {
                         world,
                         equipmentSidebar.stage(),
                         equipmentSidebar.dragSession());
-        equipmentSidebar
-                .dragSession()
-                .setExtraOnChanged(crateStorageOverlay::refreshAll);
-        DebugOverlay debug = new DebugOverlay(hud);
-        ZoomController zoomController = new ZoomController(gameSettings);
         InventoryOverlay inventoryOverlay =
                 new InventoryOverlay(
                         fonts,
                         assets,
                         inventory,
                         equipment,
-                        profile,
-                        dropSystem,
-                        entities.getPlayer());
+                        equipmentSidebar.dragSession(),
+                        equipmentSidebar.stage());
+        equipmentSidebar
+                .dragSession()
+                .setExtraOnChanged(
+                        () -> {
+                            crateStorageOverlay.refreshAll();
+                            inventoryOverlay.refreshAll();
+                        });
         final CraftingOverlay[] craftingOverlayHolder = new CraftingOverlay[1];
         CraftingSystem craftingSystem =
                 new CraftingSystem(
@@ -214,7 +215,7 @@ public final class GameContext implements Disposable {
                             hotbar.refreshSlots(equipment);
                             CraftingOverlay overlay = craftingOverlayHolder[0];
                             if (overlay != null && overlay.isOpen()) {
-                                overlay.refresh(hotbar.getHeld());
+                                overlay.refresh(inventory.getHeld());
                             }
                         });
         CraftingOverlay craftingOverlay =
@@ -227,6 +228,8 @@ public final class GameContext implements Disposable {
                         equipmentSidebar.dragSession(),
                         inventoryOverlay);
         craftingOverlayHolder[0] = craftingOverlay;
+        DebugOverlay debug = new DebugOverlay(hud);
+        ZoomController zoomController = new ZoomController(gameSettings);
         PauseOverlay pauseOverlay = new PauseOverlay(assets, fonts, gameSettings, renderSettings);
         return new GameContext(
                 assets,

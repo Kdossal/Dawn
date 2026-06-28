@@ -11,7 +11,7 @@ import com.dawn.inventory.InventoryConstants;
  * constants via {@link SlotUi#iconPxForSlot(float)}; only panel-specific inset/gap chrome differs.
  *
  * <p>See {@code docs/HUD_SCALING.md} for DISPLAY_SCALE / HUD_ART_MULT architecture. Inventory overlay
- * ({@code InventoryDesign}) is a separate coordinate system until redo — see {@code docs/INVENTORY_REDO.md}.
+ * See {@code docs/HUD_SCALING.md} and {@code docs/INVENTORY_REDO.md}.
  */
 public final class HudSlotDesign {
     public static final int SLOT_COUNT = InventoryConstants.SIZE;

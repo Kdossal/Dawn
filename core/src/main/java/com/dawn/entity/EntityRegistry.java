@@ -12,7 +12,7 @@ public final class EntityRegistry {
                 new EntityDef(
                         EntityId.PLAYER,
                         "Traveler",
-                        "player",
+                        "base",
                         Constants.DEFAULT_MOVE_WIDTH_CELLS,
                         Constants.DEFAULT_MOVE_HEIGHT_CELLS,
                         Stats.withUniformBase(10)));

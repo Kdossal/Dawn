@@ -17,6 +17,7 @@ public final class HudItemDragSession {
     private final Runnable onChanged;
 
     private boolean active;
+    private boolean inventoryCursorLayout;
     private Runnable extraOnChanged;
 
     public HudItemDragSession(
@@ -56,6 +57,30 @@ public final class HudItemDragSession {
         cursorController.registerDragTarget(slot, slot.slotRef());
     }
 
+    public void registerGridSlot(HudDragSlot slot) {
+        cursorController.registerDragTarget(slot, slot.slotRef());
+    }
+
+    /** Moves the drag cursor actor to the stage that owns input (HUD sidebar vs inventory overlay). */
+    public void attachCursorTo(Stage stage) {
+        cursorActor.remove();
+        stage.addActor(cursorActor);
+        cursorActor.toFront();
+    }
+
+    public void setInventoryCursorLayout(boolean inventoryCursorLayout) {
+        this.inventoryCursorLayout = inventoryCursorLayout;
+        applyCursorLayout();
+    }
+
+    private void applyCursorLayout() {
+        if (inventoryCursorLayout) {
+            cursorActor.useInventoryLayout();
+        } else {
+            cursorActor.useHudLayout();
+        }
+    }
+
     public void setContainer(CrateStorage container) {
         cursorController.setContainer(container);
     }
@@ -78,6 +103,7 @@ public final class HudItemDragSession {
             cursorController.returnCursorToInventory();
             cursorActor.setVisible(false);
         } else {
+            applyCursorLayout();
             refreshCursor();
         }
     }
@@ -91,6 +117,7 @@ public final class HudItemDragSession {
     }
 
     public void refreshCursor() {
+        applyCursorLayout();
         cursorActor.refresh(cursorController.cursorStack());
     }
 

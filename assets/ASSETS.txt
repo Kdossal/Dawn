@@ -88,7 +88,7 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
 [entities/]
 
-  player.png  (64x225 — 4x9 animation sheet, 16x25 frames; layout in core/src/main/resources/entity_animations.json)
+  base.png  (128x144 — 4x3 animation sheet, 32x48 frames; layout in core/src/main/resources/entity_animations.json)
 
 
 
@@ -150,11 +150,11 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
 [ui/inventory/]
 
-  chrome_bg.png
+  chrome_bg.png  (250×150 at 1× — full inventory overlay background)
 
   grid_panel.png
 
-  panel.png  (50x50 — 9-slice frame, 3px corners; used for in-world storage UI)
+  panel.png  (50x50 — 9-slice frame, 15px border at 1×; used for in-world crafting + crate UI)
 
   tab_page.png
 
@@ -170,7 +170,7 @@ Hand-made art: drop PNGs here or edit tools/assets_manifest.json.
 
   eqp_tab.png
 
-  eqp_bckgrd.png
+  eqp_bckgrd.png  (55×130 at 1× — equipment sidebar panel)
 
 
 

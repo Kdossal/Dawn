@@ -1,16 +1,19 @@
 package com.dawn.ui;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.dawn.ui.DawnTypography.TextTier;
 
 /**
- * Loads m5x7 from TTF via FreeType.
+ * Loads m5x7 from TTF via FreeType — one crisp atlas per {@link TextTier} screen size (no upscale
+ * from a tiny base glyph).
  *
- * <p>m5x7 glyphs are 5×7 pixels when rasterized at {@link #NATIVE_POINT_SIZE} — not 8. At smaller
- * point sizes FreeType produces sub-pixel, chunky shapes (~4px cap height).
+ * <p>m5x7 glyphs are ~5×7 px when rasterized at 16pt; {@link TextTier#XS} uses that native size.
  */
 public final class DawnFonts implements Disposable {
     public enum FontWeight {
@@ -20,42 +23,49 @@ public final class DawnFonts implements Disposable {
     }
 
     private static final String TTF_PATH = "fonts/m5x7.ttf";
-    /** m5x7 TTF em square maps 320×448 font units → 5×7 px at this size. */
-    public static final int NATIVE_POINT_SIZE = 16;
+    /** Smallest tier raster size (m5x7 native grid). */
+    public static final int NATIVE_POINT_SIZE = TextTier.XS.screenPx();
+
+    private static final Color SHADOW_COLOR = new Color(0f, 0f, 0f, 0.72f);
 
     private final FreeTypeFontGenerator generator;
-    private final BitmapFont small;
-    private final int lineHeightPx;
+    private final ObjectMap<TextTier, BitmapFont> tierFonts = new ObjectMap<>();
 
     public DawnFonts() {
         generator = new FreeTypeFontGenerator(Gdx.files.internal(TTF_PATH));
-        small = generate(NATIVE_POINT_SIZE);
-        lineHeightPx = Math.round(small.getData().lineHeight);
+        for (TextTier tier : TextTier.values()) {
+            tierFonts.put(tier, generate(tier.screenPx()));
+        }
+    }
+
+    /** Atlas rasterized at the tier's target screen line height. */
+    public BitmapFont forTier(TextTier tier) {
+        return tierFonts.get(tier);
+    }
+
+    public int lineHeightPx(TextTier tier) {
+        return Math.round(forTier(tier).getData().lineHeight);
     }
 
     public BitmapFont small() {
-        return small;
+        return forTier(TextTier.XS);
     }
 
+    /** Default body font ({@link TextTier#SM}). */
     public BitmapFont regular() {
-        return small;
+        return forTier(TextTier.SM);
     }
 
     public BitmapFont bold() {
-        return small;
+        return regular();
     }
 
     public BitmapFont italic() {
-        return small;
+        return regular();
     }
 
     public BitmapFont font(FontWeight weight) {
-        return small;
-    }
-
-    /** Atlas line height in pixels (use for typography tier math). */
-    public int lineHeightPx() {
-        return lineHeightPx;
+        return regular();
     }
 
     private BitmapFont generate(int pointSize) {
@@ -70,12 +80,14 @@ public final class DawnFonts implements Disposable {
         param.renderCount = 1;
         param.gamma = 1.8f;
         param.borderWidth = 0f;
+        int shadowPx = Math.max(1, pointSize / 16);
         param.shadowOffsetX = 0;
-        param.shadowOffsetY = 0;
+        param.shadowOffsetY = shadowPx;
+        param.shadowColor = SHADOW_COLOR;
         param.padTop = 0;
-        param.padBottom = 0;
+        param.padBottom = 0 * 2;
         param.padLeft = 0;
-        param.padRight = 0;
+        param.padRight = 0 * 2;
         param.characters = FreeTypeFontGenerator.DEFAULT_CHARS;
 
         BitmapFont font = generator.generateFont(param);
@@ -86,7 +98,10 @@ public final class DawnFonts implements Disposable {
 
     @Override
     public void dispose() {
-        small.dispose();
+        for (ObjectMap.Entry<TextTier, BitmapFont> entry : tierFonts) {
+            entry.value.dispose();
+        }
+        tierFonts.clear();
         generator.dispose();
     }
 }

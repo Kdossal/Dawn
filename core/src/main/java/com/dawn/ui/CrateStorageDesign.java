@@ -9,8 +9,7 @@ public final class CrateStorageDesign {
     public static final int SLOT_COLS = CrateStorage.COLS;
     public static final int SLOT_ROWS = CrateStorage.ROWS;
 
-    public static final float BASE_INSET = 4f;
-    public static final int BASE_NINE_SLICE = 3;
+    public static final float BASE_INSET = HudPanelDesign.BASE_INSET;
 
     private CrateStorageDesign() {}
 

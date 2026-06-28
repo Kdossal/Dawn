@@ -164,7 +164,15 @@ public class WorldRenderer implements Disposable {
             float pixelAlignOffsetX,
             float pixelAlignOffsetY) {
         List<WorldDrawable> drawables = WorldDrawCollector.collect(
-                world, minX, maxX, minY, maxY, playerFeetX, playerFeetY, playerSprite, drops);
+                world,
+                minX,
+                maxX,
+                minY,
+                maxY,
+                playerFeetX,
+                playerFeetY,
+                playerSprite,
+                drops);
         WorldDrawableSort.sort(drawables);
         DrawContext context =
                 DrawContext.create(

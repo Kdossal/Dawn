@@ -22,9 +22,19 @@ public final class HudItemSlot extends Group {
     private final Image bg;
     private final Image icon;
     private final Label countLabel;
+    private final Table countWrap;
     private boolean selected;
 
     public HudItemSlot(DawnAssets assets, DawnFonts fonts, HudSlotChrome chrome) {
+        this(assets, fonts, chrome, DawnTypography.SLOT_COUNT, HudSlotDesign.countPadPx());
+    }
+
+    public HudItemSlot(
+            DawnAssets assets,
+            DawnFonts fonts,
+            HudSlotChrome chrome,
+            DawnTypography.TextTier countTier,
+            float countPadPx) {
         this.assets = assets;
         this.chrome = chrome;
         setTouchable(Touchable.disabled);
@@ -37,7 +47,14 @@ public final class HudItemSlot extends Group {
         icon = new Image();
         icon.setScaling(Scaling.stretch);
         icon.setAlign(Align.center);
-        countLabel = new Label("", new Label.LabelStyle(fonts.regular(), Color.WHITE));
+        countLabel =
+                DawnTypography.label(
+                        "",
+                        fonts,
+                        DawnFonts.FontWeight.NORMAL,
+                        countTier,
+                        DawnTypography.TextContext.HUD,
+                        Color.WHITE);
         countLabel.setAlignment(Align.bottom | Align.right);
 
         if (bg != null) {
@@ -45,10 +62,17 @@ public final class HudItemSlot extends Group {
             applyBackground();
         }
         addActor(icon);
-        Table countWrap = new Table();
+        countWrap = new Table();
         countWrap.setFillParent(true);
-        countWrap.add(countLabel).expand().bottom().right().pad(HudSlotDesign.countPadPx());
+        countWrap.add(countLabel).expand().bottom().right().pad(countPadPx);
         addActor(countWrap);
+    }
+
+    public void setCountStyle(DawnFonts fonts, DawnTypography.TextTier countTier, float countPadPx) {
+        countLabel.setStyle(
+                new Label.LabelStyle(fonts.forTier(countTier), (Color) countLabel.getStyle().fontColor));
+        countWrap.clearChildren();
+        countWrap.add(countLabel).expand().bottom().right().pad(countPadPx);
     }
 
     public void setSelected(boolean selected) {
@@ -69,7 +93,6 @@ public final class HudItemSlot extends Group {
         float iy = (slotPx - iconPx) / 2f;
         icon.setSize(iconPx, iconPx);
         icon.setPosition(ix, iy);
-        countLabel.setFontScale(DawnTypography.slotCountHudScale());
     }
 
     public void refresh(ItemStack stack) {

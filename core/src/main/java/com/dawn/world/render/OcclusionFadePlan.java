@@ -45,7 +45,9 @@ public final class OcclusionFadePlan {
             float playerFeetX,
             float playerFeetY,
             EntitySpriteFrame playerSprite,
-            DawnAssets assets) {
+            DawnAssets assets,
+            float pixelAlignOffsetX,
+            float pixelAlignOffsetY) {
         Set<Long> fadedCells = new HashSet<>();
         SpriteAlphaMask playerMask = assets.occlusionMasks.player();
         int playerW = playerSprite == null ? 0 : playerSprite.widthPx();

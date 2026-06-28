@@ -69,10 +69,10 @@ public final class CraftingOverlay {
         NinePatch patch =
                 new NinePatch(
                         assets.uiInventory.panel,
-                        CraftingDesign.BASE_NINE_SLICE,
-                        CraftingDesign.BASE_NINE_SLICE,
-                        CraftingDesign.BASE_NINE_SLICE,
-                        CraftingDesign.BASE_NINE_SLICE);
+                        HudPanelDesign.BASE_NINE_SLICE,
+                        HudPanelDesign.BASE_NINE_SLICE,
+                        HudPanelDesign.BASE_NINE_SLICE,
+                        HudPanelDesign.BASE_NINE_SLICE);
         patch.scale(mult, mult);
         panelBg = new Image(new NinePatchDrawable(patch));
         panelBg.setTouchable(Touchable.disabled);
@@ -106,7 +106,7 @@ public final class CraftingOverlay {
         }
         open = true;
         root.setVisible(true);
-        refresh(ItemStack.empty());
+        refresh(inventory.getHeld());
         root.toFront();
         dragSession.cursorActor().toFront();
     }
@@ -143,17 +143,18 @@ public final class CraftingOverlay {
         }
     }
 
-    public void update(Entity player, OrthographicCamera worldCamera, ItemStack held) {
+    public void update(Entity player, OrthographicCamera worldCamera) {
         if (!open) {
             return;
         }
-        RecipeContext context = CraftingContextResolver.contextForHeld(held);
-        ItemId heldId = held == null || held.isEmpty() ? null : held.itemId;
+        ItemStack contextHeld = inventory.getHeld();
+        RecipeContext context = CraftingContextResolver.contextForHeld(contextHeld);
+        ItemId heldId = contextHeld.isEmpty() ? null : contextHeld.itemId;
         if (context != lastContext) {
             craftingSystem.cancelAll();
         }
         if (context != lastContext || heldId != lastHeldId) {
-            refresh(held);
+            refresh(contextHeld);
         }
         refreshSlotChrome();
         layoutAbovePlayer(player, worldCamera);

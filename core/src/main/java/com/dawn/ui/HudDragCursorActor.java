@@ -6,27 +6,40 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.dawn.assets.DawnAssets;
 import com.dawn.item.ItemStack;
+import com.dawn.ui.inventory.InventoryOverlayDesign;
 
 /** Floating held-item icon for HUD drag sessions. */
 public final class HudDragCursorActor extends Group {
     private static final Vector2 TMP = new Vector2();
 
+    private final DawnFonts fonts;
     private final HudItemSlot slot;
     private float sizePx;
 
     public HudDragCursorActor(DawnAssets assets, DawnFonts fonts) {
+        this.fonts = fonts;
         setVisible(false);
         setTouchable(Touchable.disabled);
         slot = new HudItemSlot(assets, fonts, HudSlotChrome.FLOATING);
         addActor(slot);
-        layout();
+        useHudLayout();
     }
 
-    public void layout() {
-        sizePx = HudSlotDesign.slotPx();
-        float iconPx = HudSlotDesign.iconPx();
-        slot.setLayoutSize(sizePx, iconPx);
-        setSize(sizePx, sizePx);
+    public void useHudLayout() {
+        setLayoutSize(HudSlotDesign.slotPx(), HudSlotDesign.iconPx());
+        slot.setCountStyle(fonts, DawnTypography.SLOT_COUNT, HudSlotDesign.countPadPx());
+    }
+
+    public void useInventoryLayout() {
+        setLayoutSize(InventoryOverlayDesign.slotPx(), InventoryOverlayDesign.iconPx());
+        slot.setCountStyle(
+                fonts, DawnTypography.INVENTORY_SLOT_COUNT, InventoryOverlayDesign.countPadPx());
+    }
+
+    public void setLayoutSize(float slotPx, float iconPx) {
+        sizePx = slotPx;
+        slot.setLayoutSize(slotPx, iconPx);
+        setSize(slotPx, slotPx);
     }
 
     public void refresh(ItemStack stack) {

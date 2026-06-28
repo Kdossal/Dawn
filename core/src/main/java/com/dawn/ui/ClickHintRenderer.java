@@ -217,7 +217,7 @@ public final class ClickHintRenderer {
         batch.draw(icon, x, iconY, iconW, iconH);
         DawnTypography.draw(
                 hud.batch,
-                hud.font,
+                hud.fonts,
                 hud.layout,
                 label,
                 TEXT_TIER,
@@ -228,12 +228,12 @@ public final class ClickHintRenderer {
     }
 
     private static float clusterWidth(HudAssets hud, String label, float iconW) {
-        DawnTypography.layout(hud.layout, hud.font, label, TEXT_TIER, TextContext.HUD);
+        DawnTypography.layout(hud.layout, hud.fonts, label, TEXT_TIER, TextContext.HUD);
         return iconW + ICON_TEXT_GAP + hud.layout.width;
     }
 
     private static float lineHeight(HudAssets hud) {
-        DawnTypography.layout(hud.layout, hud.font, "Ay", TEXT_TIER, TextContext.HUD);
+        DawnTypography.layout(hud.layout, hud.fonts, "Ay", TEXT_TIER, TextContext.HUD);
         return hud.layout.height;
     }
 }

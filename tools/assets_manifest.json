@@ -37,7 +37,7 @@
     "canned_food": { "color": "#C45C26", "pattern": "solid", "label": "F" }
   },
   "entities": {
-    "player": { "color": "#3380E6", "pattern": "player", "width": 64, "height": 225, "label": "" }
+    "base": { "color": "#3380E6", "pattern": "player", "width": 128, "height": 144, "label": "" }
   },
   "ui": {
     "common": {
@@ -47,7 +47,7 @@
       "cursor": { "width": 16, "height": 16, "color": "#E8E8F0", "pattern": "solid", "label": "" }
     },
     "inventory": {
-      "chrome_bg": { "width": 200, "height": 148, "color": "#252830", "pattern": "solid", "label": "" },
+      "chrome_bg": { "width": 250, "height": 150, "color": "#252830", "pattern": "solid", "label": "" },
       "grid_panel": { "width": 193, "height": 60, "color": "#3E424C", "pattern": "solid", "label": "" },
       "tab_page": { "width": 193, "height": 74, "color": "#4A4E58", "pattern": "solid", "label": "" },
       "tab_equipment": { "width": 12, "height": 8, "color": "#353942", "pattern": "solid", "label": "E" },

@@ -15,27 +15,20 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.dawn.config.Constants;
 
-/**
- * Smoke-test m5x7 at its native raster size (16pt → 5×7 px glyphs). Only integer scales from there.
- */
+/** Smoke-test m5x7 tier-native atlases (one raster size per typography tier, baked shadow). */
 public final class FontPreviewScreen implements Screen, Disposable {
     private static final Color BG = new Color(0.08f, 0.09f, 0.12f, 1f);
     private static final Color LABEL_COLOR = new Color(0.92f, 0.94f, 0.97f, 1f);
     private static final Color DIM = new Color(0.55f, 0.58f, 0.65f, 1f);
-    private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final String DIGITS = "0123456789";
-    private static final String LOWER = "abcdefghijklmnopqrstuvwxyz";
     private static final String SAMPLE = "DAWN — hotbar / inventory / pause";
 
     private final DawnFonts fonts;
     private final SpriteBatch batch;
     private final GlyphLayout layout;
     private final Stage stage;
-    private final float lineHeightPx;
 
     public FontPreviewScreen() {
         fonts = new DawnFonts();
-        lineHeightPx = fonts.lineHeightPx();
         batch = new SpriteBatch();
         layout = new GlyphLayout();
         stage = new Stage(new FitViewport(Constants.HUD_WIDTH_PX, Constants.HUD_HEIGHT_PX));
@@ -49,11 +42,13 @@ public final class FontPreviewScreen implements Screen, Disposable {
         root.pad(24f);
         root.defaults().left();
 
-        root.add(sectionLabel("Scene2D (typography tiers)")).padBottom(10f).row();
-        root.add(sceneRow(DawnTypography.TextTier.XS, "XS native 16px: " + SAMPLE)).padBottom(8f).row();
-        root.add(sceneRow(DawnTypography.TextTier.SM, "SM 32px ref: " + SAMPLE)).padBottom(8f).row();
-        root.add(sceneRow(DawnTypography.TextTier.MD, "MD 48px: " + SAMPLE)).padBottom(16f).row();
-        root.add(sectionLabel("Press ESC to exit")).row();
+        root.add(sectionLabel("Scene2D (tier-native atlases @1×)")).padBottom(10f).row();
+        for (DawnTypography.TextTier tier : DawnTypography.TextTier.values()) {
+            root.add(sceneRow(tier, tier.name() + " " + tier.screenPx() + "px: " + SAMPLE))
+                    .padBottom(8f)
+                    .row();
+        }
+        root.add(sectionLabel("Press ESC to exit")).padTop(8f).row();
         stage.addActor(root);
     }
 
@@ -88,36 +83,29 @@ public final class FontPreviewScreen implements Screen, Disposable {
     }
 
     private void drawBatchSection() {
-        BitmapFont font = fonts.regular();
         float x = 24f;
         float y = Constants.HUD_HEIGHT_PX - 36f;
-
-        y = drawNativeScale(font, x, y, 1, "Small 16pt @1x: " + ALPHABET);
-        y = drawNativeScale(font, x, y, 1, "              " + DIGITS + "  " + LOWER);
-        y = drawNativeScale(font, x, y, 2, "Large 16pt @2x: " + SAMPLE);
-        y = drawNativeScale(font, x, y, 3, "Native 3x: " + SAMPLE);
-        y -= 6f;
-
-        drawMetrics(font, x, y - 8f);
+        for (DawnTypography.TextTier tier : DawnTypography.TextTier.values()) {
+            y = drawTierNative(tier, x, y, tier.name() + " @1×: " + SAMPLE);
+        }
+        drawMetrics(fonts.forTier(DawnTypography.TextTier.XS), x, y - 12f);
     }
 
-    private float drawNativeScale(BitmapFont font, float x, float y, int scale, String text) {
-        font.getData().setScale(scale);
+    private float drawTierNative(DawnTypography.TextTier tier, float x, float y, String text) {
+        BitmapFont font = fonts.forTier(tier);
         layout.setText(font, text);
         font.setColor(LABEL_COLOR);
         font.draw(batch, layout, x, y);
-        font.getData().setScale(1f);
-        return y - lineHeightPx * scale - 10f;
+        return y - fonts.lineHeightPx(tier) - 10f;
     }
 
     private void drawMetrics(BitmapFont font, float x, float y) {
         String metrics =
                 String.format(
-                        "FreeType size=%dpt  lineHeight=%.1f  capHeight=%.1f  (m5x7 = 5x7px at 16pt)",
+                        "XS raster=%dpt  lineHeight=%.1f  capHeight=%.1f  (shadow baked per tier)",
                         DawnFonts.NATIVE_POINT_SIZE,
                         font.getData().lineHeight,
                         font.getData().capHeight);
-        font.getData().setScale(1f);
         layout.setText(font, metrics);
         font.setColor(DIM);
         font.draw(batch, layout, x, y);

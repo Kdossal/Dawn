@@ -16,26 +16,61 @@ class EquipmentSidebarDesignTest {
     }
 
     @Test
+    void panelInsetsAtOneX() {
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
+        int mult = Constants.HUD_ART_MULT;
+        assertEquals(EquipmentSidebarDesign.BASE_INSET_LEFT * mult, layout.insetLeft(), 0.001f);
+        assertEquals(EquipmentSidebarDesign.BASE_INSET_RIGHT * mult, layout.insetRight(), 0.001f);
+        assertEquals(EquipmentSidebarDesign.BASE_INSET_BOTTOM * mult, layout.insetBottom(), 0.001f);
+        assertEquals(15f * mult, layout.insetTop(), 0.001f);
+    }
+
+    @Test
+    void gridAndOffhandShareHorizontalCenter() {
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
+        Rectangle slot = new Rectangle();
+        Rectangle offhand = new Rectangle();
+        EquipmentSidebarDesign.slotBounds(layout.panelX(), layout, 0, 0, slot);
+        EquipmentSidebarDesign.offhandBounds(layout.panelX(), layout, offhand);
+        float gridCenterX = slot.x + layout.slotPx() + layout.slotGap() * 0.5f;
+        float offhandCenterX = offhand.x + layout.slotPx() * 0.5f;
+        assertEquals(gridCenterX, offhandCenterX, 0.001f);
+    }
+
+    @Test
+    void gridOffsetCentersTwoByFourInContentArea() {
+        EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
+        float contentW = layout.panelW() - layout.insetLeft() - layout.insetRight();
+        float gridW = 2f * layout.slotPx() + layout.slotGap();
+        assertEquals((contentW - gridW) * 0.5f, EquipmentSidebarDesign.gridOffsetX(layout), 0.001f);
+    }
+
+    @Test
     void slotPositionsAtHudScale() {
         EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
         assertEquals(Constants.HUD_ART_MULT, layout.multiplier());
 
         Rectangle slot = new Rectangle();
         EquipmentSidebarDesign.slotBounds(layout.panelX(), layout, 0, 0, slot);
-        float expectedX = layout.panelX() + layout.inset();
-        float expectedY = layout.panelY() + layout.panelH() - layout.inset() - layout.slotPx();
+        float expectedX = layout.panelX() + layout.insetLeft() + EquipmentSidebarDesign.gridOffsetX(layout);
+        float expectedY = layout.panelY() + layout.panelH() - layout.insetTop() - layout.slotPx();
         assertEquals(expectedX, slot.x, 0.001f);
         assertEquals(expectedY, slot.y, 0.001f);
         assertEquals(layout.slotPx(), slot.width, 0.001f);
         assertEquals(layout.slotPx(), slot.height, 0.001f);
 
         EquipmentSidebarDesign.slotBounds(layout.panelX(), layout, 1, 3, slot);
-        float rightColX = layout.panelX() + layout.inset() + layout.slotPx() + layout.slotGap();
+        float rightColX =
+                layout.panelX()
+                        + layout.insetLeft()
+                        + EquipmentSidebarDesign.gridOffsetX(layout)
+                        + layout.slotPx()
+                        + layout.slotGap();
         assertEquals(rightColX, slot.x, 0.001f);
         assertEquals(
                 layout.panelY()
                         + layout.panelH()
-                        - layout.inset()
+                        - layout.insetTop()
                         - layout.slotPx()
                         - 3 * (layout.slotPx() + layout.slotGap()),
                 slot.y,
@@ -95,9 +130,9 @@ class EquipmentSidebarDesignTest {
         EquipmentSidebarDesign.Layout layout = EquipmentSidebarDesign.layout();
         Rectangle offhand = new Rectangle();
         EquipmentSidebarDesign.offhandBounds(layout.panelX(), layout, offhand);
-        float gridW = EquipmentSidebarDesign.SLOT_COLS * layout.slotPx() + (EquipmentSidebarDesign.SLOT_COLS - 1) * layout.slotGap();
-        float expectedX = layout.panelX() + layout.inset() + (gridW - layout.slotPx()) * 0.5f;
-        float expectedY = layout.panelY() + layout.inset();
+        float contentW = layout.panelW() - layout.insetLeft() - layout.insetRight();
+        float expectedX = layout.panelX() + layout.insetLeft() + (contentW - layout.slotPx()) * 0.5f;
+        float expectedY = layout.panelY() + layout.insetBottom();
         assertEquals(expectedX, offhand.x, 0.001f);
         assertEquals(expectedY, offhand.y, 0.001f);
     }

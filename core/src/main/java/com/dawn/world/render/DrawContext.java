@@ -5,6 +5,7 @@ import com.dawn.config.DayNightConfig;
 import com.dawn.entity.EntityBounds;
 import com.dawn.entity.sprite.EntitySpriteFrame;
 import com.dawn.render.LightColor;
+import com.dawn.render.SpriteAnchor;
 import com.dawn.render.TileLightCorners;
 import com.dawn.render.TileLighting;
 import com.dawn.world.World;
@@ -88,7 +89,9 @@ public final class DrawContext {
                                 playerFeetX,
                                 playerFeetY,
                                 playerSprite,
-                                assets)
+                                assets,
+                                pixelAlignOffsetX,
+                                pixelAlignOffsetY)
                         : OcclusionFadePlan.disabled();
         TileLighting.TileLight[][] cache =
                 TileLighting.buildCache(

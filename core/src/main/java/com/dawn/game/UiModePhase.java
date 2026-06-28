@@ -37,9 +37,16 @@ final class UiModePhase {
     }
 
     void processHotbarAndScroll(GameContext ctx) {
-        boolean lockSelection = ctx.equipmentSidebar.locksHotbarSelection();
+        boolean lockSelection =
+                ctx.inventoryOverlay.isOpen()
+                        ? ctx.inventoryOverlay.locksHotbarSelection()
+                        : ctx.equipmentSidebar.locksHotbarSelection();
         if (lockSelection) {
-            ctx.inventory.setSelectedIndex(ctx.equipmentSidebar.lockedHotbarIndex());
+            int lockedIndex =
+                    ctx.inventoryOverlay.isOpen()
+                            ? ctx.inventoryOverlay.lockedHotbarIndex()
+                            : ctx.equipmentSidebar.lockedHotbarIndex();
+            ctx.inventory.setSelectedIndex(lockedIndex);
         }
 
         int prevSelected = ctx.inventory.getSelectedIndex();

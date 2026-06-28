@@ -4,12 +4,12 @@ import com.dawn.gameplay.TargetResolver.TargetCell;
 
 /** Selects clip id and facing from movement / interaction context. */
 public final class EntityAnimResolver {
-    public record Selection(String clipId, Facing4 facing) {}
+    public record Selection(String clipId, Facing2 facing) {}
 
     private EntityAnimResolver() {}
 
-    public static Selection selectClip(PlayerAnimContext ctx, Facing4 currentFacing) {
-        Facing4 facing = resolveFacing(ctx, currentFacing);
+    public static Selection selectClip(PlayerAnimContext ctx, Facing2 currentFacing) {
+        Facing2 facing = resolveFacing(ctx, currentFacing);
         if (ctx.interacting()) {
             return new Selection(facing.interactClipId(), facing);
         }
@@ -24,27 +24,32 @@ public final class EntityAnimResolver {
         return Math.floorMod(index, clip.frameCount());
     }
 
-    private static Facing4 resolveFacing(PlayerAnimContext ctx, Facing4 currentFacing) {
+    private static Facing2 resolveFacing(PlayerAnimContext ctx, Facing2 currentFacing) {
+        Facing2 fallback = currentFacing == null ? Facing2.LEFT : currentFacing;
         if (ctx.interacting() && ctx.target() != null) {
-            return facingToward(ctx.feetX(), ctx.feetY(), ctx.target());
+            return facingToward(ctx.feetX(), ctx.feetY(), ctx.target(), fallback);
         }
         if (ctx.interacting()) {
-            return currentFacing == null ? Facing4.DOWN : currentFacing;
+            return fallback;
         }
         if (ctx.moving()) {
-            return facingFromVector(ctx.moveX(), ctx.moveY());
+            return facingFromVector(ctx.moveX(), fallback);
         }
-        return currentFacing == null ? Facing4.DOWN : currentFacing;
+        return fallback;
     }
 
-    static Facing4 facingFromVector(float dx, float dy) {
-        if (Math.abs(dx) >= Math.abs(dy)) {
-            return dx >= 0f ? Facing4.RIGHT : Facing4.LEFT;
+    static Facing2 facingFromVector(float dx, Facing2 currentFacing) {
+        if (dx > 0f) {
+            return Facing2.RIGHT;
         }
-        return dy >= 0f ? Facing4.UP : Facing4.DOWN;
+        if (dx < 0f) {
+            return Facing2.LEFT;
+        }
+        return currentFacing == null ? Facing2.LEFT : currentFacing;
     }
 
-    static Facing4 facingToward(float playerX, float playerY, TargetCell target) {
-        return facingFromVector(target.x() + 0.5f - playerX, target.y() + 0.5f - playerY);
+    static Facing2 facingToward(float playerX, float playerY, TargetCell target, Facing2 currentFacing) {
+        float dx = target.x() + 0.5f - playerX;
+        return facingFromVector(dx, currentFacing);
     }
 }

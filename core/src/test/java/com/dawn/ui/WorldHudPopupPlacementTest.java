@@ -17,8 +17,8 @@ class WorldHudPopupPlacementTest {
         float scaleY = Constants.HUD_HEIGHT_PX / viewH;
 
         float spriteTopStageY = Constants.HUD_HEIGHT_PX * 0.5f + Constants.PLAYER_SPRITE_HEIGHT_PX * scaleY;
-        assertEquals(675f, spriteTopStageY, EPS);
-        assertEquals(525f, WorldHudPopupPlacement.stageYToTopLeftY(spriteTopStageY), 2f);
+        assertEquals(744f, spriteTopStageY, EPS);
+        assertEquals(456f, WorldHudPopupPlacement.stageYToTopLeftY(spriteTopStageY), 2f);
 
         WorldHudPopupPlacement.Config config = WorldHudPopupPlacement.Config.crateStorage();
         WorldHudPopupPlacement.PanelPosition panel =
@@ -28,6 +28,6 @@ class WorldHudPopupPlacementTest {
                         config);
 
         assertEquals(spriteTopStageY + config.gapAboveAnchorPx(), panel.panelBottomY(), EPS);
-        assertEquals(510f, WorldHudPopupPlacement.stageYToTopLeftY(panel.panelBottomY()), 2f);
+        assertEquals(441f, WorldHudPopupPlacement.stageYToTopLeftY(panel.panelBottomY()), 2f);
     }
 }

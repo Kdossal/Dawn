@@ -9,9 +9,8 @@ public final class CraftingDesign {
     public static final int MIN_GRID_COLS = 3;
     public static final int MIN_GRID_ROWS = 1;
 
-    /** Panel padding; matches {@link CraftingSlotDesign#BASE_GAP_PX} at 1×. */
-    public static final float BASE_INSET = CraftingSlotDesign.BASE_GAP_PX;
-    public static final int BASE_NINE_SLICE = 3;
+    /** Panel padding between frame and slot grid (at 1× art). */
+    public static final float BASE_INSET = HudPanelDesign.BASE_INSET;
 
     private CraftingDesign() {}
 

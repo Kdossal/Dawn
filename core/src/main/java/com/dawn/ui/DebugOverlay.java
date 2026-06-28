@@ -224,7 +224,7 @@ public class DebugOverlay implements Disposable {
     private float line(String text, float x, float y) {
         DawnTypography.draw(
                 hud.batch,
-                hud.font,
+                hud.fonts,
                 hud.layout,
                 text,
                 TextTier.SM,

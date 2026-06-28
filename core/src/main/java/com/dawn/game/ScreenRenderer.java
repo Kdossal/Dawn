@@ -37,7 +37,8 @@ public final class ScreenRenderer {
             float delta,
             String interactionMessage,
             long simTick,
-            boolean showInteractHint) {
+            boolean showInteractHint,
+            boolean playerMoving) {
         int[] bounds = WorldRenderer.visibleCellBounds(
                 worldCamera.position.x,
                 worldCamera.position.y,

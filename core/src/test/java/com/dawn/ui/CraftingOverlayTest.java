@@ -5,9 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.dawn.gameplay.crafting.CraftingAffordability;
-import com.dawn.gameplay.crafting.KnownRecipes;
 import com.dawn.gameplay.crafting.CraftingContextResolver;
+import com.dawn.gameplay.crafting.KnownRecipes;
 import com.dawn.gameplay.crafting.Recipe;
+import com.dawn.gameplay.crafting.RecipeContext;
 import com.dawn.gameplay.crafting.RecipeId;
 import com.dawn.gameplay.crafting.RecipeRegistry;
 import com.dawn.inventory.PlayerInventory;
@@ -47,6 +48,17 @@ class CraftingOverlayTest {
         inv.setSlot(1, 3, ItemStack.empty());
         Recipe bandage = RecipeRegistry.get(RecipeId.BANDAGE);
         assertFalse(CraftingAffordability.canAfford(bandage, inv));
+    }
+
+    @Test
+    void recipeContextUsesHotbarSelectionNotCraftCursor() {
+        PlayerInventory inventory = new PlayerInventory();
+        inventory.setSelectedIndex(11);
+        ItemStack hotbarHeld = inventory.getHeld();
+        ItemStack craftCursor = ItemStack.of(ItemId.LUMBER, 2);
+
+        assertEquals(RecipeContext.SAW, CraftingContextResolver.contextForHeld(hotbarHeld));
+        assertEquals(RecipeContext.HAND, CraftingContextResolver.contextForHeld(craftCursor));
     }
 
     @Test

@@ -91,10 +91,6 @@ public final class InventoryCursorController {
         return container;
     }
 
-    public void registerSlot(ItemSlotWidget widget) {
-        registerDragTarget(widget, widget.slotRef());
-    }
-
     public void registerDragTarget(Actor actor, InventorySlotRef ref) {
         actor.addListener(
                 new InputListener() {

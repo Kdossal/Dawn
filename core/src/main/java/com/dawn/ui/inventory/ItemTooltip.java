@@ -37,7 +37,7 @@ public final class ItemTooltip {
         stage.addActor(tooltip);
     }
 
-    public void bind(ItemSlotWidget slot, java.util.function.Supplier<ItemStack> stackSupplier) {
+    public void bind(Actor slot, java.util.function.Supplier<ItemStack> stackSupplier) {
         slot.addListener(
                 new InputListener() {
                     @Override
@@ -65,7 +65,7 @@ public final class ItemTooltip {
                 });
     }
 
-    private void show(ItemSlotWidget slot, String text) {
+    private void show(Actor slot, String text) {
         textLabel.setText(text);
         tooltip.pack();
         tooltip.setVisible(true);

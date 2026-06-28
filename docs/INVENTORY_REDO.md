@@ -1,44 +1,49 @@
-# Inventory overlay redo — notes for next pass
+# Inventory overlay redo
 
-The full-screen inventory (`I` key) and crafting tab are **not** on the HUD scaling path. This doc captures what to preserve, replace, and watch when redoing inventory before/alongside crafting.
+Full-screen inventory (`I` key) rebuild. Crafting lives in the world **C** menu — not in inventory tabs.
 
-## Current state (intentionally legacy)
+## Phase 1 — chrome only (done)
 
-| Piece | Scale / coords | Notes |
-|-------|----------------|-------|
-| `InventoryDesign.UI_SCALE` | **5×** on 1× chrome (200×148 design px) | ~1000×740 screen px on 1920 window — looks small vs HUD |
-| `ItemSlotWidget` | 16×16 design slots, `Scaling.fit` | Different icon scaling than HUD `stretch` |
-| `InventoryCursorActor` | Manual `× UI_SCALE` font compensation | Hacky; floats in HUD stage space |
-| `InventoryOverlay` | Own `FitViewport` + `inventoryRoot` scale | Isolated from equipment-sidebar `Stage` |
-| `CraftingTabPanel` | Placeholder only | "Crafting — soon" |
+| Piece | Location |
+|-------|----------|
+| Layout | [`InventoryOverlayDesign`](core/src/main/java/com/dawn/ui/inventory/InventoryOverlayDesign.java) — 250×150 at 1×, × `INVENTORY_ART_MULT` (5), centered on HUD |
+| Chrome | [`InventoryChrome`](core/src/main/java/com/dawn/ui/inventory/InventoryChrome.java) — `chrome_bg.png` only |
+| Overlay | [`InventoryOverlay`](core/src/main/java/com/dawn/ui/inventory/InventoryOverlay.java) — dim layer, I toggle (Phase 1); slots added in Phase 2 |
 
-**HUD path (done):** `HudSlotDesign` → `HudItemSlot` → hotbar / sidebar / crate @ `HUD_ART_MULT = 3`.
+**Removed (legacy):** `InventoryDesign` (200×148, `UI_SCALE=5`), tab stack, `ItemSlotWidget`, `InventoryGridPanel`, `InventoryCursorActor`, in-overlay `EquipmentTabPanel` / `StatCellWidget`, `CraftingTabPanel`. HUD drag uses a single [`InventoryCursorController`](core/src/main/java/com/dawn/ui/inventory/InventoryCursorController.java) via [`HudItemDragSession`](core/src/main/java/com/dawn/ui/HudItemDragSession.java).
 
-## Target architecture (recommended)
+## Phase 2 — grey slots (done)
 
-1. **Pick one slot widget** — extend `HudItemSlot` or share a common `ItemSlotView` used by both HUD and inventory, with chrome/style enum (like `HudSlotChrome`).
-2. **Pick one scale strategy** — either:
-   - **A)** Inventory chrome scales with `HUD_ART_MULT` (fills ~same proportion of 1920 window as other UI), or
-   - **B)** Keep design-space layout but set `UI_SCALE = HUD_ART_MULT` (or derive from `Constants`) and re-layout chrome constants.
-3. **One typography context** — inventory labels should use `TextContext.HUD` (or a renamed `SCREEN`) at tier SM, **not** `INVENTORY_DESIGN` fractional scales + manual `× UI_SCALE` on cursor.
-4. **One drag cursor** — merge `InventoryCursorActor` and `HudDragCursorActor` patterns (`FLOATING` chrome, same count pad via `HudSlotDesign.countPadPx()` or equivalent).
-5. **Shared drag controller** — `InventoryCursorController` already backs HUD drag; inventory overlay should register slots the same way as `HudDragSlot`.
+| Piece | Location |
+|-------|----------|
+| Slot layout | [`InventoryOverlayDesign`](core/src/main/java/com/dawn/ui/inventory/InventoryOverlayDesign.java) — wear (123,15), accessories (123,40), off-hand (219,38), grid 5×3 from (123,71); 20px cells, 4px col gap, 3px row gap |
+| Slots | [`InventoryOverlay`](core/src/main/java/com/dawn/ui/inventory/InventoryOverlay.java) — 4 wear + 4 accessory + off-hand + 15 grid `HudDragSlot`s |
+| Drag | Shared [`HudItemDragSession`](core/src/main/java/com/dawn/ui/HudItemDragSession.java); cursor moves to overlay stage on open |
 
-## Files to touch in inventory redo
+Tooltips deferred to Phase 3.
 
-| File | Action |
-|------|--------|
-| `InventoryDesign.java` | Recompute `UI_SCALE`, slot px, or replace with `HudSlotDesign` multiples + panel insets |
-| `InventoryOverlay.java` | Viewport/stage alignment with window; possibly same `HudViewport` |
-| `ItemSlotWidget.java` | Replace with `HudItemSlot` wrapper or delegate |
-| `InventoryCursorActor.java` | Use `HudItemSlot` FLOATING; drop manual font scale hack |
-| `InventoryGridPanel.java`, `EquipmentTabPanel.java` | Slot sizing from shared design |
-| `InventoryUiStyle.java`, `InventoryChrome.java` | Typography via `DawnTypography` HUD tiers |
-| `CraftingTabPanel.java` | Real recipe UI (see below) |
+## Phase 3+ (planned)
 
-## Crafting — world C-menu (in progress)
+1. **Red panel (left)** — character sprite, attributes, stats, status 6×2 grid
+2. Tooltips on slot hover (`ItemTooltip` → `HudDragSlot`)
 
-Crafting is **not** in the inventory tab (`CraftingTabPanel` stays a placeholder). Primary UI is a **popup above the player** toggled with **C**, mirroring [`CrateStorageOverlay`](../core/src/main/java/com/dawn/ui/CrateStorageOverlay.java) + [`WorldHudPopupPlacement`](../core/src/main/java/com/dawn/ui/WorldHudPopupPlacement.java).
+## Target architecture
+
+1. **One slot widget** — `HudItemSlot` / `HudDragSlot` (same as hotbar, eqp sidebar, crate)
+2. **One scale** — `INVENTORY_ART_MULT` (5) for overlay; gameplay HUD stays `HUD_ART_MULT` (3)
+3. **One typography** — `DawnTypography` `TextContext.HUD`
+4. **One drag cursor** — `HudDragCursorActor` on overlay stage; controller from `equipmentSidebar.dragSession()`
+
+## Files preserved for Phase 2+
+
+| File | Role |
+|------|------|
+| `InventoryCursorController` | Drag logic (HUD + future overlay slots) |
+| `InventorySlotRef` | Slot identity |
+| `ItemTooltip` | Hover hints (binds `Actor`) |
+| `InventoryUiStyle` | Dim alpha, tooltip chrome |
+
+## Crafting — world C-menu (done)
 
 ### Step 0 (done)
 
@@ -107,7 +112,7 @@ Hammer context still has no recipes (future pass).
 - **Place** (campfire): materials consumed on successful world placement after timer
 - Cancel before consume: no cost (placement mode does not pre-reserve)
 
-Crafting slots use **`HUD_ART_MULT`** — same scale path as hotbar/crate, not `InventoryDesign.UI_SCALE`.
+Crafting slots use **`HUD_ART_MULT`** — same scale path as hotbar/crate/inventory chrome.
 
 ## Coordinate spaces checklist
 
@@ -127,7 +132,7 @@ DISPLAY_SCALE = 3          → 1920×1200 window
 HUD_ART_MULT = 3           → hotbar / sidebar / crate slots (20×16 art-base)
 VITALS_ART_MULT = 4        → vitals only
 HUD typography             → DawnTypography TextContext.HUD, SM tier ≈ 32px
-Inventory (today)          → UI_SCALE = 5 on 16px design slots — replace in redo
+Inventory chrome           → InventoryOverlayDesign 250×150 @ INVENTORY_ART_MULT (5); HUD slots @ HUD_ART_MULT (3)
 ```
 
 ## Do not regress

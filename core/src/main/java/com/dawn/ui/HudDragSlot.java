@@ -17,9 +17,19 @@ public final class HudDragSlot extends Group {
     private final HudItemSlot slot;
 
     public HudDragSlot(DawnAssets assets, DawnFonts fonts, InventorySlotRef slotRef, HudSlotChrome chrome) {
+        this(assets, fonts, slotRef, chrome, DawnTypography.SLOT_COUNT, HudSlotDesign.countPadPx());
+    }
+
+    public HudDragSlot(
+            DawnAssets assets,
+            DawnFonts fonts,
+            InventorySlotRef slotRef,
+            HudSlotChrome chrome,
+            DawnTypography.TextTier countTier,
+            float countPadPx) {
         this.slotRef = slotRef;
         setTouchable(Touchable.enabled);
-        slot = new HudItemSlot(assets, fonts, chrome);
+        slot = new HudItemSlot(assets, fonts, chrome, countTier, countPadPx);
         addActor(slot);
     }
 

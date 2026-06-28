@@ -119,7 +119,8 @@ public class GameScreen extends ScreenAdapter {
                 delta,
                 ctx.interaction.getLastMessage(),
                 ctx.gameLoop.getSimulation().getCurrentTick(),
-                frame.interactTarget != null && !ctx.crateStorageOverlay.isOpen());
+                frame.interactTarget != null && !ctx.crateStorageOverlay.isOpen(),
+                frame.moving);
     }
 
     private void resumeFromPause() {
@@ -137,9 +138,8 @@ public class GameScreen extends ScreenAdapter {
         cameraTargetPhase.tick(ctx, gameViewport, worldCamera, frame);
         playerAndInteractionPhase.tickInteraction(ctx, frame, delta);
         if (!frame.inventoryOpen) {
-            ItemStack held = ctx.equipmentSidebar.interactionHeld(ctx.hotbar.getHeld());
             ctx.crateStorageOverlay.update(ctx.entities.getPlayer(), worldCamera);
-            ctx.craftingOverlay.update(ctx.entities.getPlayer(), worldCamera, held);
+            ctx.craftingOverlay.update(ctx.entities.getPlayer(), worldCamera);
         }
         simulationLightingPhase.tick(ctx, worldCamera, delta);
     }

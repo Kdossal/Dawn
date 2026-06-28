@@ -58,10 +58,10 @@ public final class CrateStorageOverlay {
         NinePatch patch =
                 new NinePatch(
                         assets.uiInventory.panel,
-                        CrateStorageDesign.BASE_NINE_SLICE,
-                        CrateStorageDesign.BASE_NINE_SLICE,
-                        CrateStorageDesign.BASE_NINE_SLICE,
-                        CrateStorageDesign.BASE_NINE_SLICE);
+                        HudPanelDesign.BASE_NINE_SLICE,
+                        HudPanelDesign.BASE_NINE_SLICE,
+                        HudPanelDesign.BASE_NINE_SLICE,
+                        HudPanelDesign.BASE_NINE_SLICE);
         patch.scale(mult, mult);
         panelBg = new Image(new NinePatchDrawable(patch));
         panelBg.setTouchable(Touchable.disabled);

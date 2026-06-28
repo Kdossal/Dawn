@@ -29,6 +29,9 @@ public final class Constants {
     /** HUD widget art multiplier (1× PNG bases → screen pixels). */
     public static final int HUD_ART_MULT = DISPLAY_SCALE;
 
+    /** Full-screen inventory overlay — larger than gameplay HUD for readability. */
+    public static final int INVENTORY_ART_MULT = 5;
+
     /** Vitals bars/icons — slightly larger than slot HUD art for readability at 3× window. */
     public static final int VITALS_ART_MULT = 4;
 
@@ -46,8 +49,8 @@ public final class Constants {
     public static final int TILE_ART_PX = 16;
 
     /** Player sprite draw size (animation frames); movement hitbox stays 12×12. */
-    public static final int PLAYER_SPRITE_WIDTH_PX = 16;
-    public static final int PLAYER_SPRITE_HEIGHT_PX = 25;
+    public static final int PLAYER_SPRITE_WIDTH_PX = 32;
+    public static final int PLAYER_SPRITE_HEIGHT_PX = 48;
 
     /**
      * Default movement footprint width in cells (12 logical px). Slightly narrower than a full tile so
